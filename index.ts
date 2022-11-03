@@ -7,8 +7,8 @@ const DOCUMENT_NAME = "rbs-discord-alerts";
 const datastore = new gcp.firestore.Document(DOCUMENT_NAME, {
   collection: "default",
   documentId: DOCUMENT_NAME,
-  fields: "{\"lastBlock\": \"string\"}",
-})
+  fields: "{\"lastBlock\": \"string_value\"}",
+}) // TODO not working
 
 export const datastoreId = datastore.id;
 
