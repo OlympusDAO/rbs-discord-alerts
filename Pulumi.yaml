@@ -1,0 +1,3 @@
+name: rbs-discord-alerts
+description: Discord alerts for OlympusDAO Range-Bound Stability events
+runtime: nodejs
