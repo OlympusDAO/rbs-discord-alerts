@@ -1,2 +1,7 @@
 config:
-  gcp:project: utility-descent-365911
+  gcp:project: rbs-discord-alerts
+  gcp:region: us-east1
+  rbs-discord-alerts:notificationDiscordEmail:
+    secure: AAABAIGq8k9zm/2nI7QVUCC02B5BKVMVMQrg6gzL0SDdkjwF7IB4Qd13OF79l/NlaIkohG6qf2E1gJDX6CnVHC/p2QWqPCCZ3AB4pG01xOBrlg==
+  rbs-discord-alerts:notificationEmails:
+    secure: AAABALWtzVtkXAL5NySsgl1Den12vCATIMAMShnSDPj/Zkkn3foFDoxpZrEHlZM0sQ==

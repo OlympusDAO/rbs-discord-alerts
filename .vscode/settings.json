@@ -6,4 +6,5 @@
     "source.fixAll.eslint": true
   },
   "typescript.format.enable": false,
+  "editor.formatOnSave": true,
 }
