@@ -166,7 +166,7 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_EXECUTIONS, {
         trigger: {
           count: 1,
         },
-        thresholdValue: 5, // > 5 per 5 minutes (which is expected) will trigger an alert
+        thresholdValue: 10, // > 10 per 5 minutes (higher than expected) will trigger an alert
       },
     },
   ],
@@ -199,7 +199,7 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
         trigger: {
           count: 1,
         },
-        thresholdValue: 10, // > 10 per 5 minutes (which is expected) will trigger an alert
+        thresholdValue: 10, // > 10 per 5 minutes (higher than expected) will trigger an alert
       },
     },
     {
@@ -218,7 +218,7 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
         trigger: {
           count: 1,
         },
-        thresholdValue: 10, // > 10 per 5 minutes (which is expected) will trigger an alert
+        thresholdValue: 10, // > 10 per 5 minutes (higher than expected) will trigger an alert
       },
     },
   ],
