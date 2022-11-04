@@ -86,7 +86,7 @@ export const notificationDiscordId = notificationDiscord.id;
 
 // Alert when functions crash
 const ALERT_POLICY_FUNCTION_ERROR = `${FUNCTION_NAME}-function-error`;
-const ALERT_POLICY_FUNCTION_ERROR_WINDOW_SECONDS = 15 * 60;
+const ALERT_POLICY_FUNCTION_ERROR_WINDOW_SECONDS = 5 * 60;
 new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_ERROR, {
   displayName: ALERT_POLICY_FUNCTION_ERROR,
   conditions: [
@@ -119,12 +119,12 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_ERROR, {
 
 // Alert when there are more executions than expected (1 every minute)
 const ALERT_POLICY_FUNCTION_EXECUTIONS = `${FUNCTION_NAME}-function-executions`;
-const ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS = 15 * 60;
+const ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS = 5 * 60;
 new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_EXECUTIONS, {
   displayName: ALERT_POLICY_FUNCTION_EXECUTIONS,
   conditions: [
     {
-      displayName: `Function Executions > 1 / ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes`,
+      displayName: `Function Executions > 5 / ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes`,
       conditionThreshold: {
         filter: pulumi.interpolate`resource.type = "cloud_function" AND resource.labels.function_name = "${functionSubgraphCheckName}" AND metric.type = "cloudfunctions.googleapis.com/function/execution_count"`,
         aggregations: [
@@ -139,7 +139,7 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_EXECUTIONS, {
         trigger: {
           count: 1,
         },
-        thresholdValue: 1,
+        thresholdValue: 5, // > 5 per 5 minutes (which is expected) will trigger an alert
       },
     },
   ],
@@ -151,7 +151,57 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_EXECUTIONS, {
   notificationChannels: [notificationEmailId, notificationDiscordId],
 });
 
-// TODO add policies for firestore
+const ALERT_POLICY_FIRESTORE_QUERIES = `${FUNCTION_NAME}-firestore-queries`;
+const ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS = 5 * 60;
+new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
+  displayName: ALERT_POLICY_FIRESTORE_QUERIES,
+  conditions: [
+    {
+      displayName: `Firestore Read Activity > 10 / ${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60} minutes`,
+      conditionThreshold: {
+        filter: pulumi.interpolate`resource.type = "firestore_instance" AND resource.labels.project_id = "${gcp.config.project}" AND metric.type = "firestore.googleapis.com/document/read_count"`,
+        aggregations: [
+          {
+            alignmentPeriod: `${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS}s`,
+            crossSeriesReducer: "REDUCE_NONE",
+            perSeriesAligner: "ALIGN_SUM",
+          },
+        ],
+        comparison: "COMPARISON_GT",
+        duration: "0s",
+        trigger: {
+          count: 1,
+        },
+        thresholdValue: 10, // > 10 per 5 minutes (which is expected) will trigger an alert
+      },
+    },
+    {
+      displayName: `Firestore Write Activity > 10 / ${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60} minutes`,
+      conditionThreshold: {
+        filter: pulumi.interpolate`resource.type = "firestore_instance" AND resource.labels.project_id = "${gcp.config.project}" AND metric.type = "firestore.googleapis.com/document/write_count"`,
+        aggregations: [
+          {
+            alignmentPeriod: `${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS}s`,
+            crossSeriesReducer: "REDUCE_NONE",
+            perSeriesAligner: "ALIGN_SUM",
+          },
+        ],
+        comparison: "COMPARISON_GT",
+        duration: "0s",
+        trigger: {
+          count: 1,
+        },
+        thresholdValue: 10, // > 10 per 5 minutes (which is expected) will trigger an alert
+      },
+    },
+  ],
+  alertStrategy: {
+    autoClose: "604800s",
+  },
+  combiner: "OR",
+  enabled: true,
+  notificationChannels: [notificationEmailId, notificationDiscordId],
+});
 
 /**
  * Create a dashboard for monitoring activity
