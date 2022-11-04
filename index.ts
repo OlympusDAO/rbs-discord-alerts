@@ -5,10 +5,15 @@ import { handler } from "./src/handler";
 
 const pulumiConfig = new pulumi.Config();
 
+if (!gcp.config.project) {
+  throw new Error("Set the project for the pulumi gcp provider");
+}
+
+if (!gcp.config.region) {
+  throw new Error("Set the region for the pulumi gcp provider");
+}
+
 const SECRET_DISCORD_WEBHOOK_URL = "discordWebhook";
-
-// TODO assert project and region is set
-
 const FUNCTION_NAME = "rbs-discord-alerts";
 const FUNCTION_NAME_STACK = `${FUNCTION_NAME}-${pulumi.getStack()}`;
 
@@ -264,6 +269,92 @@ new gcp.monitoring.Dashboard(
               "width": 6,
               "xPos": 0,
               "yPos": 0
+            },
+            {
+              "height": 4,
+              "widget": {
+                "title": "Document Reads per ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"firestore_instance\\" resource.labels.project_id = \\"${
+                            gcp.config.project
+                          }\\" metric.type = \\"firestore.googleapis.com/document/read_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 6,
+              "yPos": 0
+            },
+            {
+              "height": 4,
+              "widget": {
+                "title": "Document Writes per ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"firestore_instance\\" resource.labels.project_id = \\"${
+                            gcp.config.project
+                          }\\" metric.type = \\"firestore.googleapis.com/document/write_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 0,
+              "yPos": 4
             }
           ]
         }
