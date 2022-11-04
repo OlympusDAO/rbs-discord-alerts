@@ -5,13 +5,17 @@ import { handler } from "./src/handler";
 
 const pulumiConfig = new pulumi.Config();
 
+const SECRET_DISCORD_WEBHOOK_URL = "discordWebhook";
+
 // TODO assert project and region is set
 
+const FUNCTION_NAME = "rbs-discord-alerts";
+const FUNCTION_NAME_STACK = `${FUNCTION_NAME}-${pulumi.getStack()}`;
+
 // Create the KV store
-const DOCUMENT_NAME = "rbs-discord-alerts";
-const datastore = new gcp.firestore.Document(DOCUMENT_NAME, {
-  collection: "default",
-  documentId: DOCUMENT_NAME,
+const datastore = new gcp.firestore.Document(FUNCTION_NAME_STACK, {
+  collection: "",
+  documentId: FUNCTION_NAME_STACK,
   // lastBlock key contains an integer, e.g. "11223344"
   fields: "", //'{"lastBlock": { "integerValue": "0" }}',
 });
@@ -22,14 +26,17 @@ export const datastoreId = datastore.id;
  * Execution: Google Cloud Functions
  */
 const FUNCTION_EXPIRATION_SECONDS = 30;
-const FUNCTION_NAME = "rbs-discord-alerts";
-const functionSubgraphCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_NAME, {
+const functionSubgraphCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_NAME_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await handler();
+    await handler(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      pulumiConfig.requireSecret(SECRET_DISCORD_WEBHOOK_URL).get(),
+    );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
@@ -43,7 +50,7 @@ export const functionSubgraphCheckUrl = functionSubgraphCheck.httpsTriggerUrl;
  * Scheduling: Cloud Scheduler
  */
 const schedulerJob = new gcp.cloudscheduler.Job(
-  FUNCTION_NAME,
+  FUNCTION_NAME_STACK,
   {
     schedule: "* * * * *", // Every minute
     timeZone: "UTC",
@@ -206,7 +213,7 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
 /**
  * Create a dashboard for monitoring activity
  */
-const DASHBOARD_NAME = `${FUNCTION_NAME}`;
+const DASHBOARD_NAME = `${FUNCTION_NAME_STACK}`;
 new gcp.monitoring.Dashboard(
   DASHBOARD_NAME,
   {

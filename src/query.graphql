@@ -1,0 +1,14 @@
+query RBSPriceEvents($latestBlock: BigInt!) {
+  priceEvents(orderBy: block, orderDirection: asc, where: { block_gt: $latestBlock }) {
+    id
+    block
+    transaction
+    date
+    type
+    isHigh
+    timestamp
+    capacityOhm
+    price
+    priceMovingAverage
+  }
+}

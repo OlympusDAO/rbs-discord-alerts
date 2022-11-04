@@ -1,6 +1,8 @@
 config:
   gcp:project: rbs-discord-alerts
   gcp:region: us-east1
+  rbs-discord-alerts:discordWebhook:
+    secure: AAABADUOkVs8Ug15/62odOn4cufM0Z1FLhvn2Nx4QyjIoMjaIBUi1xXG0mkoSyP0FlnJlzKpD2GUZ5yLC20EaW1LCZump/lrK4b2ZtBMOnPZTjGW1Yq8QITuI0LRIOuAeAbj2NYQepGvoXpWvWaCSzQ4K+ti1GjM2hWSRiMQccYdu85vYmcP9J+rnXpa5ZjoDyhXv2yr16J5
   rbs-discord-alerts:notificationDiscordEmail:
     secure: AAABAIGq8k9zm/2nI7QVUCC02B5BKVMVMQrg6gzL0SDdkjwF7IB4Qd13OF79l/NlaIkohG6qf2E1gJDX6CnVHC/p2QWqPCCZ3AB4pG01xOBrlg==
   rbs-discord-alerts:notificationEmails:
