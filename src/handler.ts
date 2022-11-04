@@ -111,5 +111,5 @@ export const handler = async (
 
 // Running via CLI
 if (require.main === module) {
-  handler("rbs-discord-alerts", "default", "dummyUrl");
+  handler("rbs-discord-alerts-dev", "default", "dummyUrl");
 }
