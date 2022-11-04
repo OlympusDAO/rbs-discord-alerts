@@ -20,3 +20,9 @@ Pulumi is used to manage the infrastructure, which comprises of:
 2. Fetches all PriceEvent records from the [RBS subgraph](https://github.com/OlympusDAO/rbs-subgraph)
 3. Sends a message using a Discord webhook
 4. Updates the latest block in Firestore
+
+## Secrets Management
+
+Pulumi can manage secrets, but due to a bug (or misconfiguration), it doesn't work. See: <https://github.com/pulumi/pulumi/issues/11257>
+
+As a workaround, copy the `.env.sample` file to `.env` and populate it with the required variables. This will be read when deploying.

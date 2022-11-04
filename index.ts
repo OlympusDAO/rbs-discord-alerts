@@ -1,9 +1,11 @@
 import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
+import * as dotenv from "dotenv";
 
 import { handler } from "./src/handler";
 
-const pulumiConfig = new pulumi.Config();
+// Read from .env
+dotenv.config();
 
 if (!gcp.config.project) {
   throw new Error("Set the project for the pulumi gcp provider");
@@ -13,7 +15,27 @@ if (!gcp.config.region) {
   throw new Error("Set the region for the pulumi gcp provider");
 }
 
-const SECRET_DISCORD_WEBHOOK_URL = "discordWebhook";
+/**
+ * Something is wonky with requireSecret, so the secrets are
+ * passed in as environment variables.
+ *
+ * See: https://github.com/pulumi/pulumi/issues/11257
+ */
+const WEBHOOK_URL = process.env.WEBHOOK_URL;
+if (!WEBHOOK_URL) {
+  throw new Error("Set the WEBHOOK_URL environment variable");
+}
+
+const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
+if (!NOTIFICATION_EMAIL) {
+  throw new Error("Set the NOTIFICATION_EMAIL environment variable");
+}
+
+const NOTIFICATION_EMAIL_DISCORD = process.env.NOTIFICATION_EMAIL_DISCORD;
+if (!NOTIFICATION_EMAIL_DISCORD) {
+  throw new Error("Set the NOTIFICATION_EMAIL_DISCORD environment variable");
+}
+
 const FUNCTION_NAME = "rbs-discord-alerts";
 const FUNCTION_NAME_STACK = `${FUNCTION_NAME}-${pulumi.getStack()}`;
 
@@ -21,8 +43,7 @@ const FUNCTION_NAME_STACK = `${FUNCTION_NAME}-${pulumi.getStack()}`;
 const datastore = new gcp.firestore.Document(FUNCTION_NAME_STACK, {
   collection: "default",
   documentId: FUNCTION_NAME_STACK,
-  // lastBlock key contains an integer, e.g. "11223344"
-  fields: "", //'{"lastBlock": { "integerValue": "0" }}',
+  fields: "",
 });
 
 export const datastoreId = datastore.id;
@@ -37,11 +58,7 @@ const functionSubgraphCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTI
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await handler(
-      datastore.documentId.get(),
-      datastore.collection.get(),
-      pulumiConfig.requireSecret(SECRET_DISCORD_WEBHOOK_URL).get(),
-    );
+    await handler(datastore.documentId.get(), datastore.collection.get(), WEBHOOK_URL);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
@@ -75,13 +92,11 @@ export const schedulerJobName = schedulerJob.name;
  * Create Alert Policies
  */
 // Email notification channel
-const SECRET_NOTIFICATION_EMAIL = "notificationEmails";
-const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationDiscordEmail";
 const notificationEmail = new gcp.monitoring.NotificationChannel("email", {
   displayName: "Email",
   type: "email",
   labels: {
-    email_address: pulumiConfig.requireSecret(SECRET_NOTIFICATION_EMAIL),
+    email_address: NOTIFICATION_EMAIL,
   },
 });
 export const notificationEmailId = notificationEmail.id;
@@ -91,7 +106,7 @@ const notificationDiscord = new gcp.monitoring.NotificationChannel("discord", {
   displayName: "discord",
   type: "email",
   labels: {
-    email_address: pulumiConfig.requireSecret(SECRET_NOTIFICATION_EMAIL_DISCORD),
+    email_address: NOTIFICATION_EMAIL_DISCORD,
   },
 });
 export const notificationDiscordId = notificationDiscord.id;
