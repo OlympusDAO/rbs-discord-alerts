@@ -14,7 +14,7 @@ const FUNCTION_NAME_STACK = `${FUNCTION_NAME}-${pulumi.getStack()}`;
 
 // Create the KV store
 const datastore = new gcp.firestore.Document(FUNCTION_NAME_STACK, {
-  collection: "",
+  collection: "default",
   documentId: FUNCTION_NAME_STACK,
   // lastBlock key contains an integer, e.g. "11223344"
   fields: "", //'{"lastBlock": { "integerValue": "0" }}',
