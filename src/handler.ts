@@ -4,6 +4,7 @@ import fetch from "cross-fetch";
 
 import { sendAlert } from "./discord";
 import { PriceEvent, RbsPriceEventsDocument } from "./graphql/generated";
+import { formatCurrency } from "./helpers/numberHelper";
 
 const FIELD_LATEST_BLOCK = "latestBlock";
 const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/rbs";
@@ -60,12 +61,32 @@ export const handler = async (
       },
       {
         name: "Price",
-        value: priceEvent.price ? priceEvent.price.toString() : "N/A",
+        value: formatCurrency(priceEvent.price),
         inline: true,
       },
       {
         name: "Moving Average Price",
-        value: priceEvent.priceMovingAverage ? priceEvent.priceMovingAverage.toString() : "N/A",
+        value: formatCurrency(priceEvent.priceMovingAverage),
+        inline: true,
+      },
+      {
+        name: "Wall Low Price",
+        value: formatCurrency(priceEvent.wallLowPrice),
+        inline: true,
+      },
+      {
+        name: "Cushion Low Price",
+        value: formatCurrency(priceEvent.cushionLowPrice),
+        inline: true,
+      },
+      {
+        name: "Cushion High Price",
+        value: formatCurrency(priceEvent.cushionHighPrice),
+        inline: true,
+      },
+      {
+        name: "Wall High Price",
+        value: formatCurrency(priceEvent.wallHighPrice),
         inline: true,
       },
       {

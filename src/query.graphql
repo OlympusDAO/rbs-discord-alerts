@@ -10,5 +10,9 @@ query RBSPriceEvents($latestBlock: BigInt!) {
     capacityOhm
     price
     priceMovingAverage
+    cushionHighPrice
+    cushionLowPrice
+    wallHighPrice
+    wallLowPrice
   }
 }

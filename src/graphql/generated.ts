@@ -272,6 +272,8 @@ export type PriceEvent = {
   __typename?: "PriceEvent";
   block: Scalars["BigInt"];
   capacityOhm?: Maybe<Scalars["BigDecimal"]>;
+  cushionHighPrice?: Maybe<Scalars["BigDecimal"]>;
+  cushionLowPrice?: Maybe<Scalars["BigDecimal"]>;
   date: Scalars["String"];
   id: Scalars["ID"];
   isHigh: Scalars["Boolean"];
@@ -280,6 +282,8 @@ export type PriceEvent = {
   timestamp: Scalars["BigInt"];
   transaction: Scalars["Bytes"];
   type: PriceEventType;
+  wallHighPrice?: Maybe<Scalars["BigDecimal"]>;
+  wallLowPrice?: Maybe<Scalars["BigDecimal"]>;
 };
 
 export enum PriceEventType {
@@ -308,6 +312,22 @@ export type PriceEvent_Filter = {
   capacityOhm_lte?: InputMaybe<Scalars["BigDecimal"]>;
   capacityOhm_not?: InputMaybe<Scalars["BigDecimal"]>;
   capacityOhm_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  cushionHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  cushionHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  cushionLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  cushionLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -374,11 +394,29 @@ export type PriceEvent_Filter = {
   type_in?: InputMaybe<Array<PriceEventType>>;
   type_not?: InputMaybe<PriceEventType>;
   type_not_in?: InputMaybe<Array<PriceEventType>>;
+  wallHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  wallHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  wallHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  wallHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  wallHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  wallHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  wallHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  wallHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  wallLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  wallLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  wallLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  wallLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  wallLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  wallLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  wallLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  wallLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
 };
 
 export enum PriceEvent_OrderBy {
   Block = "block",
   CapacityOhm = "capacityOhm",
+  CushionHighPrice = "cushionHighPrice",
+  CushionLowPrice = "cushionLowPrice",
   Date = "date",
   Id = "id",
   IsHigh = "isHigh",
@@ -387,6 +425,8 @@ export enum PriceEvent_OrderBy {
   Timestamp = "timestamp",
   Transaction = "transaction",
   Type = "type",
+  WallHighPrice = "wallHighPrice",
+  WallLowPrice = "wallLowPrice",
 }
 
 export type PricesChangedEvent = {
@@ -1087,6 +1127,10 @@ export type RbsPriceEventsQuery = {
     capacityOhm?: number | null;
     price?: number | null;
     priceMovingAverage?: number | null;
+    cushionHighPrice?: number | null;
+    cushionLowPrice?: number | null;
+    wallHighPrice?: number | null;
+    wallLowPrice?: number | null;
   }>;
 };
 
@@ -1149,6 +1193,10 @@ export const RbsPriceEventsDocument = {
                 { kind: "Field", name: { kind: "Name", value: "capacityOhm" } },
                 { kind: "Field", name: { kind: "Name", value: "price" } },
                 { kind: "Field", name: { kind: "Name", value: "priceMovingAverage" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
               ],
             },
           },
