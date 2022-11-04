@@ -31,7 +31,7 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
   });
 
   if (!response.ok) {
-    console.log(`Encountered error with Discord webhook: ${response.body}`);
+    throw new Error(`Encountered error with Discord webhook: ${response.text()}`);
   }
 };
 
