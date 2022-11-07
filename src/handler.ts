@@ -2,7 +2,7 @@ import { Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { sendAlert } from "./discord";
+import { BLANK_EMBED_FIELD, sendAlert } from "./discord";
 import { PriceEvent, RbsPriceEventsDocument } from "./graphql/generated";
 import { formatCurrency } from "./helpers/numberHelper";
 
@@ -49,14 +49,18 @@ export const handler = async (
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
     await sendAlert(webhookUrl, `🚨 RBS Price Event`, ``, [
+      // Row 1
       {
-        name: "Type",
-        value: priceEvent.type,
+        name: "Wall High Price",
+        value: formatCurrency(priceEvent.wallHighPrice),
         inline: true,
       },
+      BLANK_EMBED_FIELD,
+      BLANK_EMBED_FIELD,
+      // Row 2
       {
-        name: "Is High?",
-        value: priceEvent.isHigh ? "True" : "False",
+        name: "Cushion High Price",
+        value: formatCurrency(priceEvent.cushionHighPrice),
         inline: true,
       },
       {
@@ -64,36 +68,44 @@ export const handler = async (
         value: formatCurrency(priceEvent.price),
         inline: true,
       },
-      {
-        name: "Moving Average Price",
-        value: formatCurrency(priceEvent.priceMovingAverage),
-        inline: true,
-      },
-      {
-        name: "Wall Low Price",
-        value: formatCurrency(priceEvent.wallLowPrice),
-        inline: true,
-      },
+      BLANK_EMBED_FIELD,
+      // Row 3
       {
         name: "Cushion Low Price",
         value: formatCurrency(priceEvent.cushionLowPrice),
         inline: true,
       },
       {
-        name: "Cushion High Price",
-        value: formatCurrency(priceEvent.cushionHighPrice),
+        name: "Moving Average Price",
+        value: formatCurrency(priceEvent.priceMovingAverage),
+        inline: true,
+      },
+      BLANK_EMBED_FIELD,
+      // Row 4
+      {
+        name: "Wall Low Price",
+        value: formatCurrency(priceEvent.wallLowPrice),
+        inline: true,
+      },
+      BLANK_EMBED_FIELD,
+      BLANK_EMBED_FIELD,
+      // Row 5
+      {
+        name: "Type",
+        value: priceEvent.type,
         inline: true,
       },
       {
-        name: "Wall High Price",
-        value: formatCurrency(priceEvent.wallHighPrice),
+        name: "Above/Below",
+        value: priceEvent.isHigh ? "Above" : "Below",
         inline: true,
       },
       {
         name: "Timestamp",
         value: priceEvent.date,
-        inline: false,
+        inline: true,
       },
+      // Row 6
       {
         name: "Transaction",
         value: `https://etherscan.io/tx/${priceEvent.transaction}`,

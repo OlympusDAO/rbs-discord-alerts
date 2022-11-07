@@ -35,6 +35,11 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
   }
 };
 
+export const BLANK_EMBED_FIELD = {
+  name: "\u200B",
+  value: "\u200B",
+};
+
 export const sendAlert = async (
   webhook: string,
   title: string,
