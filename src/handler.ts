@@ -50,60 +50,49 @@ export const handler = async (
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
-    await sendAlert(
-      webhookUrl,
-      `🚨 RBS Price Event`,
-      ``,
-      [
-        // Row 1
-        {
-          name: "Type",
-          value: priceEvent.type,
-          inline: true,
-        },
-        {
-          name: "Is High?",
-          value: priceEvent.isHigh ? "Yes" : "No",
-          inline: true,
-        },
-        {
-          name: "Transaction",
-          value: `[${shorten(priceEvent.transaction.toString())}](${getEtherscanTransactionUrl(
-            priceEvent.transaction.toString(),
-            priceEvent.blockchain,
-          )})`,
-          inline: true,
-        },
-        // Current price
-        {
-          name: "Current",
-          value: formatCurrency(priceEvent.price),
-          inline: false,
-        },
-        // High
-        {
-          name: "High",
-          value: `Wall: ${formatCurrency(priceEvent.wallHighPrice)}\nCushion: ${formatCurrency(
-            priceEvent.cushionHighPrice,
-          )}`,
-        },
-        // Moving average
-        {
-          name: "Moving Average",
-          value: formatCurrency(priceEvent.priceMovingAverage),
-          inline: false,
-        },
-        // Low
-        {
-          name: "Low",
-          value: `Cushion: ${formatCurrency(priceEvent.cushionLowPrice)}\nWall: ${formatCurrency(
-            priceEvent.wallLowPrice,
-          )}`,
-        },
-      ],
-      undefined,
-      priceEvent.date,
-    );
+    await sendAlert(webhookUrl, `🚨 RBS Price Event`, ``, [
+      // Row 1
+      {
+        name: "Date",
+        // Display in the local user's timezone. Expects the timestamp in seconds.
+        value: `<t:${priceEvent.timestamp / 1000}>`,
+        inline: true,
+      },
+      {
+        name: "Transaction",
+        value: `[${shorten(priceEvent.transaction.toString())}](${getEtherscanTransactionUrl(
+          priceEvent.transaction.toString(),
+          priceEvent.blockchain,
+        )})`,
+        inline: true,
+      },
+      // Current price
+      {
+        name: "Current",
+        value: formatCurrency(priceEvent.price),
+        inline: false,
+      },
+      // High
+      {
+        name: "High",
+        value: `Wall: ${formatCurrency(priceEvent.wallHighPrice)}\nCushion: ${formatCurrency(
+          priceEvent.cushionHighPrice,
+        )}`,
+      },
+      // Moving average
+      {
+        name: "Moving Average",
+        value: formatCurrency(priceEvent.priceMovingAverage),
+        inline: false,
+      },
+      // Low
+      {
+        name: "Low",
+        value: `Cushion: ${formatCurrency(priceEvent.cushionLowPrice)}\nWall: ${formatCurrency(
+          priceEvent.wallLowPrice,
+        )}`,
+      },
+    ]);
   }
 
   // Update last processed block
