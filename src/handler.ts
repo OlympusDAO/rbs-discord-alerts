@@ -2,7 +2,7 @@ import { Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { BLANK_EMBED_FIELD, sendAlert, sortPriceEmbeds } from "./discord";
+import { sendAlert } from "./discord";
 import { PriceEvent, RbsPriceEventsDocument } from "./graphql/generated";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { formatCurrency } from "./helpers/numberHelper";
@@ -74,44 +74,32 @@ export const handler = async (
           )})`,
           inline: true,
         },
-        // Blank row
-        BLANK_EMBED_FIELD,
-        // Rest of the rows
-        ...sortPriceEmbeds(
-          [
-            {
-              name: "Wall High Price",
-              value: formatCurrency(priceEvent.wallHighPrice),
-              inline: false,
-            },
-            {
-              name: "Cushion High Price",
-              value: formatCurrency(priceEvent.cushionHighPrice),
-              inline: false,
-            },
-            {
-              name: "Price",
-              value: formatCurrency(priceEvent.price),
-              inline: false,
-            },
-            {
-              name: "Cushion Low Price",
-              value: formatCurrency(priceEvent.cushionLowPrice),
-              inline: false,
-            },
-            {
-              name: "Moving Average Price",
-              value: formatCurrency(priceEvent.priceMovingAverage),
-              inline: false,
-            },
-            {
-              name: "Wall Low Price",
-              value: formatCurrency(priceEvent.wallLowPrice),
-              inline: false,
-            },
-          ],
-          false,
-        ),
+        // Current price
+        {
+          name: "Current",
+          value: formatCurrency(priceEvent.price),
+          inline: false,
+        },
+        // High
+        {
+          name: "High",
+          value: `Wall: ${formatCurrency(priceEvent.wallHighPrice)}\nCushion: ${formatCurrency(
+            priceEvent.cushionHighPrice,
+          )}`,
+        },
+        // Moving average
+        {
+          name: "Moving Average",
+          value: formatCurrency(priceEvent.priceMovingAverage),
+          inline: false,
+        },
+        // Low
+        {
+          name: "Low",
+          value: `Cushion: ${formatCurrency(priceEvent.cushionLowPrice)}\nWall: ${formatCurrency(
+            priceEvent.wallLowPrice,
+          )}`,
+        },
       ],
       undefined,
       priceEvent.date,
