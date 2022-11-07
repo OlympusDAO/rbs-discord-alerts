@@ -4,6 +4,7 @@ import fetch from "cross-fetch";
 
 import { BLANK_EMBED_FIELD, sendAlert, sortPriceEmbeds } from "./discord";
 import { PriceEvent, RbsPriceEventsDocument } from "./graphql/generated";
+import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -67,7 +68,10 @@ export const handler = async (
         },
         {
           name: "Transaction",
-          value: `[${shorten(priceEvent.transaction.toString())}](https://etherscan.io/tx/${priceEvent.transaction})`,
+          value: `[${shorten(priceEvent.transaction.toString())}](${getEtherscanTransactionUrl(
+            priceEvent.transaction.toString(),
+            priceEvent.blockchain,
+          )})`,
           inline: true,
         },
         // Blank row

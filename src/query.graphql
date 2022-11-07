@@ -1,6 +1,7 @@
 query RBSPriceEvents($latestBlock: BigInt!) {
   priceEvents(orderBy: block, orderDirection: asc, where: { block_gt: $latestBlock }) {
     id
+    blockchain
     block
     transaction
     date

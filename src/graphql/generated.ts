@@ -29,6 +29,7 @@ export type Block_Height = {
 export type MovingAverageDurationChanged = {
   __typename?: "MovingAverageDurationChanged";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   date: Scalars["String"];
   id: Scalars["ID"];
   movingAverageDuration: Scalars["BigInt"];
@@ -46,6 +47,26 @@ export type MovingAverageDurationChanged_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -92,6 +113,7 @@ export type MovingAverageDurationChanged_Filter = {
 
 export enum MovingAverageDurationChanged_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   Date = "date",
   Id = "id",
   MovingAverageDuration = "movingAverageDuration",
@@ -101,6 +123,7 @@ export enum MovingAverageDurationChanged_OrderBy {
 export type NewObservation = {
   __typename?: "NewObservation";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   date: Scalars["String"];
   id: Scalars["ID"];
   price: Scalars["BigDecimal"];
@@ -120,6 +143,26 @@ export type NewObservation_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -182,6 +225,7 @@ export type NewObservation_Filter = {
 
 export enum NewObservation_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   Date = "date",
   Id = "id",
   Price = "price",
@@ -193,6 +237,7 @@ export enum NewObservation_OrderBy {
 export type ObservationFrequencyChanged = {
   __typename?: "ObservationFrequencyChanged";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   date: Scalars["String"];
   id: Scalars["ID"];
   observationFrequencySeconds: Scalars["BigInt"];
@@ -210,6 +255,26 @@ export type ObservationFrequencyChanged_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -256,6 +321,7 @@ export type ObservationFrequencyChanged_Filter = {
 
 export enum ObservationFrequencyChanged_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   Date = "date",
   Id = "id",
   ObservationFrequencySeconds = "observationFrequencySeconds",
@@ -271,6 +337,7 @@ export enum OrderDirection {
 export type PriceEvent = {
   __typename?: "PriceEvent";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   capacityOhm?: Maybe<Scalars["BigDecimal"]>;
   cushionHighPrice?: Maybe<Scalars["BigDecimal"]>;
   cushionLowPrice?: Maybe<Scalars["BigDecimal"]>;
@@ -304,6 +371,26 @@ export type PriceEvent_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   capacityOhm?: InputMaybe<Scalars["BigDecimal"]>;
   capacityOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
   capacityOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -414,6 +501,7 @@ export type PriceEvent_Filter = {
 
 export enum PriceEvent_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   CapacityOhm = "capacityOhm",
   CushionHighPrice = "cushionHighPrice",
   CushionLowPrice = "cushionLowPrice",
@@ -432,6 +520,7 @@ export enum PriceEvent_OrderBy {
 export type PricesChangedEvent = {
   __typename?: "PricesChangedEvent";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   cushionHighPrice: Scalars["BigDecimal"];
   cushionLowPrice: Scalars["BigDecimal"];
   date: Scalars["String"];
@@ -452,6 +541,26 @@ export type PricesChangedEvent_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   cushionHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
   cushionHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
   cushionHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -522,6 +631,7 @@ export type PricesChangedEvent_Filter = {
 
 export enum PricesChangedEvent_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   CushionHighPrice = "cushionHighPrice",
   CushionLowPrice = "cushionLowPrice",
   Date = "date",
@@ -688,6 +798,7 @@ export type QueryUpdateThresholdsChangedsArgs = {
 export type SpreadsChangedEvent = {
   __typename?: "SpreadsChangedEvent";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   cushionSpread: Scalars["BigDecimal"];
   date: Scalars["String"];
   id: Scalars["ID"];
@@ -706,6 +817,26 @@ export type SpreadsChangedEvent_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   cushionSpread?: InputMaybe<Scalars["BigDecimal"]>;
   cushionSpread_gt?: InputMaybe<Scalars["BigDecimal"]>;
   cushionSpread_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -760,6 +891,7 @@ export type SpreadsChangedEvent_Filter = {
 
 export enum SpreadsChangedEvent_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   CushionSpread = "cushionSpread",
   Date = "date",
   Id = "id",
@@ -924,6 +1056,7 @@ export type SubscriptionUpdateThresholdsChangedsArgs = {
 export type ThresholdFactorChangedEvent = {
   __typename?: "ThresholdFactorChangedEvent";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   date: Scalars["String"];
   id: Scalars["ID"];
   thresholdFactor: Scalars["BigDecimal"];
@@ -941,6 +1074,26 @@ export type ThresholdFactorChangedEvent_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -987,6 +1140,7 @@ export type ThresholdFactorChangedEvent_Filter = {
 
 export enum ThresholdFactorChangedEvent_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   Date = "date",
   Id = "id",
   ThresholdFactor = "thresholdFactor",
@@ -996,6 +1150,7 @@ export enum ThresholdFactorChangedEvent_OrderBy {
 export type UpdateThresholdsChanged = {
   __typename?: "UpdateThresholdsChanged";
   block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
   date: Scalars["String"];
   id: Scalars["ID"];
   ohmEthUpdateThresholdSeconds: Scalars["BigInt"];
@@ -1014,6 +1169,26 @@ export type UpdateThresholdsChanged_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -1068,6 +1243,7 @@ export type UpdateThresholdsChanged_Filter = {
 
 export enum UpdateThresholdsChanged_OrderBy {
   Block = "block",
+  Blockchain = "blockchain",
   Date = "date",
   Id = "id",
   OhmEthUpdateThresholdSeconds = "ohmEthUpdateThresholdSeconds",
@@ -1118,6 +1294,7 @@ export type RbsPriceEventsQuery = {
   priceEvents: Array<{
     __typename?: "PriceEvent";
     id: string;
+    blockchain: string;
     block: number;
     transaction: Uint8Array;
     date: string;
@@ -1184,6 +1361,7 @@ export const RbsPriceEventsDocument = {
               kind: "SelectionSet",
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
                 { kind: "Field", name: { kind: "Name", value: "block" } },
                 { kind: "Field", name: { kind: "Name", value: "transaction" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
