@@ -10,6 +10,10 @@ type Embed = {
   title: string;
   description: string;
   fields?: EmbedField[];
+  footer?: {
+    text?: string;
+  };
+  timestamp?: string;
 };
 
 type DiscordMessage = {
@@ -45,6 +49,8 @@ export const sendAlert = async (
   title: string,
   description: string,
   fields: EmbedField[],
+  footer?: string,
+  timestamp?: string,
 ): Promise<void> => {
   await executeWebhook(webhook, {
     content: "",
@@ -53,7 +59,20 @@ export const sendAlert = async (
         title: title,
         description: description,
         fields: fields,
+        footer: {
+          text: footer,
+        },
+        timestamp: timestamp,
       },
     ],
+  });
+};
+
+export const sortPriceEmbeds = (fields: EmbedField[], ascending = true): EmbedField[] => {
+  return fields.sort((a, b) => {
+    const aValue = parseFloat(a.value.replace("$", ""));
+    const bValue = parseFloat(b.value.replace("$", ""));
+
+    return ascending ? aValue - bValue : bValue - aValue;
   });
 };
