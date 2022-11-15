@@ -4,7 +4,7 @@ import fetch from "cross-fetch";
 import { RBS_SUBGRAPH_URL } from "./constants";
 import { sendAlert } from "./discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "./graphql/rangeSnapshot";
-import { addDays } from "./helpers/dateHelper";
+import { addDate } from "./helpers/dateHelper";
 
 const CUSHION_CAPACITY_THRESHOLD = 1.0;
 const DEPLETION_COUNT_THRESHOLD = 2;
@@ -12,7 +12,7 @@ const SINCE_DAYS = 1;
 
 export const checkCapacityDepletion = async (webhookUrl: string): Promise<void> => {
   const now = new Date();
-  const sinceDate = addDays(now, -1 * SINCE_DAYS, false);
+  const sinceDate = addDate(now, -1 * SINCE_DAYS, 0, false);
   const sinceDateString = sinceDate.toISOString();
 
   // TODO throttling?
