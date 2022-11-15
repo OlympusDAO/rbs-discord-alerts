@@ -18,20 +18,50 @@ query RBSPriceEvents($latestBlock: BigInt!) {
   }
 }
 
-query RangeSnapshots($latestBlock: BigInt!) {
-  rangeSnapshots(orderBy: block, orderDirection: desc, where: { block_gt: $latestBlock }) {
-    id
-    blockchain
-    block
-    date
-    timestamp
-    ohmPrice
-    ohmMovingAveragePrice
-    cushionHighPrice
-    cushionHighCapacityOhm
-    wallHighPrice
-    cushionLowPrice
-    cushionLowCapacityOhm
-    wallLowPrice
+fragment RangeSnapshotParts on RangeSnapshot {
+  id
+  blockchain
+  block
+  date
+  timestamp
+  ohmPrice
+  ohmMovingAveragePrice
+  cushionHighPrice
+  cushionHighCapacityOhm
+  wallHighPrice
+  cushionLowPrice
+  cushionLowCapacityOhm
+  wallLowPrice
+}
+
+query RangeSnapshots($sinceBlock: BigInt!) {
+  rangeSnapshots(orderBy: block, orderDirection: desc, where: { block_gt: $sinceBlock }) {
+    ...RangeSnapshotParts
+  }
+}
+
+query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecimal!) {
+  rangeSnapshots(
+    orderBy: block
+    orderDirection: desc
+    where: { date_gt: $sinceDate, cushionLowCapacityOhm_lt: $belowCapacity }
+  ) {
+    ...RangeSnapshotParts
+  }
+}
+
+query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecimal!) {
+  rangeSnapshots(
+    orderBy: block
+    orderDirection: desc
+    where: { date_gt: $sinceDate, cushionHighCapacityOhm_lt: $belowCapacity }
+  ) {
+    ...RangeSnapshotParts
+  }
+}
+
+query LowerWallBroken($sinceDate: String!, $belowPrice: BigDecimal!) {
+  rangeSnapshots(orderBy: block, orderDirection: desc, where: { date_gt: $sinceDate, ohmPrice_lt: $belowPrice }) {
+    ...RangeSnapshotParts
   }
 }

@@ -1553,8 +1553,25 @@ export type RbsPriceEventsQuery = {
   }>;
 };
 
+export type RangeSnapshotPartsFragment = {
+  __typename?: "RangeSnapshot";
+  id: string;
+  blockchain: string;
+  block: number;
+  date: string;
+  timestamp: number;
+  ohmPrice?: number | null;
+  ohmMovingAveragePrice?: number | null;
+  cushionHighPrice: number;
+  cushionHighCapacityOhm: number;
+  wallHighPrice: number;
+  cushionLowPrice: number;
+  cushionLowCapacityOhm: number;
+  wallLowPrice: number;
+};
+
 export type RangeSnapshotsQueryVariables = Exact<{
-  latestBlock: Scalars["BigInt"];
+  sinceBlock: Scalars["BigInt"];
 }>;
 
 export type RangeSnapshotsQuery = {
@@ -1577,6 +1594,109 @@ export type RangeSnapshotsQuery = {
   }>;
 };
 
+export type LowerCushionCapacityDepletedQueryVariables = Exact<{
+  sinceDate: Scalars["String"];
+  belowCapacity: Scalars["BigDecimal"];
+}>;
+
+export type LowerCushionCapacityDepletedQuery = {
+  __typename?: "Query";
+  rangeSnapshots: Array<{
+    __typename?: "RangeSnapshot";
+    id: string;
+    blockchain: string;
+    block: number;
+    date: string;
+    timestamp: number;
+    ohmPrice?: number | null;
+    ohmMovingAveragePrice?: number | null;
+    cushionHighPrice: number;
+    cushionHighCapacityOhm: number;
+    wallHighPrice: number;
+    cushionLowPrice: number;
+    cushionLowCapacityOhm: number;
+    wallLowPrice: number;
+  }>;
+};
+
+export type UpperCushionCapacityDepletedQueryVariables = Exact<{
+  sinceDate: Scalars["String"];
+  belowCapacity: Scalars["BigDecimal"];
+}>;
+
+export type UpperCushionCapacityDepletedQuery = {
+  __typename?: "Query";
+  rangeSnapshots: Array<{
+    __typename?: "RangeSnapshot";
+    id: string;
+    blockchain: string;
+    block: number;
+    date: string;
+    timestamp: number;
+    ohmPrice?: number | null;
+    ohmMovingAveragePrice?: number | null;
+    cushionHighPrice: number;
+    cushionHighCapacityOhm: number;
+    wallHighPrice: number;
+    cushionLowPrice: number;
+    cushionLowCapacityOhm: number;
+    wallLowPrice: number;
+  }>;
+};
+
+export type LowerWallBrokenQueryVariables = Exact<{
+  sinceDate: Scalars["String"];
+  belowPrice: Scalars["BigDecimal"];
+}>;
+
+export type LowerWallBrokenQuery = {
+  __typename?: "Query";
+  rangeSnapshots: Array<{
+    __typename?: "RangeSnapshot";
+    id: string;
+    blockchain: string;
+    block: number;
+    date: string;
+    timestamp: number;
+    ohmPrice?: number | null;
+    ohmMovingAveragePrice?: number | null;
+    cushionHighPrice: number;
+    cushionHighCapacityOhm: number;
+    wallHighPrice: number;
+    cushionLowPrice: number;
+    cushionLowCapacityOhm: number;
+    wallLowPrice: number;
+  }>;
+};
+
+export const RangeSnapshotPartsFragmentDoc = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "RangeSnapshotParts" },
+      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "RangeSnapshot" } },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          { kind: "Field", name: { kind: "Name", value: "id" } },
+          { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+          { kind: "Field", name: { kind: "Name", value: "block" } },
+          { kind: "Field", name: { kind: "Name", value: "date" } },
+          { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+          { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+          { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
+          { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
+          { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
+          { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
+          { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
+          { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
+          { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RangeSnapshotPartsFragment, unknown>;
 export const RbsPriceEventsDocument = {
   kind: "Document",
   definitions: [
@@ -1659,7 +1779,7 @@ export const RangeSnapshotsDocument = {
       variableDefinitions: [
         {
           kind: "VariableDefinition",
-          variable: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+          variable: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
           type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
         },
       ],
@@ -1689,7 +1809,7 @@ export const RangeSnapshotsDocument = {
                     {
                       kind: "ObjectField",
                       name: { kind: "Name", value: "block_gt" },
-                      value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+                      value: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
                     },
                   ],
                 },
@@ -1697,25 +1817,213 @@ export const RangeSnapshotsDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
-                { kind: "Field", name: { kind: "Name", value: "block" } },
-                { kind: "Field", name: { kind: "Name", value: "date" } },
-                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
-              ],
+              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
             },
           },
         ],
       },
     },
+    ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<RangeSnapshotsQuery, RangeSnapshotsQueryVariables>;
+export const LowerCushionCapacityDepletedDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "LowerCushionCapacityDepleted" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigDecimal" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "rangeSnapshots" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "block" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "EnumValue", value: "desc" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "date_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "cushionLowCapacityOhm_lt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
+            },
+          },
+        ],
+      },
+    },
+    ...RangeSnapshotPartsFragmentDoc.definitions,
+  ],
+} as unknown as DocumentNode<LowerCushionCapacityDepletedQuery, LowerCushionCapacityDepletedQueryVariables>;
+export const UpperCushionCapacityDepletedDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "UpperCushionCapacityDepleted" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigDecimal" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "rangeSnapshots" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "block" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "EnumValue", value: "desc" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "date_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "cushionHighCapacityOhm_lt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
+            },
+          },
+        ],
+      },
+    },
+    ...RangeSnapshotPartsFragmentDoc.definitions,
+  ],
+} as unknown as DocumentNode<UpperCushionCapacityDepletedQuery, UpperCushionCapacityDepletedQueryVariables>;
+export const LowerWallBrokenDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "LowerWallBroken" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "belowPrice" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigDecimal" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "rangeSnapshots" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "block" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "EnumValue", value: "desc" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "date_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "ohmPrice_lt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "belowPrice" } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
+            },
+          },
+        ],
+      },
+    },
+    ...RangeSnapshotPartsFragmentDoc.definitions,
+  ],
+} as unknown as DocumentNode<LowerWallBrokenQuery, LowerWallBrokenQueryVariables>;
