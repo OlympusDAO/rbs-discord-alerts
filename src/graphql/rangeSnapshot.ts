@@ -1570,11 +1570,9 @@ export type RangeSnapshotPartsFragment = {
   wallLowPrice: number;
 };
 
-export type RangeSnapshotsQueryVariables = Exact<{
-  sinceBlock: Scalars["BigInt"];
-}>;
+export type LatestRangeSnapshotQueryVariables = Exact<{ [key: string]: never }>;
 
-export type RangeSnapshotsQuery = {
+export type LatestRangeSnapshotQuery = {
   __typename?: "Query";
   rangeSnapshots: Array<{
     __typename?: "RangeSnapshot";
@@ -1769,20 +1767,13 @@ export const RbsPriceEventsDocument = {
     },
   ],
 } as unknown as DocumentNode<RbsPriceEventsQuery, RbsPriceEventsQueryVariables>;
-export const RangeSnapshotsDocument = {
+export const LatestRangeSnapshotDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "query",
-      name: { kind: "Name", value: "RangeSnapshots" },
-      variableDefinitions: [
-        {
-          kind: "VariableDefinition",
-          variable: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
-          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
-        },
-      ],
+      name: { kind: "Name", value: "LatestRangeSnapshot" },
       selectionSet: {
         kind: "SelectionSet",
         selections: [
@@ -1800,20 +1791,7 @@ export const RangeSnapshotsDocument = {
                 name: { kind: "Name", value: "orderDirection" },
                 value: { kind: "EnumValue", value: "desc" },
               },
-              {
-                kind: "Argument",
-                name: { kind: "Name", value: "where" },
-                value: {
-                  kind: "ObjectValue",
-                  fields: [
-                    {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "block_gt" },
-                      value: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
-                    },
-                  ],
-                },
-              },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1" } },
             ],
             selectionSet: {
               kind: "SelectionSet",
@@ -1825,7 +1803,7 @@ export const RangeSnapshotsDocument = {
     },
     ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
-} as unknown as DocumentNode<RangeSnapshotsQuery, RangeSnapshotsQueryVariables>;
+} as unknown as DocumentNode<LatestRangeSnapshotQuery, LatestRangeSnapshotQueryVariables>;
 export const LowerCushionCapacityDepletedDocument = {
   kind: "Document",
   definitions: [

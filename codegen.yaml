@@ -1,8 +1,8 @@
-#schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
-schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.7
-documents: "src/query.graphql"
 generates:
-  src/graphql/generated.ts:
+  src/graphql/rangeSnapshot.ts:
+    #schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
+    schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.7
+    documents: "src/rangeSnapshot.graphql"
     plugins:
       - typescript
       - typescript-operations

@@ -34,8 +34,8 @@ fragment RangeSnapshotParts on RangeSnapshot {
   wallLowPrice
 }
 
-query RangeSnapshots($sinceBlock: BigInt!) {
-  rangeSnapshots(orderBy: block, orderDirection: desc, where: { block_gt: $sinceBlock }) {
+query LatestRangeSnapshot {
+  rangeSnapshots(orderBy: block, orderDirection: desc, first: 1) {
     ...RangeSnapshotParts
   }
 }
