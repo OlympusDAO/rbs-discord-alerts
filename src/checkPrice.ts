@@ -66,9 +66,7 @@ export const checkPrice = async (webhookUrl: string): Promise<void> => {
   await sendAlert(
     webhookUrl,
     `🚨 Potential Price Manipulation`,
-    `Chainlink (${chainlinkPrice}) and LP (${lpPrice}) prices differ by > ${PRICE_DELTA}: ${relativePriceDiff}.
-    
-    Potential manipulation of the Chainlink price oracle.`,
+    `Chainlink (${chainlinkPrice}) and LP (${lpPrice}) prices differ by > ${PRICE_DELTA}: ${relativePriceDiff}.\n\nPotential manipulation of the Chainlink price oracle.`,
     [],
   );
 };
