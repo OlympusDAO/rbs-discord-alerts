@@ -1642,12 +1642,11 @@ export type UpperCushionCapacityDepletedQuery = {
   }>;
 };
 
-export type LowerWallBrokenQueryVariables = Exact<{
-  sinceDate: Scalars["String"];
-  belowPrice: Scalars["BigDecimal"];
+export type RangeSnapshotQueryVariables = Exact<{
+  block: Scalars["BigInt"];
 }>;
 
-export type LowerWallBrokenQuery = {
+export type RangeSnapshotQuery = {
   __typename?: "Query";
   rangeSnapshots: Array<{
     __typename?: "RangeSnapshot";
@@ -1938,23 +1937,18 @@ export const UpperCushionCapacityDepletedDocument = {
     ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<UpperCushionCapacityDepletedQuery, UpperCushionCapacityDepletedQueryVariables>;
-export const LowerWallBrokenDocument = {
+export const RangeSnapshotDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "query",
-      name: { kind: "Name", value: "LowerWallBroken" },
+      name: { kind: "Name", value: "RangeSnapshot" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
-          variable: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
-          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } },
-        },
-        {
-          kind: "VariableDefinition",
-          variable: { kind: "Variable", name: { kind: "Name", value: "belowPrice" } },
-          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigDecimal" } } },
+          variable: { kind: "Variable", name: { kind: "Name", value: "block" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
         },
       ],
       selectionSet: {
@@ -1982,13 +1976,8 @@ export const LowerWallBrokenDocument = {
                   fields: [
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "date_gt" },
-                      value: { kind: "Variable", name: { kind: "Name", value: "sinceDate" } },
-                    },
-                    {
-                      kind: "ObjectField",
-                      name: { kind: "Name", value: "ohmPrice_lt" },
-                      value: { kind: "Variable", name: { kind: "Name", value: "belowPrice" } },
+                      name: { kind: "Name", value: "block" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "block" } },
                     },
                   ],
                 },
@@ -2004,4 +1993,4 @@ export const LowerWallBrokenDocument = {
     },
     ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
-} as unknown as DocumentNode<LowerWallBrokenQuery, LowerWallBrokenQueryVariables>;
+} as unknown as DocumentNode<RangeSnapshotQuery, RangeSnapshotQueryVariables>;
