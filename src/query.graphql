@@ -17,3 +17,21 @@ query RBSPriceEvents($latestBlock: BigInt!) {
     wallLowPrice
   }
 }
+
+query RangeSnapshots($latestBlock: BigInt!) {
+  rangeSnapshots(orderBy: block, orderDirection: desc, where: { block_gt: $latestBlock }) {
+    id
+    blockchain
+    block
+    date
+    timestamp
+    ohmPrice
+    ohmMovingAveragePrice
+    cushionHighPrice
+    cushionHighCapacityOhm
+    wallHighPrice
+    cushionLowPrice
+    cushionLowCapacityOhm
+    wallLowPrice
+  }
+}

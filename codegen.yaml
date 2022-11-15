@@ -1,4 +1,5 @@
-schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
+#schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
+schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.7
 documents: "src/query.graphql"
 generates:
   src/graphql/generated.ts:

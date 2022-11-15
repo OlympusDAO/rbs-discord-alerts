@@ -2,6 +2,7 @@ import { Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
+import { RBS_SUBGRAPH_URL } from "./constants";
 import { sendAlert } from "./discord";
 import { PriceEvent, RbsPriceEventsDocument } from "./graphql/generated";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
@@ -9,7 +10,6 @@ import { formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
 const FIELD_LATEST_BLOCK = "latestBlock";
-const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/rbs";
 
 export const handleEvents = async (
   firestoreDocumentPath: string,
@@ -25,7 +25,7 @@ export const handleEvents = async (
 
   // Fetch events since the last processed block
   const client = new Client({
-    url: SUBGRAPH_URL,
+    url: RBS_SUBGRAPH_URL,
     fetch,
   });
   const queryResults = await client
