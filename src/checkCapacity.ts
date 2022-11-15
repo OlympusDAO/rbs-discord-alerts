@@ -64,8 +64,10 @@ export const checkCapacityDepletion = async (webhookUrl: string): Promise<void> 
   console.error(`Above threshold of ${DEPLETION_COUNT_THRESHOLD}. Throwing alarm.`);
   await sendAlert(
     webhookUrl,
-    `🚨 Cushion Depletion`,
-    `Cushion capacities have been depleted ${capacityDepletionCount} (> threshold of ${DEPLETION_COUNT_THRESHOLD}) times in the past ${SINCE_DAYS} days. Potential flash loan/exploit/treasury attack.`,
+    `🚨 Repeated Cushion Depletion`,
+    `Cushion capacities have been depleted ${capacityDepletionCount} (> threshold of ${DEPLETION_COUNT_THRESHOLD}) times in the past ${SINCE_DAYS} days. 
+    
+    Potential flash loan/exploit/treasury attack.`,
     [],
   );
 };
