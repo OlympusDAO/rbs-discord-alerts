@@ -16,3 +16,20 @@ generates:
     hooks:
       afterOneFileWrite:
         - yarn eslint --config ./.eslintrc.js --fix
+  src/graphql/priceSnapshot.ts:
+    #schema: https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics
+    schema: https://api.studio.thegraph.com/query/28103/olympus-protocol-metrics/3.0.35
+    documents: "src/priceSnapshot.graphql"
+    plugins:
+      - typescript
+      - typescript-operations
+      - typed-document-node
+    config:
+      preResolveTypes: true
+      scalars:
+        BigDecimal: number
+        BigInt: number
+        Bytes: Uint8Array # https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
+    hooks:
+      afterOneFileWrite:
+        - yarn eslint --config ./.eslintrc.js --fix

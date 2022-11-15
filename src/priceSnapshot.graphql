@@ -1,0 +1,14 @@
+fragment PriceSnapshotParts on PriceSnapshot {
+  id
+  block
+  date
+  timestamp
+  priceGOhm
+  priceOhm
+}
+
+query LatestPriceSnapshot {
+  priceSnapshots(orderBy: block, orderDirection: desc, first: 1) {
+    ...PriceSnapshotParts
+  }
+}
