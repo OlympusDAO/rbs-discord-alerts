@@ -3,7 +3,7 @@ import fetch from "cross-fetch";
 
 import { RBS_SUBGRAPH_URL } from "./constants";
 import { sendAlert } from "./discord";
-import { LowerCushionCapacityDepletedDocument } from "./graphql/generated";
+import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "./graphql/rangeSnapshot";
 import { addDays } from "./helpers/dateHelper";
 
 const CUSHION_CAPACITY_THRESHOLD = 1.0;
@@ -37,7 +37,7 @@ export const checkCapacityDepletion = async (webhookUrl: string): Promise<void> 
 
   // Get the upper cushion capacity
   const upperCushionCapacity = await client
-    .query(LowerCushionCapacityDepletedDocument, {
+    .query(UpperCushionCapacityDepletedDocument, {
       sinceDate: sinceDateString,
       belowCapacity: CUSHION_CAPACITY_THRESHOLD,
     })

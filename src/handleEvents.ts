@@ -4,7 +4,7 @@ import fetch from "cross-fetch";
 
 import { RBS_SUBGRAPH_URL } from "./constants";
 import { sendAlert } from "./discord";
-import { PriceEvent, RbsPriceEventsDocument } from "./graphql/generated";
+import { PriceEvent, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
