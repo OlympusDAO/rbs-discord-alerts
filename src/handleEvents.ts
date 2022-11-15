@@ -11,7 +11,7 @@ import { shorten } from "./helpers/stringHelper";
 const FIELD_LATEST_BLOCK = "latestBlock";
 const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/rbs";
 
-export const handler = async (
+export const handleEvents = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
   webhookUrl: string,
@@ -104,5 +104,5 @@ export const handler = async (
 
 // Running via CLI
 if (require.main === module) {
-  handler("rbs-discord-alerts-dev", "default", "dummyUrl");
+  handleEvents("rbs-discord-alerts-dev", "default", "dummyUrl");
 }

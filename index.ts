@@ -2,7 +2,7 @@ import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
 import * as dotenv from "dotenv";
 
-import { handler } from "./src/handler";
+import { handleEvents } from "./src/handleEvents";
 
 // Read from .env
 dotenv.config();
@@ -58,7 +58,7 @@ const functionSubgraphCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTI
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await handler(datastore.documentId.get(), datastore.collection.get(), WEBHOOK_URL);
+    await handleEvents(datastore.documentId.get(), datastore.collection.get(), WEBHOOK_URL);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
