@@ -24,11 +24,10 @@ const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
 
 // Create the KV store
-const FIRESTORE_DOCUMENT = PROJECT_NAME;
 const FIRESTORE_DOCUMENT_STACK = PROJECT_NAME_STACK;
 const datastore = new gcp.firestore.Document(FIRESTORE_DOCUMENT_STACK, {
   collection: "default",
-  documentId: FIRESTORE_DOCUMENT,
+  documentId: FIRESTORE_DOCUMENT_STACK,
   fields: "",
 });
 
