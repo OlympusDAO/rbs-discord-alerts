@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This project checks the RBS subgraph for PriceEvents and sends an alert in Discord.
+This project checks the state of RBS and sends alerts in Discord.
 
 ## Architecture
 
@@ -14,15 +14,19 @@ Pulumi is used to manage the infrastructure, which comprises of:
 - Alerts: sends notifications via email and Discord (using [Make](https://us1.make.com/126792/scenarios/463632/edit))
 - Dashboards
 
-## Procedure
+## Checks
 
-1. Gets the latest block from Firestore
-2. Fetches all PriceEvent records from the [RBS subgraph](https://github.com/OlympusDAO/rbs-subgraph)
-3. Sends a message using a Discord webhook
-4. Updates the latest block in Firestore
+- Subgraph Check: PriceEvents
+  1. Gets the latest block from Firestore
+  2. Fetches all PriceEvent records from the [RBS subgraph](https://github.com/OlympusDAO/rbs-subgraph)
+  3. Sends a message using a Discord webhook
+  4. Updates the latest block in Firestore
+- Emergency Alerts
+  - Checks for three conditions:
+    - Current price below the lower wall price
+    - Chainlink and LP price differ
+    - Cushion capacity is depleted too often
 
 ## Secrets Management
 
-Pulumi can manage secrets, but due to a bug (or misconfiguration), it doesn't work. See: <https://github.com/pulumi/pulumi/issues/11257>
-
-As a workaround, copy the `.env.sample` file to `.env` and populate it with the required variables. This will be read when deploying.
+Secrets are stored in Pulumi on a per-stack basis.
