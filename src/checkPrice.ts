@@ -8,6 +8,28 @@ import { LatestRangeSnapshotDocument } from "./graphql/rangeSnapshot";
 
 const PRICE_DELTA = 0.1; // 10%
 
+export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [boolean, string] => {
+  const priceDiff = chainlinkPrice - lpPrice;
+  const chainlinkRelativePriceDiff = Math.abs(priceDiff / chainlinkPrice);
+  const lpRelativePriceDiff = Math.abs(priceDiff / lpPrice);
+  console.info(
+    `Chainlink price: ${chainlinkPrice}
+    LP price: ${lpPrice}
+    Absolute price difference is ${priceDiff}
+    Chainlink relative difference is ${chainlinkRelativePriceDiff}
+    LP relative difference is ${lpRelativePriceDiff}`,
+  );
+
+  if (chainlinkRelativePriceDiff < PRICE_DELTA && lpRelativePriceDiff < PRICE_DELTA) {
+    return [false, ""];
+  }
+
+  return [
+    true,
+    `Chainlink (${chainlinkPrice}) and LP (${lpPrice}) prices differ by > ${PRICE_DELTA}: ${chainlinkRelativePriceDiff}.\n\nPotential manipulation of the Chainlink price oracle.`,
+  ];
+};
+
 export const checkPrice = async (webhookUrl: string): Promise<void> => {
   // Grab latest RangeSnapshot
   const rangeSnapshotClient = new Client({
@@ -47,26 +69,12 @@ export const checkPrice = async (webhookUrl: string): Promise<void> => {
   const latestPriceSnapshot = priceSnapshotResults.data.priceSnapshots[0];
   const lpPrice = latestPriceSnapshot.priceOhm;
 
-  // If the price is within parameters, exit
-  const priceDiff = chainlinkPrice - lpPrice;
-  const relativePriceDiff = Math.abs(priceDiff / chainlinkPrice);
-  console.info(
-    `Chainlink price: ${chainlinkPrice}
-    LP price: ${lpPrice}
-    Price difference is ${priceDiff}
-    Relative difference is ${relativePriceDiff}`,
-  );
-  if (relativePriceDiff < PRICE_DELTA) {
-    console.info(`Relative price difference is below threshold of ${PRICE_DELTA}. Exiting.`);
+  const result = isPriceDeviating(chainlinkPrice, lpPrice);
+  if (!result[0]) {
     return;
   }
 
   // Throw an alarm
   console.error(`Above threshold of ${PRICE_DELTA}. Throwing alarm.`);
-  await sendAlert(
-    webhookUrl,
-    `🚨 Potential Price Manipulation`,
-    `Chainlink (${chainlinkPrice}) and LP (${lpPrice}) prices differ by > ${PRICE_DELTA}: ${relativePriceDiff}.\n\nPotential manipulation of the Chainlink price oracle.`,
-    [],
-  );
+  await sendAlert(webhookUrl, `🚨 Potential Price Manipulation`, result[1], []);
 };
