@@ -43,6 +43,10 @@ const datastore = new gcp.firestore.Document(FUNCTION_NAME_STACK, {
 export const datastoreId = datastore.id;
 
 /**
+ * RBS Subgraph Checks
+ */
+
+/**
  * Execution: Google Cloud Functions
  */
 const FUNCTION_EXPIRATION_SECONDS = 30;

@@ -5,8 +5,10 @@ import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "./constants";
 import { getRoleMentions, sendAlert } from "./discord";
 import { LatestPriceSnapshotDocument } from "./graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "./graphql/rangeSnapshot";
+import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
 
 const PRICE_DELTA = 0.1; // 10%
+const FUNCTION_KEY = "checkPrice";
 
 export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [boolean, string] => {
   const priceDiff = chainlinkPrice - lpPrice;
@@ -30,7 +32,13 @@ export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [bool
   ];
 };
 
-export const checkPrice = async (mentionRoles: string[], webhookUrl: string): Promise<void> => {
+export const checkPrice = async (
+  firestore: FirebaseFirestore.DocumentReference,
+  mentionRoles: string[],
+  webhookUrl: string,
+): Promise<void> => {
+  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
+
   // Grab latest RangeSnapshot
   const rangeSnapshotClient = new Client({
     url: RBS_SUBGRAPH_URL,
@@ -74,7 +82,15 @@ export const checkPrice = async (mentionRoles: string[], webhookUrl: string): Pr
     return;
   }
 
+  if (shouldThrottle) {
+    console.info(`Alarm conditions are present, but throttling is active.`);
+    return;
+  }
+
   // Throw an alarm
   console.error(`Above threshold of ${PRICE_DELTA}. Throwing alarm.`);
   await sendAlert(webhookUrl, `🚨 Potential Price Manipulation`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
+
+  // Update lastAlarmDate
+  await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());
 };

@@ -5,10 +5,12 @@ import { RBS_SUBGRAPH_URL } from "./constants";
 import { getRoleMentions, sendAlert } from "./discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "./graphql/rangeSnapshot";
 import { addDate } from "./helpers/dateHelper";
+import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
 
 const CUSHION_CAPACITY_THRESHOLD = 1.0;
 export const DEPLETION_COUNT_THRESHOLD = 2;
 const SINCE_DAYS = 1;
+const FUNCTION_KEY = "checkCapacityDepletion";
 
 export const isCapacityDepleted = (
   lowerCushionDepletionCount: number,
@@ -30,12 +32,16 @@ export const isCapacityDepleted = (
   ];
 };
 
-export const checkCapacityDepletion = async (mentionRoles: string[], webhookUrl: string): Promise<void> => {
+export const checkCapacityDepletion = async (
+  firestore: FirebaseFirestore.DocumentReference,
+  mentionRoles: string[],
+  webhookUrl: string,
+): Promise<void> => {
+  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
+
   const now = new Date();
   const sinceDate = addDate(now, -1 * SINCE_DAYS, 0, false);
   const sinceDateString = sinceDate.toISOString();
-
-  // TODO throttling?
 
   const client = new Client({
     url: RBS_SUBGRAPH_URL,
@@ -76,6 +82,15 @@ export const checkCapacityDepletion = async (mentionRoles: string[], webhookUrl:
     return;
   }
 
+  if (shouldThrottle) {
+    console.info(`Alarm conditions are present, but throttling is active.`);
+    return;
+  }
+
+  // Throw alarm
   console.error(`Above threshold of ${DEPLETION_COUNT_THRESHOLD}. Throwing alarm.`);
   await sendAlert(webhookUrl, `🚨 Repeated Cushion Depletion`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
+
+  // Update lastAlarmDate
+  await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());
 };

@@ -4,8 +4,10 @@ import fetch from "cross-fetch";
 import { RBS_SUBGRAPH_URL } from "./constants";
 import { getRoleMentions, sendAlert } from "./discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "./graphql/rangeSnapshot";
+import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
 
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
+const FUNCTION_KEY = "checkLowerWall";
 
 export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice: number): [boolean, string] => {
   console.info(`
@@ -24,7 +26,13 @@ export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice
   ];
 };
 
-export const checkLowerWall = async (mentionRoles: string[], webhookUrl: string): Promise<void> => {
+export const checkLowerWall = async (
+  firestore: FirebaseFirestore.DocumentReference,
+  mentionRoles: string[],
+  webhookUrl: string,
+): Promise<void> => {
+  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
+
   // Get the current block
   const rangeSnapshotClient = new Client({
     url: RBS_SUBGRAPH_URL,
@@ -68,7 +76,15 @@ export const checkLowerWall = async (mentionRoles: string[], webhookUrl: string)
     return;
   }
 
+  if (shouldThrottle) {
+    console.info(`Alarm conditions are present, but throttling is active.`);
+    return;
+  }
+
   // Throw alarm
   console.error(`Outside threshold of ${LOWER_WALL_PRICE_MULTIPLE}. Throwing alarm.`);
   await sendAlert(webhookUrl, `🚨 Fast Price Depreciation`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
+
+  // Update lastAlarmDate
+  await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());
 };
