@@ -15,7 +15,8 @@ export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [bool
   const chainlinkRelativePriceDiff = Math.abs(priceDiff / chainlinkPrice);
   const lpRelativePriceDiff = Math.abs(priceDiff / lpPrice);
   console.info(
-    `Chainlink price: ${chainlinkPrice}
+    `
+    Chainlink price: ${chainlinkPrice}
     LP price: ${lpPrice}
     Absolute price difference is ${priceDiff}
     Chainlink relative difference is ${chainlinkRelativePriceDiff}
@@ -37,6 +38,7 @@ export const checkPrice = async (
   mentionRoles: string[],
   webhookUrl: string,
 ): Promise<void> => {
+  console.info(`\n\n⏰ Checking Price Manipulation`);
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
 
   // Grab latest RangeSnapshot

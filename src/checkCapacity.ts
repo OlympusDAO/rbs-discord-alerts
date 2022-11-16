@@ -37,6 +37,7 @@ export const checkCapacityDepletion = async (
   mentionRoles: string[],
   webhookUrl: string,
 ): Promise<void> => {
+  console.info(`\n\n⏰ Checking Capacity Depletion`);
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
 
   const now = new Date();

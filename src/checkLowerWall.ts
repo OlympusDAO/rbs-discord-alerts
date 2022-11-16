@@ -31,6 +31,7 @@ export const checkLowerWall = async (
   mentionRoles: string[],
   webhookUrl: string,
 ): Promise<void> => {
+  console.info(`\n\n⏰ Checking Lower Wall Break`);
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
 
   // Get the current block
