@@ -1,13 +1,9 @@
 import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
-import * as dotenv from "dotenv";
 
 import { handleEvents } from "./src/handleEvents";
 
 const pulumiConfig = new pulumi.Config();
-
-// Read from .env
-dotenv.config();
 
 if (!gcp.config.project) {
   throw new Error("Set the project for the pulumi gcp provider");
@@ -19,16 +15,8 @@ if (!gcp.config.region) {
 
 const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
 const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
-
-const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
-if (!NOTIFICATION_EMAIL) {
-  throw new Error("Set the NOTIFICATION_EMAIL environment variable");
-}
-
-const NOTIFICATION_EMAIL_DISCORD = process.env.NOTIFICATION_EMAIL_DISCORD;
-if (!NOTIFICATION_EMAIL_DISCORD) {
-  throw new Error("Set the NOTIFICATION_EMAIL_DISCORD environment variable");
-}
+const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
+const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 
 const FUNCTION_NAME = "rbs-discord-alerts";
 const FUNCTION_NAME_STACK = `${FUNCTION_NAME}-${pulumi.getStack()}`;
@@ -97,7 +85,7 @@ const notificationEmail = new gcp.monitoring.NotificationChannel("email", {
   displayName: "Email",
   type: "email",
   labels: {
-    email_address: NOTIFICATION_EMAIL,
+    email_address: pulumiConfig.requireSecret(SECRET_NOTIFICATION_EMAIL),
   },
 });
 export const notificationEmailId = notificationEmail.id;
@@ -107,7 +95,7 @@ const notificationDiscord = new gcp.monitoring.NotificationChannel("discord", {
   displayName: "discord",
   type: "email",
   labels: {
-    email_address: NOTIFICATION_EMAIL_DISCORD,
+    email_address: pulumiConfig.requireSecret(SECRET_NOTIFICATION_EMAIL_DISCORD),
   },
 });
 export const notificationDiscordId = notificationDiscord.id;
