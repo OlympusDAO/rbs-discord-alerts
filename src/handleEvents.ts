@@ -9,7 +9,7 @@ import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
-const FIELD_LATEST_BLOCK = "latestBlock";
+const FIELD_LATEST_BLOCK = "events.latestBlock";
 
 export const handleEvents = async (
   firestoreDocumentPath: string,
@@ -104,5 +104,9 @@ export const handleEvents = async (
 
 // Running via CLI
 if (require.main === module) {
-  handleEvents("rbs-discord-alerts-dev", "default", "dummyUrl");
+  if (!process.env.WEBHOOK_URL) {
+    throw new Error("Set the WEBHOOK_URL environment variable");
+  }
+
+  handleEvents("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
 }
