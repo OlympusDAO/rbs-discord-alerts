@@ -82,3 +82,26 @@ export const sortPriceEmbeds = (fields: EmbedField[], ascending = true): EmbedFi
     return ascending ? aValue - bValue : bValue - aValue;
   });
 };
+
+export const getRoleMention = (role: string): string => {
+  return `<@&${role}>`;
+};
+
+/**
+ * Generates Discord role mentions in the correct syntax.
+ *
+ * Passing in an array with two role IDs will result in:
+ * "<@&1111> <@&2222>"
+ *
+ * @param roles
+ * @returns
+ */
+export const getRoleMentions = (roles: string[]): string => {
+  if (roles.length === 0) {
+    return "";
+  }
+
+  return roles.reduce((previousValue, currentValue) => {
+    return `${previousValue} ${getRoleMention(currentValue)}`;
+  }, "");
+};

@@ -2,7 +2,7 @@ import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
 import { RBS_SUBGRAPH_URL } from "./constants";
-import { sendAlert } from "./discord";
+import { getRoleMentions, sendAlert } from "./discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "./graphql/rangeSnapshot";
 
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
@@ -24,7 +24,7 @@ export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice
   ];
 };
 
-export const checkLowerWall = async (webhookUrl: string): Promise<void> => {
+export const checkLowerWall = async (mentionRoles: string[], webhookUrl: string): Promise<void> => {
   // Get the current block
   const rangeSnapshotClient = new Client({
     url: RBS_SUBGRAPH_URL,
@@ -70,5 +70,5 @@ export const checkLowerWall = async (webhookUrl: string): Promise<void> => {
 
   // Throw alarm
   console.error(`Outside threshold of ${LOWER_WALL_PRICE_MULTIPLE}. Throwing alarm.`);
-  await sendAlert(webhookUrl, `🚨 Fast Price Depreciation`, result[1], []);
+  await sendAlert(webhookUrl, `🚨 Fast Price Depreciation`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
 };

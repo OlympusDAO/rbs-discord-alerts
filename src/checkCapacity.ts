@@ -2,7 +2,7 @@ import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
 import { RBS_SUBGRAPH_URL } from "./constants";
-import { sendAlert } from "./discord";
+import { getRoleMentions, sendAlert } from "./discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "./graphql/rangeSnapshot";
 import { addDate } from "./helpers/dateHelper";
 
@@ -30,7 +30,7 @@ export const isCapacityDepleted = (
   ];
 };
 
-export const checkCapacityDepletion = async (webhookUrl: string): Promise<void> => {
+export const checkCapacityDepletion = async (mentionRoles: string[], webhookUrl: string): Promise<void> => {
   const now = new Date();
   const sinceDate = addDate(now, -1 * SINCE_DAYS, 0, false);
   const sinceDateString = sinceDate.toISOString();
@@ -77,5 +77,5 @@ export const checkCapacityDepletion = async (webhookUrl: string): Promise<void> 
   }
 
   console.error(`Above threshold of ${DEPLETION_COUNT_THRESHOLD}. Throwing alarm.`);
-  await sendAlert(webhookUrl, `🚨 Repeated Cushion Depletion`, result[1], []);
+  await sendAlert(webhookUrl, `🚨 Repeated Cushion Depletion`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
 };

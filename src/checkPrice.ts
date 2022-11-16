@@ -2,7 +2,7 @@ import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
 import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "./constants";
-import { sendAlert } from "./discord";
+import { getRoleMentions, sendAlert } from "./discord";
 import { LatestPriceSnapshotDocument } from "./graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "./graphql/rangeSnapshot";
 
@@ -30,7 +30,7 @@ export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [bool
   ];
 };
 
-export const checkPrice = async (webhookUrl: string): Promise<void> => {
+export const checkPrice = async (mentionRoles: string[], webhookUrl: string): Promise<void> => {
   // Grab latest RangeSnapshot
   const rangeSnapshotClient = new Client({
     url: RBS_SUBGRAPH_URL,
@@ -76,5 +76,5 @@ export const checkPrice = async (webhookUrl: string): Promise<void> => {
 
   // Throw an alarm
   console.error(`Above threshold of ${PRICE_DELTA}. Throwing alarm.`);
-  await sendAlert(webhookUrl, `🚨 Potential Price Manipulation`, result[1], []);
+  await sendAlert(webhookUrl, `🚨 Potential Price Manipulation`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
 };
