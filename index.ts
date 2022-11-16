@@ -20,9 +20,12 @@ const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 
+const PROJECT_NAME = `${gcp.config.project}`;
+const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
+
 // Create the KV store
-const FIRESTORE_DOCUMENT = "rbs-discord-alerts";
-const FIRESTORE_DOCUMENT_STACK = `${FIRESTORE_DOCUMENT}-${pulumi.getStack()}`;
+const FIRESTORE_DOCUMENT = PROJECT_NAME;
+const FIRESTORE_DOCUMENT_STACK = PROJECT_NAME_STACK;
 const datastore = new gcp.firestore.Document(FIRESTORE_DOCUMENT_STACK, {
   collection: "default",
   documentId: FIRESTORE_DOCUMENT,
@@ -142,25 +145,28 @@ const notificationDiscord = new gcp.monitoring.NotificationChannel("discord", {
 });
 export const notificationDiscordId = notificationDiscord.id;
 
-createAlertFunctionError(FUNCTION_SUBGRAPH_CHECK, functionSubgraphCheckName, 60, [
+createAlertFunctionError(FUNCTION_SUBGRAPH_CHECK_STACK, functionSubgraphCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
 
-createAlertFunctionExecutions(FUNCTION_SUBGRAPH_CHECK, functionSubgraphCheckName, 60, [
+createAlertFunctionExecutions(FUNCTION_SUBGRAPH_CHECK_STACK, functionSubgraphCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
 
-createAlertFunctionError(FUNCTION_EMERGENCY, functionEmergencyName, 60, [notificationEmailId, notificationDiscordId]);
+createAlertFunctionError(FUNCTION_EMERGENCY_STACK, functionEmergencyName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
 
-createAlertFunctionExecutions(FUNCTION_EMERGENCY, functionEmergencyName, 60, [
+createAlertFunctionExecutions(FUNCTION_EMERGENCY_STACK, functionEmergencyName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
 
 // One alert for all functions (as it can't be filtered further)
-const ALERT_POLICY_FIRESTORE_QUERIES = `${FUNCTION_SUBGRAPH_CHECK}-firestore-queries`;
+const ALERT_POLICY_FIRESTORE_QUERIES = `${PROJECT_NAME_STACK}-firestore-queries`;
 const ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS = 5 * 60;
 new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
   displayName: ALERT_POLICY_FIRESTORE_QUERIES,
@@ -215,7 +221,7 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
 /**
  * Create a dashboard for monitoring activity
  */
-const DASHBOARD_NAME = gcp.config.project;
+const DASHBOARD_NAME = PROJECT_NAME_STACK;
 const DASHBOARD_WINDOW_SECONDS = 5 * 60;
 new gcp.monitoring.Dashboard(
   DASHBOARD_NAME,
