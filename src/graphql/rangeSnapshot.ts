@@ -1553,23 +1553,6 @@ export type RbsPriceEventsQuery = {
   }>;
 };
 
-export type RangeSnapshotPartsFragment = {
-  __typename?: "RangeSnapshot";
-  id: string;
-  blockchain: string;
-  block: number;
-  date: string;
-  timestamp: number;
-  ohmPrice?: number | null;
-  ohmMovingAveragePrice?: number | null;
-  cushionHighPrice: number;
-  cushionHighCapacityOhm: number;
-  wallHighPrice: number;
-  cushionLowPrice: number;
-  cushionLowCapacityOhm: number;
-  wallLowPrice: number;
-};
-
 export type LatestRangeSnapshotQueryVariables = Exact<{ [key: string]: never }>;
 
 export type LatestRangeSnapshotQuery = {
@@ -1666,34 +1649,6 @@ export type RangeSnapshotQuery = {
   }>;
 };
 
-export const RangeSnapshotPartsFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "RangeSnapshotParts" },
-      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "RangeSnapshot" } },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "blockchain" } },
-          { kind: "Field", name: { kind: "Name", value: "block" } },
-          { kind: "Field", name: { kind: "Name", value: "date" } },
-          { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-          { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
-          { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
-          { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
-          { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
-          { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
-          { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
-          { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
-          { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<RangeSnapshotPartsFragment, unknown>;
 export const RbsPriceEventsDocument = {
   kind: "Document",
   definitions: [
@@ -1794,13 +1749,26 @@ export const LatestRangeSnapshotDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+              ],
             },
           },
         ],
       },
     },
-    ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<LatestRangeSnapshotQuery, LatestRangeSnapshotQueryVariables>;
 export const LowerCushionCapacityDepletedDocument = {
@@ -1861,13 +1829,26 @@ export const LowerCushionCapacityDepletedDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+              ],
             },
           },
         ],
       },
     },
-    ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<LowerCushionCapacityDepletedQuery, LowerCushionCapacityDepletedQueryVariables>;
 export const UpperCushionCapacityDepletedDocument = {
@@ -1928,13 +1909,26 @@ export const UpperCushionCapacityDepletedDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+              ],
             },
           },
         ],
       },
     },
-    ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<UpperCushionCapacityDepletedQuery, UpperCushionCapacityDepletedQueryVariables>;
 export const RangeSnapshotDocument = {
@@ -1985,12 +1979,25 @@ export const RangeSnapshotDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RangeSnapshotParts" } }],
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+              ],
             },
           },
         ],
       },
     },
-    ...RangeSnapshotPartsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<RangeSnapshotQuery, RangeSnapshotQueryVariables>;

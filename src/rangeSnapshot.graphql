@@ -18,25 +18,22 @@ query RBSPriceEvents($latestBlock: BigInt!) {
   }
 }
 
-fragment RangeSnapshotParts on RangeSnapshot {
-  id
-  blockchain
-  block
-  date
-  timestamp
-  ohmPrice
-  ohmMovingAveragePrice
-  cushionHighPrice
-  cushionHighCapacityOhm
-  wallHighPrice
-  cushionLowPrice
-  cushionLowCapacityOhm
-  wallLowPrice
-}
-
+# Something with the pulumi build process causes GraphQL fragments to generate an error, so the fields are repeated here
 query LatestRangeSnapshot {
   rangeSnapshots(orderBy: block, orderDirection: desc, first: 1) {
-    ...RangeSnapshotParts
+    id
+    blockchain
+    block
+    date
+    timestamp
+    ohmPrice
+    ohmMovingAveragePrice
+    cushionHighPrice
+    cushionHighCapacityOhm
+    wallHighPrice
+    cushionLowPrice
+    cushionLowCapacityOhm
+    wallLowPrice
   }
 }
 
@@ -46,7 +43,19 @@ query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     orderDirection: desc
     where: { date_gt: $sinceDate, cushionLowCapacityOhm_lt: $belowCapacity }
   ) {
-    ...RangeSnapshotParts
+    id
+    blockchain
+    block
+    date
+    timestamp
+    ohmPrice
+    ohmMovingAveragePrice
+    cushionHighPrice
+    cushionHighCapacityOhm
+    wallHighPrice
+    cushionLowPrice
+    cushionLowCapacityOhm
+    wallLowPrice
   }
 }
 
@@ -56,12 +65,36 @@ query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     orderDirection: desc
     where: { date_gt: $sinceDate, cushionHighCapacityOhm_lt: $belowCapacity }
   ) {
-    ...RangeSnapshotParts
+    id
+    blockchain
+    block
+    date
+    timestamp
+    ohmPrice
+    ohmMovingAveragePrice
+    cushionHighPrice
+    cushionHighCapacityOhm
+    wallHighPrice
+    cushionLowPrice
+    cushionLowCapacityOhm
+    wallLowPrice
   }
 }
 
 query RangeSnapshot($block: BigInt!) {
   rangeSnapshots(orderBy: block, orderDirection: desc, where: { block: $block }) {
-    ...RangeSnapshotParts
+    id
+    blockchain
+    block
+    date
+    timestamp
+    ohmPrice
+    ohmMovingAveragePrice
+    cushionHighPrice
+    cushionHighCapacityOhm
+    wallHighPrice
+    cushionLowPrice
+    cushionLowCapacityOhm
+    wallLowPrice
   }
 }
