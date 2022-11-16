@@ -107,7 +107,7 @@ export const functionEmergencyUrl = functionEmergency.httpsTriggerUrl;
 const schedulerJobEmergency = new gcp.cloudscheduler.Job(
   FUNCTION_EMERGENCY_STACK,
   {
-    schedule: "*/5 * * * *", // Every 12 seconds
+    schedule: "* * * * *", // Every minute (the minimum)
     timeZone: "UTC",
     httpTarget: {
       httpMethod: "GET",
