@@ -111,11 +111,11 @@ const schedulerJobEmergency = new gcp.cloudscheduler.Job(
     timeZone: "UTC",
     httpTarget: {
       httpMethod: "GET",
-      uri: functionSubgraphCheckUrl,
+      uri: functionEmergencyUrl,
     },
   },
   {
-    dependsOn: [functionSubgraphCheck],
+    dependsOn: [functionEmergency],
   },
 );
 
