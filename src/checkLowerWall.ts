@@ -8,6 +8,11 @@ import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "./graphql/ra
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
 
 export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice: number): [boolean, string] => {
+  console.info(`
+  Historical lower wall price: ${historicalLowerWallPrice}
+  Current price: ${currentPrice}
+  Threshold: ${LOWER_WALL_PRICE_MULTIPLE}
+  `);
   // If the current price is >= 80% of the lower wall price, exit
   if (currentPrice >= LOWER_WALL_PRICE_MULTIPLE * historicalLowerWallPrice) {
     return [false, ""];
