@@ -1,8 +1,10 @@
+import { DocumentReference } from "@google-cloud/firestore";
+
 const ELAPSED_THRESHOLD_SECONDS = 5 * 60; // 5 minutes
 const KEY_LAST_ALERT = "lastAlertDate";
 
 export const getShouldThrottle = async (
-  firestore: FirebaseFirestore.DocumentReference,
+  firestore: DocumentReference,
   functionKey: string,
   thresholdSeconds = ELAPSED_THRESHOLD_SECONDS,
 ): Promise<boolean> => {
@@ -34,7 +36,7 @@ export const getShouldThrottle = async (
 };
 
 export const updateLastAlertDate = async (
-  firestore: FirebaseFirestore.DocumentReference,
+  firestore: DocumentReference,
   functionKey: string,
   date: Date,
 ): Promise<void> => {

@@ -1499,16 +1499,6 @@ export enum _SubgraphErrorPolicy_ {
   Deny = "deny",
 }
 
-export type PriceSnapshotPartsFragment = {
-  __typename?: "PriceSnapshot";
-  id: string;
-  block: number;
-  date: string;
-  timestamp: number;
-  priceGOhm: number;
-  priceOhm: number;
-};
-
 export type LatestPriceSnapshotQueryVariables = Exact<{ [key: string]: never }>;
 
 export type LatestPriceSnapshotQuery = {
@@ -1524,27 +1514,6 @@ export type LatestPriceSnapshotQuery = {
   }>;
 };
 
-export const PriceSnapshotPartsFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "PriceSnapshotParts" },
-      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "PriceSnapshot" } },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "block" } },
-          { kind: "Field", name: { kind: "Name", value: "date" } },
-          { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-          { kind: "Field", name: { kind: "Name", value: "priceGOhm" } },
-          { kind: "Field", name: { kind: "Name", value: "priceOhm" } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<PriceSnapshotPartsFragment, unknown>;
 export const LatestPriceSnapshotDocument = {
   kind: "Document",
   definitions: [
@@ -1573,12 +1542,18 @@ export const LatestPriceSnapshotDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "PriceSnapshotParts" } }],
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "priceGOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "priceOhm" } },
+              ],
             },
           },
         ],
       },
     },
-    ...PriceSnapshotPartsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<LatestPriceSnapshotQuery, LatestPriceSnapshotQueryVariables>;

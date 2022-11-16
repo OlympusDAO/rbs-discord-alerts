@@ -1,3 +1,4 @@
+import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
@@ -34,7 +35,7 @@ export const isCapacityDepleted = (
 };
 
 export const checkCapacityDepletion = async (
-  firestore: FirebaseFirestore.DocumentReference,
+  firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
 ): Promise<void> => {

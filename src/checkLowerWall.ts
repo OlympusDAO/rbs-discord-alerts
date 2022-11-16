@@ -1,3 +1,4 @@
+import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
@@ -28,7 +29,7 @@ export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice
 };
 
 export const checkLowerWall = async (
-  firestore: FirebaseFirestore.DocumentReference,
+  firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
 ): Promise<void> => {
