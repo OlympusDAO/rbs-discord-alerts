@@ -4,6 +4,7 @@ const KEY_LAST_ALERT = "lastAlertDate";
 export const getShouldThrottle = async (
   firestore: FirebaseFirestore.DocumentReference,
   functionKey: string,
+  thresholdSeconds = ELAPSED_THRESHOLD_SECONDS,
 ): Promise<boolean> => {
   const firestoreSnapshot = await firestore.get();
   const lastAlertDateValue = firestoreSnapshot.get(`${functionKey}.${KEY_LAST_ALERT}`);
@@ -19,11 +20,11 @@ export const getShouldThrottle = async (
   console.info(`
     Last alert date: ${lastAlertDate}
     Elapsed seconds: ${elapsedSeconds}
-    Threshold: ${ELAPSED_THRESHOLD_SECONDS}
+    Threshold: ${thresholdSeconds}
   `);
 
   // If more than the threshold has passed, no need to throttle
-  if (elapsedSeconds >= ELAPSED_THRESHOLD_SECONDS) {
+  if (elapsedSeconds >= thresholdSeconds) {
     console.info(`Sufficient time has elapsed from previous alarm. No need to throttle.`);
     return false;
   }

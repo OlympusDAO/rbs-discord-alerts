@@ -11,6 +11,7 @@ const CUSHION_CAPACITY_THRESHOLD = 1.0;
 export const DEPLETION_COUNT_THRESHOLD = 2;
 const SINCE_DAYS = 1;
 const FUNCTION_KEY = "checkCapacityDepletion";
+const ALERT_THRESHOLD_SECONDS = SINCE_DAYS * 24 * 60 * 60;
 
 export const isCapacityDepleted = (
   lowerCushionDepletionCount: number,
@@ -38,7 +39,7 @@ export const checkCapacityDepletion = async (
   webhookUrl: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Capacity Depletion`);
-  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
+  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
   const now = new Date();
   const sinceDate = addDate(now, -1 * SINCE_DAYS, 0, false);

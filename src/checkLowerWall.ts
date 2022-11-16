@@ -8,6 +8,7 @@ import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper
 
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
 const FUNCTION_KEY = "checkLowerWall";
+const ALERT_THRESHOLD_SECONDS = 6 * 60 * 60;
 
 export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice: number): [boolean, string] => {
   console.info(`
@@ -32,7 +33,7 @@ export const checkLowerWall = async (
   webhookUrl: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Lower Wall Break`);
-  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
+  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
   // Get the current block
   const rangeSnapshotClient = new Client({
@@ -56,7 +57,7 @@ export const checkLowerWall = async (
   }
 
   // Calculate the block for 6 hours ago
-  const historicalBlock = latestBlock - (6 * 60 * 60) / 12;
+  const historicalBlock = latestBlock - ALERT_THRESHOLD_SECONDS / 12;
 
   // Get the lower wall price 6 hours ago
   const previousBlockResults = await rangeSnapshotClient
