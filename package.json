@@ -2,8 +2,8 @@
     "name": "rbs-discord-alerts",
     "main": "index.ts",
     "scripts": {
-        "execute:events": "ts-node src/handleEvents.ts",
-        "execute:snapshots": "ts-node src/handleSnapshots.ts",
+        "execute:events": "export $(cat .env | xargs) && ts-node src/handleEvents.ts",
+        "execute:snapshots": "export $(cat .env | xargs) && ts-node src/handleSnapshots.ts",
         "codegen": "graphql-codegen"
     },
     "devDependencies": {

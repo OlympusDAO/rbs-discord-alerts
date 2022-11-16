@@ -20,5 +20,9 @@ export const handleSnapshots = async (
 
 // Running via CLI
 if (require.main === module) {
-  handleSnapshots("rbs-discord-alerts-dev", "default", [], "dummyUrl");
+  if (!process.env.WEBHOOK_URL) {
+    throw new Error("Set the WEBHOOK_URL environment variable");
+  }
+
+  handleSnapshots("rbs-discord-alerts-dev", "default", ["1042353289477500950"], process.env.WEBHOOK_URL);
 }
