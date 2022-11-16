@@ -7,6 +7,18 @@ import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "./graphql/ra
 
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
 
+export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice: number): [boolean, string] => {
+  // If the current price is >= 80% of the lower wall price, exit
+  if (currentPrice >= LOWER_WALL_PRICE_MULTIPLE * historicalLowerWallPrice) {
+    return [false, ""];
+  }
+
+  return [
+    true,
+    `The current price (${currentPrice}) is < ${LOWER_WALL_PRICE_MULTIPLE} of the lower wall price from 6 hours ago (${historicalLowerWallPrice}).\n\nThe rate of price depreciation is out of bounds.`,
+  ];
+};
+
 export const checkLowerWall = async (webhookUrl: string): Promise<void> => {
   // Get the current block
   const rangeSnapshotClient = new Client({
@@ -46,20 +58,12 @@ export const checkLowerWall = async (webhookUrl: string): Promise<void> => {
 
   const historicalLowerWallPrice = previousBlockResults.data.rangeSnapshots[0].wallLowPrice;
 
-  // If the current price is > 80% of the lower wall price, exit
-  if (latestPrice > LOWER_WALL_PRICE_MULTIPLE * historicalLowerWallPrice) {
-    console.info(
-      `Current price at block ${latestBlock}: ${latestPrice}\nLower wall price at block ${historicalBlock}: ${historicalLowerWallPrice}\nCurrent price is >= ${LOWER_WALL_PRICE_MULTIPLE} * ${historicalLowerWallPrice}, so in bounds. Exiting.`,
-    );
+  const result = isLowerWallBroken(historicalLowerWallPrice, latestPrice);
+  if (!result[0]) {
     return;
   }
 
   // Throw alarm
   console.error(`Outside threshold of ${LOWER_WALL_PRICE_MULTIPLE}. Throwing alarm.`);
-  await sendAlert(
-    webhookUrl,
-    `🚨 Fast Price Depreciation`,
-    `The current price (${latestPrice}) is < ${LOWER_WALL_PRICE_MULTIPLE} of the lower wall price from 6 hours ago (${historicalLowerWallPrice}).\n\nThe rate of price depreciation is out of bounds.`,
-    [],
-  );
+  await sendAlert(webhookUrl, `🚨 Fast Price Depreciation`, result[1], []);
 };
