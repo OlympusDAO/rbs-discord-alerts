@@ -7,8 +7,28 @@ import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocum
 import { addDate } from "./helpers/dateHelper";
 
 const CUSHION_CAPACITY_THRESHOLD = 1.0;
-const DEPLETION_COUNT_THRESHOLD = 2;
+export const DEPLETION_COUNT_THRESHOLD = 2;
 const SINCE_DAYS = 1;
+
+export const isCapacityDepleted = (
+  lowerCushionDepletionCount: number,
+  upperCushionDepletionCount: number,
+): [boolean, string] => {
+  const capacityDepletionCount = lowerCushionDepletionCount + upperCushionDepletionCount;
+  console.info(
+    `Capacity depletion occurred ${capacityDepletionCount} times (lower: ${lowerCushionDepletionCount}, upper: ${upperCushionDepletionCount}) in the last ${SINCE_DAYS} days`,
+  );
+
+  if (capacityDepletionCount < DEPLETION_COUNT_THRESHOLD) {
+    return [false, ""];
+  }
+
+  // If any cushion capacities have been depleted twice in 24 hours, throw an alarm
+  return [
+    true,
+    `Cushion capacities have been depleted ${capacityDepletionCount} (> threshold of ${DEPLETION_COUNT_THRESHOLD}) times in the past ${SINCE_DAYS} days.\n\nPotential flash loan/exploit/treasury attack.`,
+  ];
+};
 
 export const checkCapacityDepletion = async (webhookUrl: string): Promise<void> => {
   const now = new Date();
@@ -48,24 +68,14 @@ export const checkCapacityDepletion = async (webhookUrl: string): Promise<void> 
     );
   }
 
-  // If any cushion capacities have been depleted twice in 24 hours, throw an alarm
   const lowerDepletionCount = lowerCushionCapacity.data.rangeSnapshots.length;
   const upperDepletionCount = upperCushionCapacity.data.rangeSnapshots.length;
-  const capacityDepletionCount = lowerDepletionCount + upperDepletionCount;
 
-  console.info(
-    `Capacity depletion occurred ${capacityDepletionCount} times (lower: ${lowerDepletionCount}, upper: ${upperDepletionCount}) in the last ${SINCE_DAYS}`,
-  );
-  if (capacityDepletionCount < DEPLETION_COUNT_THRESHOLD) {
-    console.info(`Below threshold of ${DEPLETION_COUNT_THRESHOLD}.`);
+  const result = isCapacityDepleted(lowerDepletionCount, upperDepletionCount);
+  if (!result[0]) {
     return;
   }
 
   console.error(`Above threshold of ${DEPLETION_COUNT_THRESHOLD}. Throwing alarm.`);
-  await sendAlert(
-    webhookUrl,
-    `🚨 Repeated Cushion Depletion`,
-    `Cushion capacities have been depleted ${capacityDepletionCount} (> threshold of ${DEPLETION_COUNT_THRESHOLD}) times in the past ${SINCE_DAYS} days.\n\nPotential flash loan/exploit/treasury attack.`,
-    [],
-  );
+  await sendAlert(webhookUrl, `🚨 Repeated Cushion Depletion`, result[1], []);
 };
