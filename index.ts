@@ -4,6 +4,8 @@ import * as dotenv from "dotenv";
 
 import { handleEvents } from "./src/handleEvents";
 
+const pulumiConfig = new pulumi.Config();
+
 // Read from .env
 dotenv.config();
 
@@ -15,16 +17,8 @@ if (!gcp.config.region) {
   throw new Error("Set the region for the pulumi gcp provider");
 }
 
-/**
- * Something is wonky with requireSecret, so the secrets are
- * passed in as environment variables.
- *
- * See: https://github.com/pulumi/pulumi/issues/11257
- */
-const WEBHOOK_URL = process.env.WEBHOOK_URL;
-if (!WEBHOOK_URL) {
-  throw new Error("Set the WEBHOOK_URL environment variable");
-}
+const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
+const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
 if (!NOTIFICATION_EMAIL) {
@@ -52,13 +46,16 @@ export const datastoreId = datastore.id;
  * Execution: Google Cloud Functions
  */
 const FUNCTION_EXPIRATION_SECONDS = 30;
+// Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
+// Also use `require` instead of `requireSecret`, as requireSecret won't work
+const webhookSubgraphCheck = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
 const functionSubgraphCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_NAME_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await handleEvents(datastore.documentId.get(), datastore.collection.get(), WEBHOOK_URL);
+    await handleEvents(datastore.documentId.get(), datastore.collection.get(), webhookSubgraphCheck);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
