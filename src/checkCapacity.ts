@@ -89,7 +89,7 @@ export const checkCapacityDepletion = async (
 
   // Throw alarm
   console.error(`Above threshold of ${DEPLETION_COUNT_THRESHOLD}. Throwing alarm.`);
-  await sendAlert(webhookUrl, `🚨 Repeated Cushion Depletion`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
+  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Repeated Cushion Depletion`, result[1], []);
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());

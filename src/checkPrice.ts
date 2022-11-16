@@ -89,7 +89,7 @@ export const checkPrice = async (
 
   // Throw an alarm
   console.error(`Above threshold of ${PRICE_DELTA}. Throwing alarm.`);
-  await sendAlert(webhookUrl, `🚨 Potential Price Manipulation`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
+  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Potential Price Manipulation`, result[1], []);
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());

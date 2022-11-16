@@ -83,7 +83,7 @@ export const checkLowerWall = async (
 
   // Throw alarm
   console.error(`Outside threshold of ${LOWER_WALL_PRICE_MULTIPLE}. Throwing alarm.`);
-  await sendAlert(webhookUrl, `🚨 Fast Price Depreciation`, `${getRoleMentions(mentionRoles)} ${result[1]}`, []);
+  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Fast Price Depreciation`, result[1], []);
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());

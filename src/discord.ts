@@ -50,8 +50,23 @@ export const BLANK_EMBED_FIELD = {
   value: "\u200B",
 };
 
+/**
+ * Sends an alert using a Discord webhook.
+ *
+ * Mentions are not parsed within embeds, so any role/user mentions should be contained
+ * within the `content` parameter.
+ *
+ * @param webhook
+ * @param content
+ * @param title
+ * @param description
+ * @param fields
+ * @param footer
+ * @param timestamp
+ */
 export const sendAlert = async (
   webhook: string,
+  content: string,
   title: string,
   description: string,
   fields: EmbedField[],
@@ -59,7 +74,7 @@ export const sendAlert = async (
   timestamp?: string,
 ): Promise<void> => {
   await executeWebhook(webhook, {
-    content: "",
+    content: content,
     embeds: [
       {
         title: title,

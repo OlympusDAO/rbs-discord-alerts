@@ -50,7 +50,7 @@ export const handleEvents = async (
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
-    await sendAlert(webhookUrl, `🚨 RBS Price Event`, ``, [
+    await sendAlert(webhookUrl, "", `🚨 RBS Price Event`, ``, [
       // Row 1
       {
         name: "Date",
