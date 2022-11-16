@@ -34,8 +34,14 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
     },
   });
 
+  console.debug(`Discord response status: ${response.status}`);
+  // Ignore rate-limiting
+  if (response.status == 429) {
+    return;
+  }
+
   if (!response.ok) {
-    throw new Error(`Encountered error with Discord webhook: ${response.text()}`);
+    throw new Error(`Encountered error with Discord webhook: ${await response.text()}`);
   }
 };
 
