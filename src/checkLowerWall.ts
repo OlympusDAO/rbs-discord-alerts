@@ -5,6 +5,7 @@ import fetch from "cross-fetch";
 import { RBS_SUBGRAPH_URL } from "./constants";
 import { getRoleMentions, sendAlert } from "./discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "./graphql/rangeSnapshot";
+import { getShutdownEmbedField } from "./helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
 
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
@@ -32,6 +33,7 @@ export const checkLowerWall = async (
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
+  contractUrl?: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Lower Wall Break`);
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
@@ -86,7 +88,9 @@ export const checkLowerWall = async (
 
   // Throw alarm
   console.error(`Outside threshold of ${LOWER_WALL_PRICE_MULTIPLE}. Throwing alarm.`);
-  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Fast Price Depreciation`, result[1], []);
+  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Fast Price Depreciation`, result[1], [
+    ...getShutdownEmbedField(contractUrl),
+  ]);
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());

@@ -17,6 +17,7 @@ if (!gcp.config.region) {
 
 const CONFIG_DISCORD_ROLE_COUNCIL = "discordRoleIdCouncil";
 const CONFIG_DISCORD_ROLE_CORE = "discordRoleIdCore";
+const CONFIG_CONTRACT = "contractUrl";
 const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
 const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
@@ -89,8 +90,6 @@ const FUNCTION_EMERGENCY_STACK = `${FUNCTION_EMERGENCY}-${pulumi.getStack()}`;
 // Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
 // Also use `require` instead of `requireSecret`, as requireSecret won't work
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
-const roleIdCouncil = pulumiConfig.require(CONFIG_DISCORD_ROLE_COUNCIL);
-const roleIdCore = pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE);
 const functionEmergency = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_EMERGENCY_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
@@ -100,8 +99,9 @@ const functionEmergency = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_E
     await handleSnapshots(
       datastore.documentId.get(),
       datastore.collection.get(),
-      [roleIdCouncil, roleIdCore],
+      [pulumiConfig.require(CONFIG_DISCORD_ROLE_COUNCIL), pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
       webhookEmergency,
+      pulumiConfig.get(CONFIG_CONTRACT),
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -6,6 +6,7 @@ import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "./constants";
 import { getRoleMentions, sendAlert } from "./discord";
 import { LatestPriceSnapshotDocument } from "./graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "./graphql/rangeSnapshot";
+import { getShutdownEmbedField } from "./helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
 
 const PRICE_DELTA = 0.1; // 10%
@@ -38,6 +39,7 @@ export const checkPrice = async (
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
+  contractUrl?: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Price Manipulation`);
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
@@ -92,7 +94,9 @@ export const checkPrice = async (
 
   // Throw an alarm
   console.error(`Above threshold of ${PRICE_DELTA}. Throwing alarm.`);
-  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Potential Price Manipulation`, result[1], []);
+  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Potential Price Manipulation`, result[1], [
+    ...getShutdownEmbedField(contractUrl),
+  ]);
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());

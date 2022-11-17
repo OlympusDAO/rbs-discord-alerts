@@ -6,6 +6,7 @@ import { RBS_SUBGRAPH_URL } from "./constants";
 import { getRoleMentions, sendAlert } from "./discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "./graphql/rangeSnapshot";
 import { addDate } from "./helpers/dateHelper";
+import { getShutdownEmbedField } from "./helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
 
 const CUSHION_CAPACITY_THRESHOLD = 1.0;
@@ -38,6 +39,7 @@ export const checkCapacityDepletion = async (
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
+  contractUrl?: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Capacity Depletion`);
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
@@ -92,7 +94,9 @@ export const checkCapacityDepletion = async (
 
   // Throw alarm
   console.error(`Above threshold of ${DEPLETION_COUNT_THRESHOLD}. Throwing alarm.`);
-  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Repeated Cushion Depletion`, result[1], []);
+  await sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 Repeated Cushion Depletion`, result[1], [
+    ...getShutdownEmbedField(contractUrl),
+  ]);
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());
