@@ -1,6 +1,7 @@
 config:
   gcp:project: rbs-discord-alerts
   gcp:region: us-east1
+  # TODO add production contract URL
   rbs-discord-alerts:discordRoleIdCore: "1042174999320080416"
   rbs-discord-alerts:discordRoleIdCouncil: "1041761686077583441"
   rbs-discord-alerts:discordWebhookAlert:
