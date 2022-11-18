@@ -33,6 +33,8 @@ query RBSPriceEvents($latestBlock: BigInt!) {
       treasuryDebtBalance
       treasuryReserveBalance
       wallSpread
+      operatorReserveFactor
+      operatorCushionFactor
     }
   }
 }
@@ -64,6 +66,8 @@ query LatestRangeSnapshot {
     treasuryDebtBalance
     treasuryReserveBalance
     wallSpread
+    operatorReserveFactor
+    operatorCushionFactor
   }
 }
 
@@ -97,6 +101,8 @@ query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     treasuryDebtBalance
     treasuryReserveBalance
     wallSpread
+    operatorReserveFactor
+    operatorCushionFactor
   }
 }
 
@@ -130,6 +136,8 @@ query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     treasuryDebtBalance
     treasuryReserveBalance
     wallSpread
+    operatorReserveFactor
+    operatorCushionFactor
   }
 }
 
@@ -159,5 +167,7 @@ query RangeSnapshot($block: BigInt!) {
     treasuryDebtBalance
     treasuryReserveBalance
     wallSpread
+    operatorReserveFactor
+    operatorCushionFactor
   }
 }
