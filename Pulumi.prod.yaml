@@ -2,7 +2,7 @@ config:
   gcp:project: rbs-discord-alerts
   gcp:region: us-east1
   rbs-discord-alerts:contractUrl: "https://etherscan.io/address/0x2286d7f9639e8158FaD1169e76d1FbC38247f54b#writeContract"
-  rbs-discord-alerts:discordRoleIdCore: "1042174999320080416"
+  rbs-discord-alerts:discordRoleIdCore: "1042890524937420861"
   rbs-discord-alerts:discordRoleIdCouncil: "1041761686077583441"
   rbs-discord-alerts:discordWebhookAlert:
     secure: AAABAF+djk78BN4rXyM1AU3fon2AzmzEWawwLrem+lpbiGQz0gEMW1sRuyOaVLiSZ5t5ZpLamm4l/Lp0CI5Qm4D/3ONcMAhxeisAQAlZAjGvdoDNKx/FOCnDp/6hfDexgWuEdZcVsL/MxXJuiuFf0L0ub+jKPqqRCTBLjPAoWReARp5KVdByxwmBipQRC7A/jBUwsRwzu503
