@@ -12,17 +12,20 @@ import { shorten } from "./helpers/stringHelper";
 const FIELD_LATEST_BLOCK = "events.latestBlock";
 
 /**
- * Broadcasts into Discord any PriceEvents that are emitted from the RBS contracts.
+ * Performs checks against PriceEvents
+ *
+ * This currently:
+ * - Broadcasts into Discord any PriceEvents that are emitted from the RBS contracts.
  *
  * @param firestoreDocumentPath
  * @param firestoreCollectionName
- * @param webhookUrl
+ * @param alertUrl
  * @returns
  */
 export const performEventChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
-  webhookUrl: string,
+  alertUrl: string,
 ): Promise<void> => {
   // Get last processed block
   const firestoreClient = new Firestore();
@@ -58,7 +61,7 @@ export const performEventChecks = async (
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
-    await sendAlert(webhookUrl, "", `🚨 RBS Price Event`, ``, [
+    await sendAlert(alertUrl, "", `🚨 RBS Price Event`, ``, [
       // Row 1
       {
         name: "Date",
