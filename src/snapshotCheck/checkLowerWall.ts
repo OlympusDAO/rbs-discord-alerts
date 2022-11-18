@@ -2,11 +2,11 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { RBS_SUBGRAPH_URL } from "./constants";
-import { getRoleMentions, sendAlert } from "./discord";
-import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "./graphql/rangeSnapshot";
-import { getShutdownEmbedField } from "./helpers/shutdownHelper";
-import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
+import { RBS_SUBGRAPH_URL } from "../constants";
+import { getRoleMentions, sendAlert } from "../discord";
+import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "../graphql/rangeSnapshot";
+import { getShutdownEmbedField } from "../helpers/shutdownHelper";
+import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
 const FUNCTION_KEY = "checkLowerWall";
@@ -74,7 +74,7 @@ export const checkLowerWall = async (
     );
   }
 
-  const historicalLowerWallPrice = previousBlockResults.data.rangeSnapshots[0].wallLowPrice;
+  const historicalLowerWallPrice = previousBlockResults.data.rangeSnapshots[0].lowWallPrice;
 
   const result = isLowerWallBroken(historicalLowerWallPrice, latestPrice);
   if (!result[0]) {

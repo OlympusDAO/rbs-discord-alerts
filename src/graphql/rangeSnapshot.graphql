@@ -1,0 +1,163 @@
+query RBSPriceEvents($latestBlock: BigInt!) {
+  priceEvents(orderBy: block, orderDirection: asc, where: { block_gt: $latestBlock }) {
+    block
+    blockchain
+    date
+    id
+    isHigh
+    timestamp
+    transaction
+    type
+    snapshot {
+      block
+      blockchain
+      cushionSpread
+      date
+      highActive
+      highCapacityOhm
+      highCushionPrice
+      highLastActiveTimestamp
+      highMarketId
+      highWallPrice
+      id
+      lowActive
+      lowCapacityOhm
+      lowCushionPrice
+      lowLastActiveTimestamp
+      lowMarketId
+      lowWallPrice
+      ohmMovingAveragePrice
+      ohmPrice
+      thresholdFactor
+      timestamp
+      treasuryDebtBalance
+      treasuryReserveBalance
+      wallSpread
+    }
+  }
+}
+
+# Something with the pulumi build process causes GraphQL fragments to generate an error, so the fields are repeated here
+query LatestRangeSnapshot {
+  rangeSnapshots(orderBy: block, orderDirection: desc, first: 1) {
+    block
+    blockchain
+    cushionSpread
+    date
+    highActive
+    highCapacityOhm
+    highCushionPrice
+    highLastActiveTimestamp
+    highMarketId
+    highWallPrice
+    id
+    lowActive
+    lowCapacityOhm
+    lowCushionPrice
+    lowLastActiveTimestamp
+    lowMarketId
+    lowWallPrice
+    ohmMovingAveragePrice
+    ohmPrice
+    thresholdFactor
+    timestamp
+    treasuryDebtBalance
+    treasuryReserveBalance
+    wallSpread
+  }
+}
+
+query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecimal!) {
+  rangeSnapshots(
+    orderBy: block
+    orderDirection: desc
+    where: { date_gt: $sinceDate, lowCapacityOhm_lt: $belowCapacity }
+  ) {
+    block
+    blockchain
+    cushionSpread
+    date
+    highActive
+    highCapacityOhm
+    highCushionPrice
+    highLastActiveTimestamp
+    highMarketId
+    highWallPrice
+    id
+    lowActive
+    lowCapacityOhm
+    lowCushionPrice
+    lowLastActiveTimestamp
+    lowMarketId
+    lowWallPrice
+    ohmMovingAveragePrice
+    ohmPrice
+    thresholdFactor
+    timestamp
+    treasuryDebtBalance
+    treasuryReserveBalance
+    wallSpread
+  }
+}
+
+query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecimal!) {
+  rangeSnapshots(
+    orderBy: block
+    orderDirection: desc
+    where: { date_gt: $sinceDate, highCapacityOhm_lt: $belowCapacity }
+  ) {
+    block
+    blockchain
+    cushionSpread
+    date
+    highActive
+    highCapacityOhm
+    highCushionPrice
+    highLastActiveTimestamp
+    highMarketId
+    highWallPrice
+    id
+    lowActive
+    lowCapacityOhm
+    lowCushionPrice
+    lowLastActiveTimestamp
+    lowMarketId
+    lowWallPrice
+    ohmMovingAveragePrice
+    ohmPrice
+    thresholdFactor
+    timestamp
+    treasuryDebtBalance
+    treasuryReserveBalance
+    wallSpread
+  }
+}
+
+query RangeSnapshot($block: BigInt!) {
+  rangeSnapshots(orderBy: block, orderDirection: desc, where: { block: $block }) {
+    block
+    blockchain
+    cushionSpread
+    date
+    highActive
+    highCapacityOhm
+    highCushionPrice
+    highLastActiveTimestamp
+    highMarketId
+    highWallPrice
+    id
+    lowActive
+    lowCapacityOhm
+    lowCushionPrice
+    lowLastActiveTimestamp
+    lowMarketId
+    lowWallPrice
+    ohmMovingAveragePrice
+    ohmPrice
+    thresholdFactor
+    timestamp
+    treasuryDebtBalance
+    treasuryReserveBalance
+    wallSpread
+  }
+}

@@ -2,12 +2,12 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "./constants";
-import { getRoleMentions, sendAlert } from "./discord";
-import { LatestPriceSnapshotDocument } from "./graphql/priceSnapshot";
-import { LatestRangeSnapshotDocument } from "./graphql/rangeSnapshot";
-import { getShutdownEmbedField } from "./helpers/shutdownHelper";
-import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
+import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "../constants";
+import { getRoleMentions, sendAlert } from "../discord";
+import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
+import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
+import { getShutdownEmbedField } from "../helpers/shutdownHelper";
+import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 
 const PRICE_DELTA = 0.1; // 10%
 const FUNCTION_KEY = "checkPrice";

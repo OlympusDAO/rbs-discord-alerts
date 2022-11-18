@@ -19,13 +19,15 @@ const FIELD_LATEST_BLOCK = "events.latestBlock";
  *
  * @param firestoreDocumentPath
  * @param firestoreCollectionName
- * @param alertUrl
+ * @param alertWebhookUrl
+ * @param emergencyWebhookUrl
  * @returns
  */
 export const performEventChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
-  alertUrl: string,
+  alertWebhookUrl: string,
+  emergencyWebhookUrl: string,
 ): Promise<void> => {
   // Get last processed block
   const firestoreClient = new Firestore();
@@ -61,7 +63,7 @@ export const performEventChecks = async (
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
-    await sendAlert(alertUrl, "", `🚨 RBS Price Event`, ``, [
+    await sendAlert(alertWebhookUrl, "", `🚨 RBS Price Event`, ``, [
       // Row 1
       {
         name: "Date",
@@ -80,27 +82,27 @@ export const performEventChecks = async (
       // Current price
       {
         name: "Current",
-        value: formatCurrency(priceEvent.price),
+        value: formatCurrency(priceEvent.snapshot.ohmPrice),
         inline: false,
       },
       // High
       {
         name: "High",
-        value: `Wall: ${formatCurrency(priceEvent.wallHighPrice)}\nCushion: ${formatCurrency(
-          priceEvent.cushionHighPrice,
+        value: `Wall: ${formatCurrency(priceEvent.snapshot.highWallPrice)}\nCushion: ${formatCurrency(
+          priceEvent.snapshot.highCushionPrice,
         )}`,
       },
       // Moving average
       {
         name: "Moving Average",
-        value: formatCurrency(priceEvent.priceMovingAverage),
+        value: formatCurrency(priceEvent.snapshot.ohmMovingAveragePrice),
         inline: false,
       },
       // Low
       {
         name: "Low",
-        value: `Cushion: ${formatCurrency(priceEvent.cushionLowPrice)}\nWall: ${formatCurrency(
-          priceEvent.wallLowPrice,
+        value: `Cushion: ${formatCurrency(priceEvent.snapshot.lowCushionPrice)}\nWall: ${formatCurrency(
+          priceEvent.snapshot.lowWallPrice,
         )}`,
       },
     ]);
@@ -119,5 +121,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performEventChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
+  performEventChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL, process.env.WEBHOOK_URL);
 }

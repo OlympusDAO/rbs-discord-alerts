@@ -1,8 +1,8 @@
 generates:
   src/graphql/rangeSnapshot.ts:
     #schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
-    schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.9
-    documents: "src/rangeSnapshot.graphql"
+    schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.11
+    documents: "src/graphql/rangeSnapshot.graphql"
     plugins:
       - typescript
       - typescript-operations
@@ -19,7 +19,7 @@ generates:
   src/graphql/priceSnapshot.ts:
     #schema: https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics
     schema: https://api.studio.thegraph.com/query/28103/olympus-protocol-metrics/3.0.35
-    documents: "src/priceSnapshot.graphql"
+    documents: "src/graphql/priceSnapshot.graphql"
     plugins:
       - typescript
       - typescript-operations

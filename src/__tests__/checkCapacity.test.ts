@@ -1,4 +1,4 @@
-import { isCapacityDepleted } from "../checkCapacity";
+import { isCapacityDepleted } from "../snapshotCheck/checkCapacity";
 
 describe("checkCapacityDepletion", () => {
   test("lower cushion depletion > threshold", () => {

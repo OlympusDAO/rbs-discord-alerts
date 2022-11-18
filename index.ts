@@ -38,22 +38,24 @@ export const datastoreId = datastore.id;
 
 const FUNCTION_EXPIRATION_SECONDS = 30;
 
+// Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
+// Also use `require` instead of `requireSecret`, as requireSecret won't work
+const webhookAlert = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
+const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
+
 /**
  * Price Events
  */
 const FUNCTION_PRICE_EVENTS = "rbs-price-events";
 const FUNCTION_PRICE_EVENTS_STACK = `${FUNCTION_PRICE_EVENTS}-${pulumi.getStack()}`;
 
-// Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
-// Also use `require` instead of `requireSecret`, as requireSecret won't work
-const webhookAlert = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
 const functionPriceEvents = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_PRICE_EVENTS_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert);
+    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert, webhookEmergency);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
@@ -87,9 +89,6 @@ export const schedulerJobPriceEventsName = schedulerJobPriceEvents.name;
 const FUNCTION_SNAPSHOT_CHECK = "rbs-snapshot-check";
 const FUNCTION_SNAPSHOT_CHECK_STACK = `${FUNCTION_SNAPSHOT_CHECK}-${pulumi.getStack()}`;
 
-// Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
-// Also use `require` instead of `requireSecret`, as requireSecret won't work
-const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 const functionSnapshotCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_SNAPSHOT_CHECK_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,

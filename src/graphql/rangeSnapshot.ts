@@ -124,16 +124,11 @@ export type NewObservation = {
   __typename?: "NewObservation";
   block: Scalars["BigInt"];
   blockchain: Scalars["String"];
-  cushionHighPrice?: Maybe<Scalars["BigDecimal"]>;
-  cushionLowPrice?: Maybe<Scalars["BigDecimal"]>;
   date: Scalars["String"];
   id: Scalars["ID"];
-  price: Scalars["BigDecimal"];
-  priceMovingAverage: Scalars["BigDecimal"];
+  snapshot: RangeSnapshot;
   timestamp: Scalars["BigInt"];
   transaction: Scalars["Bytes"];
-  wallHighPrice?: Maybe<Scalars["BigDecimal"]>;
-  wallLowPrice?: Maybe<Scalars["BigDecimal"]>;
 };
 
 export type NewObservation_Filter = {
@@ -167,22 +162,6 @@ export type NewObservation_Filter = {
   blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
-  cushionHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -211,22 +190,27 @@ export type NewObservation_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
-  price?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  priceMovingAverage_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_not?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  price_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  price_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  price_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  price_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  price_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  price_not?: InputMaybe<Scalars["BigDecimal"]>;
-  price_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  snapshot?: InputMaybe<Scalars["String"]>;
+  snapshot_?: InputMaybe<RangeSnapshot_Filter>;
+  snapshot_contains?: InputMaybe<Scalars["String"]>;
+  snapshot_contains_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_ends_with?: InputMaybe<Scalars["String"]>;
+  snapshot_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_gt?: InputMaybe<Scalars["String"]>;
+  snapshot_gte?: InputMaybe<Scalars["String"]>;
+  snapshot_in?: InputMaybe<Array<Scalars["String"]>>;
+  snapshot_lt?: InputMaybe<Scalars["String"]>;
+  snapshot_lte?: InputMaybe<Scalars["String"]>;
+  snapshot_not?: InputMaybe<Scalars["String"]>;
+  snapshot_not_contains?: InputMaybe<Scalars["String"]>;
+  snapshot_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_not_ends_with?: InputMaybe<Scalars["String"]>;
+  snapshot_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  snapshot_not_starts_with?: InputMaybe<Scalars["String"]>;
+  snapshot_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_starts_with?: InputMaybe<Scalars["String"]>;
+  snapshot_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -241,37 +225,16 @@ export type NewObservation_Filter = {
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
-  wallHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
 };
 
 export enum NewObservation_OrderBy {
   Block = "block",
   Blockchain = "blockchain",
-  CushionHighPrice = "cushionHighPrice",
-  CushionLowPrice = "cushionLowPrice",
   Date = "date",
   Id = "id",
-  Price = "price",
-  PriceMovingAverage = "priceMovingAverage",
+  Snapshot = "snapshot",
   Timestamp = "timestamp",
   Transaction = "transaction",
-  WallHighPrice = "wallHighPrice",
-  WallLowPrice = "wallLowPrice",
 }
 
 export type ObservationFrequencyChanged = {
@@ -378,19 +341,13 @@ export type PriceEvent = {
   __typename?: "PriceEvent";
   block: Scalars["BigInt"];
   blockchain: Scalars["String"];
-  capacityOhm?: Maybe<Scalars["BigDecimal"]>;
-  cushionHighPrice?: Maybe<Scalars["BigDecimal"]>;
-  cushionLowPrice?: Maybe<Scalars["BigDecimal"]>;
   date: Scalars["String"];
   id: Scalars["ID"];
   isHigh: Scalars["Boolean"];
-  price?: Maybe<Scalars["BigDecimal"]>;
-  priceMovingAverage?: Maybe<Scalars["BigDecimal"]>;
+  snapshot: RangeSnapshot;
   timestamp: Scalars["BigInt"];
   transaction: Scalars["Bytes"];
   type: PriceEventType;
-  wallHighPrice?: Maybe<Scalars["BigDecimal"]>;
-  wallLowPrice?: Maybe<Scalars["BigDecimal"]>;
 };
 
 export enum PriceEventType {
@@ -431,30 +388,6 @@ export type PriceEvent_Filter = {
   blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
-  capacityOhm?: InputMaybe<Scalars["BigDecimal"]>;
-  capacityOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  capacityOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  capacityOhm_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  capacityOhm_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  capacityOhm_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  capacityOhm_not?: InputMaybe<Scalars["BigDecimal"]>;
-  capacityOhm_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -487,22 +420,27 @@ export type PriceEvent_Filter = {
   isHigh_in?: InputMaybe<Array<Scalars["Boolean"]>>;
   isHigh_not?: InputMaybe<Scalars["Boolean"]>;
   isHigh_not_in?: InputMaybe<Array<Scalars["Boolean"]>>;
-  price?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  priceMovingAverage_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_not?: InputMaybe<Scalars["BigDecimal"]>;
-  priceMovingAverage_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  price_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  price_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  price_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  price_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  price_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  price_not?: InputMaybe<Scalars["BigDecimal"]>;
-  price_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  snapshot?: InputMaybe<Scalars["String"]>;
+  snapshot_?: InputMaybe<RangeSnapshot_Filter>;
+  snapshot_contains?: InputMaybe<Scalars["String"]>;
+  snapshot_contains_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_ends_with?: InputMaybe<Scalars["String"]>;
+  snapshot_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_gt?: InputMaybe<Scalars["String"]>;
+  snapshot_gte?: InputMaybe<Scalars["String"]>;
+  snapshot_in?: InputMaybe<Array<Scalars["String"]>>;
+  snapshot_lt?: InputMaybe<Scalars["String"]>;
+  snapshot_lte?: InputMaybe<Scalars["String"]>;
+  snapshot_not?: InputMaybe<Scalars["String"]>;
+  snapshot_not_contains?: InputMaybe<Scalars["String"]>;
+  snapshot_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_not_ends_with?: InputMaybe<Scalars["String"]>;
+  snapshot_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  snapshot_not_starts_with?: InputMaybe<Scalars["String"]>;
+  snapshot_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_starts_with?: InputMaybe<Scalars["String"]>;
+  snapshot_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -521,53 +459,28 @@ export type PriceEvent_Filter = {
   type_in?: InputMaybe<Array<PriceEventType>>;
   type_not?: InputMaybe<PriceEventType>;
   type_not_in?: InputMaybe<Array<PriceEventType>>;
-  wallHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
 };
 
 export enum PriceEvent_OrderBy {
   Block = "block",
   Blockchain = "blockchain",
-  CapacityOhm = "capacityOhm",
-  CushionHighPrice = "cushionHighPrice",
-  CushionLowPrice = "cushionLowPrice",
   Date = "date",
   Id = "id",
   IsHigh = "isHigh",
-  Price = "price",
-  PriceMovingAverage = "priceMovingAverage",
+  Snapshot = "snapshot",
   Timestamp = "timestamp",
   Transaction = "transaction",
   Type = "type",
-  WallHighPrice = "wallHighPrice",
-  WallLowPrice = "wallLowPrice",
 }
 
 export type PricesChangedEvent = {
   __typename?: "PricesChangedEvent";
   block: Scalars["BigInt"];
   blockchain: Scalars["String"];
-  cushionHighPrice: Scalars["BigDecimal"];
-  cushionLowPrice: Scalars["BigDecimal"];
   date: Scalars["String"];
   id: Scalars["ID"];
+  snapshot: RangeSnapshot;
   transaction: Scalars["Bytes"];
-  wallHighPrice: Scalars["BigDecimal"];
-  wallLowPrice: Scalars["BigDecimal"];
 };
 
 export type PricesChangedEvent_Filter = {
@@ -601,22 +514,6 @@ export type PricesChangedEvent_Filter = {
   blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
-  cushionHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -645,40 +542,42 @@ export type PricesChangedEvent_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  snapshot?: InputMaybe<Scalars["String"]>;
+  snapshot_?: InputMaybe<RangeSnapshot_Filter>;
+  snapshot_contains?: InputMaybe<Scalars["String"]>;
+  snapshot_contains_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_ends_with?: InputMaybe<Scalars["String"]>;
+  snapshot_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_gt?: InputMaybe<Scalars["String"]>;
+  snapshot_gte?: InputMaybe<Scalars["String"]>;
+  snapshot_in?: InputMaybe<Array<Scalars["String"]>>;
+  snapshot_lt?: InputMaybe<Scalars["String"]>;
+  snapshot_lte?: InputMaybe<Scalars["String"]>;
+  snapshot_not?: InputMaybe<Scalars["String"]>;
+  snapshot_not_contains?: InputMaybe<Scalars["String"]>;
+  snapshot_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_not_ends_with?: InputMaybe<Scalars["String"]>;
+  snapshot_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  snapshot_not_starts_with?: InputMaybe<Scalars["String"]>;
+  snapshot_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  snapshot_starts_with?: InputMaybe<Scalars["String"]>;
+  snapshot_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
-  wallHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
 };
 
 export enum PricesChangedEvent_OrderBy {
   Block = "block",
   Blockchain = "blockchain",
-  CushionHighPrice = "cushionHighPrice",
-  CushionLowPrice = "cushionLowPrice",
   Date = "date",
   Id = "id",
+  Snapshot = "snapshot",
   Transaction = "transaction",
-  WallHighPrice = "wallHighPrice",
-  WallLowPrice = "wallLowPrice",
 }
 
 export type Query = {
@@ -857,17 +756,28 @@ export type RangeSnapshot = {
   __typename?: "RangeSnapshot";
   block: Scalars["BigInt"];
   blockchain: Scalars["String"];
-  cushionHighCapacityOhm: Scalars["BigDecimal"];
-  cushionHighPrice: Scalars["BigDecimal"];
-  cushionLowCapacityOhm: Scalars["BigDecimal"];
-  cushionLowPrice: Scalars["BigDecimal"];
+  cushionSpread: Scalars["BigDecimal"];
   date: Scalars["String"];
+  highActive: Scalars["Boolean"];
+  highCapacityOhm: Scalars["BigDecimal"];
+  highCushionPrice: Scalars["BigDecimal"];
+  highLastActiveTimestamp: Scalars["BigInt"];
+  highMarketId?: Maybe<Scalars["BigInt"]>;
+  highWallPrice: Scalars["BigDecimal"];
   id: Scalars["ID"];
+  lowActive: Scalars["Boolean"];
+  lowCapacityOhm: Scalars["BigDecimal"];
+  lowCushionPrice: Scalars["BigDecimal"];
+  lowLastActiveTimestamp: Scalars["BigInt"];
+  lowMarketId?: Maybe<Scalars["BigInt"]>;
+  lowWallPrice: Scalars["BigDecimal"];
   ohmMovingAveragePrice?: Maybe<Scalars["BigDecimal"]>;
   ohmPrice?: Maybe<Scalars["BigDecimal"]>;
+  thresholdFactor: Scalars["BigDecimal"];
   timestamp: Scalars["BigInt"];
-  wallHighPrice: Scalars["BigDecimal"];
-  wallLowPrice: Scalars["BigDecimal"];
+  treasuryDebtBalance: Scalars["BigDecimal"];
+  treasuryReserveBalance: Scalars["BigDecimal"];
+  wallSpread: Scalars["BigDecimal"];
 };
 
 export type RangeSnapshot_Filter = {
@@ -901,38 +811,14 @@ export type RangeSnapshot_Filter = {
   blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with?: InputMaybe<Scalars["String"]>;
   blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
-  cushionHighCapacityOhm?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighCapacityOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighCapacityOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighCapacityOhm_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionHighCapacityOhm_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighCapacityOhm_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighCapacityOhm_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighCapacityOhm_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowCapacityOhm?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowCapacityOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowCapacityOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowCapacityOhm_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowCapacityOhm_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowCapacityOhm_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowCapacityOhm_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowCapacityOhm_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  cushionLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  cushionLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  cushionSpread?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionSpread_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionSpread_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionSpread_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  cushionSpread_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionSpread_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionSpread_not?: InputMaybe<Scalars["BigDecimal"]>;
+  cushionSpread_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -953,6 +839,50 @@ export type RangeSnapshot_Filter = {
   date_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   date_starts_with?: InputMaybe<Scalars["String"]>;
   date_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  highActive?: InputMaybe<Scalars["Boolean"]>;
+  highActive_in?: InputMaybe<Array<Scalars["Boolean"]>>;
+  highActive_not?: InputMaybe<Scalars["Boolean"]>;
+  highActive_not_in?: InputMaybe<Array<Scalars["Boolean"]>>;
+  highCapacityOhm?: InputMaybe<Scalars["BigDecimal"]>;
+  highCapacityOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  highCapacityOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  highCapacityOhm_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highCapacityOhm_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  highCapacityOhm_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  highCapacityOhm_not?: InputMaybe<Scalars["BigDecimal"]>;
+  highCapacityOhm_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highCushionPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highCushionPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highLastActiveTimestamp?: InputMaybe<Scalars["BigInt"]>;
+  highLastActiveTimestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  highLastActiveTimestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  highLastActiveTimestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  highLastActiveTimestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  highLastActiveTimestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  highLastActiveTimestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  highLastActiveTimestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  highMarketId?: InputMaybe<Scalars["BigInt"]>;
+  highMarketId_gt?: InputMaybe<Scalars["BigInt"]>;
+  highMarketId_gte?: InputMaybe<Scalars["BigInt"]>;
+  highMarketId_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  highMarketId_lt?: InputMaybe<Scalars["BigInt"]>;
+  highMarketId_lte?: InputMaybe<Scalars["BigInt"]>;
+  highMarketId_not?: InputMaybe<Scalars["BigInt"]>;
+  highMarketId_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  highWallPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highWallPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   id?: InputMaybe<Scalars["ID"]>;
   id_gt?: InputMaybe<Scalars["ID"]>;
   id_gte?: InputMaybe<Scalars["ID"]>;
@@ -961,6 +891,50 @@ export type RangeSnapshot_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  lowActive?: InputMaybe<Scalars["Boolean"]>;
+  lowActive_in?: InputMaybe<Array<Scalars["Boolean"]>>;
+  lowActive_not?: InputMaybe<Scalars["Boolean"]>;
+  lowActive_not_in?: InputMaybe<Array<Scalars["Boolean"]>>;
+  lowCapacityOhm?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityOhm_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowCapacityOhm_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityOhm_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityOhm_not?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityOhm_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowCushionPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowCushionPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowLastActiveTimestamp?: InputMaybe<Scalars["BigInt"]>;
+  lowLastActiveTimestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  lowLastActiveTimestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  lowLastActiveTimestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  lowLastActiveTimestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  lowLastActiveTimestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  lowLastActiveTimestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  lowLastActiveTimestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  lowMarketId?: InputMaybe<Scalars["BigInt"]>;
+  lowMarketId_gt?: InputMaybe<Scalars["BigInt"]>;
+  lowMarketId_gte?: InputMaybe<Scalars["BigInt"]>;
+  lowMarketId_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  lowMarketId_lt?: InputMaybe<Scalars["BigInt"]>;
+  lowMarketId_lte?: InputMaybe<Scalars["BigInt"]>;
+  lowMarketId_not?: InputMaybe<Scalars["BigInt"]>;
+  lowMarketId_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  lowWallPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowWallPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   ohmMovingAveragePrice?: InputMaybe<Scalars["BigDecimal"]>;
   ohmMovingAveragePrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
   ohmMovingAveragePrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -977,6 +951,14 @@ export type RangeSnapshot_Filter = {
   ohmPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   ohmPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   ohmPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  thresholdFactor?: InputMaybe<Scalars["BigDecimal"]>;
+  thresholdFactor_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  thresholdFactor_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  thresholdFactor_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  thresholdFactor_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  thresholdFactor_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  thresholdFactor_not?: InputMaybe<Scalars["BigDecimal"]>;
+  thresholdFactor_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -985,38 +967,57 @@ export type RangeSnapshot_Filter = {
   timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
   timestamp_not?: InputMaybe<Scalars["BigInt"]>;
   timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
-  wallHighPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallHighPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallHighPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  wallLowPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
-  wallLowPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryDebtBalance?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryDebtBalance_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryDebtBalance_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryDebtBalance_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryDebtBalance_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryDebtBalance_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryDebtBalance_not?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryDebtBalance_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryReserveBalance?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryReserveBalance_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryReserveBalance_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryReserveBalance_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryReserveBalance_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryReserveBalance_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryReserveBalance_not?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryReserveBalance_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  wallSpread?: InputMaybe<Scalars["BigDecimal"]>;
+  wallSpread_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  wallSpread_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  wallSpread_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  wallSpread_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  wallSpread_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  wallSpread_not?: InputMaybe<Scalars["BigDecimal"]>;
+  wallSpread_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
 };
 
 export enum RangeSnapshot_OrderBy {
   Block = "block",
   Blockchain = "blockchain",
-  CushionHighCapacityOhm = "cushionHighCapacityOhm",
-  CushionHighPrice = "cushionHighPrice",
-  CushionLowCapacityOhm = "cushionLowCapacityOhm",
-  CushionLowPrice = "cushionLowPrice",
+  CushionSpread = "cushionSpread",
   Date = "date",
+  HighActive = "highActive",
+  HighCapacityOhm = "highCapacityOhm",
+  HighCushionPrice = "highCushionPrice",
+  HighLastActiveTimestamp = "highLastActiveTimestamp",
+  HighMarketId = "highMarketId",
+  HighWallPrice = "highWallPrice",
   Id = "id",
+  LowActive = "lowActive",
+  LowCapacityOhm = "lowCapacityOhm",
+  LowCushionPrice = "lowCushionPrice",
+  LowLastActiveTimestamp = "lowLastActiveTimestamp",
+  LowMarketId = "lowMarketId",
+  LowWallPrice = "lowWallPrice",
   OhmMovingAveragePrice = "ohmMovingAveragePrice",
   OhmPrice = "ohmPrice",
+  ThresholdFactor = "thresholdFactor",
   Timestamp = "timestamp",
-  WallHighPrice = "wallHighPrice",
-  WallLowPrice = "wallLowPrice",
+  TreasuryDebtBalance = "treasuryDebtBalance",
+  TreasuryReserveBalance = "treasuryReserveBalance",
+  WallSpread = "wallSpread",
 }
 
 export type SpreadsChangedEvent = {
@@ -1535,21 +1536,41 @@ export type RbsPriceEventsQuery = {
   __typename?: "Query";
   priceEvents: Array<{
     __typename?: "PriceEvent";
-    id: string;
-    blockchain: string;
     block: number;
-    transaction: Uint8Array;
+    blockchain: string;
     date: string;
-    type: PriceEventType;
+    id: string;
     isHigh: boolean;
     timestamp: number;
-    capacityOhm?: number | null;
-    price?: number | null;
-    priceMovingAverage?: number | null;
-    cushionHighPrice?: number | null;
-    cushionLowPrice?: number | null;
-    wallHighPrice?: number | null;
-    wallLowPrice?: number | null;
+    transaction: Uint8Array;
+    type: PriceEventType;
+    snapshot: {
+      __typename?: "RangeSnapshot";
+      block: number;
+      blockchain: string;
+      cushionSpread: number;
+      date: string;
+      highActive: boolean;
+      highCapacityOhm: number;
+      highCushionPrice: number;
+      highLastActiveTimestamp: number;
+      highMarketId?: number | null;
+      highWallPrice: number;
+      id: string;
+      lowActive: boolean;
+      lowCapacityOhm: number;
+      lowCushionPrice: number;
+      lowLastActiveTimestamp: number;
+      lowMarketId?: number | null;
+      lowWallPrice: number;
+      ohmMovingAveragePrice?: number | null;
+      ohmPrice?: number | null;
+      thresholdFactor: number;
+      timestamp: number;
+      treasuryDebtBalance: number;
+      treasuryReserveBalance: number;
+      wallSpread: number;
+    };
   }>;
 };
 
@@ -1559,19 +1580,30 @@ export type LatestRangeSnapshotQuery = {
   __typename?: "Query";
   rangeSnapshots: Array<{
     __typename?: "RangeSnapshot";
-    id: string;
-    blockchain: string;
     block: number;
+    blockchain: string;
+    cushionSpread: number;
     date: string;
-    timestamp: number;
-    ohmPrice?: number | null;
+    highActive: boolean;
+    highCapacityOhm: number;
+    highCushionPrice: number;
+    highLastActiveTimestamp: number;
+    highMarketId?: number | null;
+    highWallPrice: number;
+    id: string;
+    lowActive: boolean;
+    lowCapacityOhm: number;
+    lowCushionPrice: number;
+    lowLastActiveTimestamp: number;
+    lowMarketId?: number | null;
+    lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
-    cushionHighPrice: number;
-    cushionHighCapacityOhm: number;
-    wallHighPrice: number;
-    cushionLowPrice: number;
-    cushionLowCapacityOhm: number;
-    wallLowPrice: number;
+    ohmPrice?: number | null;
+    thresholdFactor: number;
+    timestamp: number;
+    treasuryDebtBalance: number;
+    treasuryReserveBalance: number;
+    wallSpread: number;
   }>;
 };
 
@@ -1584,19 +1616,30 @@ export type LowerCushionCapacityDepletedQuery = {
   __typename?: "Query";
   rangeSnapshots: Array<{
     __typename?: "RangeSnapshot";
-    id: string;
-    blockchain: string;
     block: number;
+    blockchain: string;
+    cushionSpread: number;
     date: string;
-    timestamp: number;
-    ohmPrice?: number | null;
+    highActive: boolean;
+    highCapacityOhm: number;
+    highCushionPrice: number;
+    highLastActiveTimestamp: number;
+    highMarketId?: number | null;
+    highWallPrice: number;
+    id: string;
+    lowActive: boolean;
+    lowCapacityOhm: number;
+    lowCushionPrice: number;
+    lowLastActiveTimestamp: number;
+    lowMarketId?: number | null;
+    lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
-    cushionHighPrice: number;
-    cushionHighCapacityOhm: number;
-    wallHighPrice: number;
-    cushionLowPrice: number;
-    cushionLowCapacityOhm: number;
-    wallLowPrice: number;
+    ohmPrice?: number | null;
+    thresholdFactor: number;
+    timestamp: number;
+    treasuryDebtBalance: number;
+    treasuryReserveBalance: number;
+    wallSpread: number;
   }>;
 };
 
@@ -1609,19 +1652,30 @@ export type UpperCushionCapacityDepletedQuery = {
   __typename?: "Query";
   rangeSnapshots: Array<{
     __typename?: "RangeSnapshot";
-    id: string;
-    blockchain: string;
     block: number;
+    blockchain: string;
+    cushionSpread: number;
     date: string;
-    timestamp: number;
-    ohmPrice?: number | null;
+    highActive: boolean;
+    highCapacityOhm: number;
+    highCushionPrice: number;
+    highLastActiveTimestamp: number;
+    highMarketId?: number | null;
+    highWallPrice: number;
+    id: string;
+    lowActive: boolean;
+    lowCapacityOhm: number;
+    lowCushionPrice: number;
+    lowLastActiveTimestamp: number;
+    lowMarketId?: number | null;
+    lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
-    cushionHighPrice: number;
-    cushionHighCapacityOhm: number;
-    wallHighPrice: number;
-    cushionLowPrice: number;
-    cushionLowCapacityOhm: number;
-    wallLowPrice: number;
+    ohmPrice?: number | null;
+    thresholdFactor: number;
+    timestamp: number;
+    treasuryDebtBalance: number;
+    treasuryReserveBalance: number;
+    wallSpread: number;
   }>;
 };
 
@@ -1633,19 +1687,30 @@ export type RangeSnapshotQuery = {
   __typename?: "Query";
   rangeSnapshots: Array<{
     __typename?: "RangeSnapshot";
-    id: string;
-    blockchain: string;
     block: number;
+    blockchain: string;
+    cushionSpread: number;
     date: string;
-    timestamp: number;
-    ohmPrice?: number | null;
+    highActive: boolean;
+    highCapacityOhm: number;
+    highCushionPrice: number;
+    highLastActiveTimestamp: number;
+    highMarketId?: number | null;
+    highWallPrice: number;
+    id: string;
+    lowActive: boolean;
+    lowCapacityOhm: number;
+    lowCushionPrice: number;
+    lowLastActiveTimestamp: number;
+    lowMarketId?: number | null;
+    lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
-    cushionHighPrice: number;
-    cushionHighCapacityOhm: number;
-    wallHighPrice: number;
-    cushionLowPrice: number;
-    cushionLowCapacityOhm: number;
-    wallLowPrice: number;
+    ohmPrice?: number | null;
+    thresholdFactor: number;
+    timestamp: number;
+    treasuryDebtBalance: number;
+    treasuryReserveBalance: number;
+    wallSpread: number;
   }>;
 };
 
@@ -1698,21 +1763,47 @@ export const RbsPriceEventsDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
                 { kind: "Field", name: { kind: "Name", value: "block" } },
-                { kind: "Field", name: { kind: "Name", value: "transaction" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
-                { kind: "Field", name: { kind: "Name", value: "type" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "isHigh" } },
                 { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-                { kind: "Field", name: { kind: "Name", value: "capacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "price" } },
-                { kind: "Field", name: { kind: "Name", value: "priceMovingAverage" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "transaction" } },
+                { kind: "Field", name: { kind: "Name", value: "type" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "snapshot" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "block" } },
+                      { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                      { kind: "Field", name: { kind: "Name", value: "cushionSpread" } },
+                      { kind: "Field", name: { kind: "Name", value: "date" } },
+                      { kind: "Field", name: { kind: "Name", value: "highActive" } },
+                      { kind: "Field", name: { kind: "Name", value: "highCapacityOhm" } },
+                      { kind: "Field", name: { kind: "Name", value: "highCushionPrice" } },
+                      { kind: "Field", name: { kind: "Name", value: "highLastActiveTimestamp" } },
+                      { kind: "Field", name: { kind: "Name", value: "highMarketId" } },
+                      { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "lowActive" } },
+                      { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                      { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
+                      { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
+                      { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
+                      { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
+                      { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
+                      { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                      { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
+                      { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                      { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                      { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
+                      { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
+                    ],
+                  },
+                },
               ],
             },
           },
@@ -1750,19 +1841,30 @@ export const LatestRangeSnapshotDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
                 { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionSpread" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
-                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highActive" } },
+                { kind: "Field", name: { kind: "Name", value: "highCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "highCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "highMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "lowActive" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
               ],
             },
           },
@@ -1820,7 +1922,7 @@ export const LowerCushionCapacityDepletedDocument = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "cushionLowCapacityOhm_lt" },
+                      name: { kind: "Name", value: "lowCapacityOhm_lt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
                     },
                   ],
@@ -1830,19 +1932,30 @@ export const LowerCushionCapacityDepletedDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
                 { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionSpread" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
-                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highActive" } },
+                { kind: "Field", name: { kind: "Name", value: "highCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "highCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "highMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "lowActive" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
               ],
             },
           },
@@ -1900,7 +2013,7 @@ export const UpperCushionCapacityDepletedDocument = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "cushionHighCapacityOhm_lt" },
+                      name: { kind: "Name", value: "highCapacityOhm_lt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
                     },
                   ],
@@ -1910,19 +2023,30 @@ export const UpperCushionCapacityDepletedDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
                 { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionSpread" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
-                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highActive" } },
+                { kind: "Field", name: { kind: "Name", value: "highCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "highCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "highMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "lowActive" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
               ],
             },
           },
@@ -1980,19 +2104,30 @@ export const RangeSnapshotDocument = {
             selectionSet: {
               kind: "SelectionSet",
               selections: [
-                { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
                 { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionSpread" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
-                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
-                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highActive" } },
+                { kind: "Field", name: { kind: "Name", value: "highCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "highCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "highMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "lowActive" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionHighCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallHighPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowPrice" } },
-                { kind: "Field", name: { kind: "Name", value: "cushionLowCapacityOhm" } },
-                { kind: "Field", name: { kind: "Name", value: "wallLowPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
               ],
             },
           },

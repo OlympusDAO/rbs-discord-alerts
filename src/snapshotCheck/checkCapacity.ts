@@ -2,12 +2,12 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { RBS_SUBGRAPH_URL } from "./constants";
-import { getRoleMentions, sendAlert } from "./discord";
-import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "./graphql/rangeSnapshot";
-import { addDate } from "./helpers/dateHelper";
-import { getShutdownEmbedField } from "./helpers/shutdownHelper";
-import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
+import { RBS_SUBGRAPH_URL } from "../constants";
+import { getRoleMentions, sendAlert } from "../discord";
+import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "../graphql/rangeSnapshot";
+import { addDate } from "../helpers/dateHelper";
+import { getShutdownEmbedField } from "../helpers/shutdownHelper";
+import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 
 const CUSHION_CAPACITY_THRESHOLD = 1.0;
 export const DEPLETION_COUNT_THRESHOLD = 2;
