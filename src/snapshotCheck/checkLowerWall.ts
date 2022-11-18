@@ -68,10 +68,15 @@ export const checkLowerWall = async (
       block: historicalBlock,
     })
     .toPromise();
-  if (!previousBlockResults.data || previousBlockResults.data.rangeSnapshots.length == 0) {
+  if (!previousBlockResults.data) {
     throw new Error(
       `Did not receive results from RangeSnapshot GraphQL query with block ${historicalBlock}. Error: ${previousBlockResults.error}`,
     );
+  }
+
+  if (previousBlockResults.data.rangeSnapshots.length == 0) {
+    console.warn(`RangeSnapshot GraphQL query with block ${historicalBlock} returned 0 records. Exiting.`);
+    return;
   }
 
   const historicalLowerWallPrice = previousBlockResults.data.rangeSnapshots[0].lowWallPrice;
