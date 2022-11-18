@@ -3,7 +3,7 @@ import * as pulumi from "@pulumi/pulumi";
 
 import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
 import { handleEvents } from "./src/handleEvents";
-import { performSnapshotChecks } from "./src/handleSnapshots";
+import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 
 const pulumiConfig = new pulumi.Config();
 
