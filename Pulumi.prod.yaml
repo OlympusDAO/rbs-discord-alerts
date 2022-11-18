@@ -1,7 +1,7 @@
 config:
   gcp:project: rbs-discord-alerts
   gcp:region: us-east1
-  # TODO add production contract URL
+  rbs-discord-alerts:contractUrl: "https://etherscan.io/address/0x2286d7f9639e8158FaD1169e76d1FbC38247f54b#writeContract"
   rbs-discord-alerts:discordRoleIdCore: "1042174999320080416"
   rbs-discord-alerts:discordRoleIdCouncil: "1041761686077583441"
   rbs-discord-alerts:discordWebhookAlert:

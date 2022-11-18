@@ -1,7 +1,6 @@
 generates:
   src/graphql/rangeSnapshot.ts:
-    #schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
-    schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.17
+    schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
     documents: "src/graphql/rangeSnapshot.graphql"
     plugins:
       - typescript
@@ -17,6 +16,7 @@ generates:
       afterOneFileWrite:
         - yarn eslint --config ./.eslintrc.js --fix
   src/graphql/priceSnapshot.ts:
+    # TODO update protocol metrics
     #schema: https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics
     schema: https://api.studio.thegraph.com/query/28103/olympus-protocol-metrics/3.0.35
     documents: "src/graphql/priceSnapshot.graphql"
