@@ -3,7 +3,7 @@ import * as pulumi from "@pulumi/pulumi";
 
 import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
 import { handleEvents } from "./src/handleEvents";
-import { handleSnapshots } from "./src/handleSnapshots";
+import { performSnapshotChecks } from "./src/handleSnapshots";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -82,21 +82,21 @@ const schedulerJobSubgraphCheck = new gcp.cloudscheduler.Job(
 export const schedulerJobSubgraphCheckName = schedulerJobSubgraphCheck.name;
 
 /**
- * RBS Emergency Alerts
+ * RBS Snapshot Checks
  */
-const FUNCTION_EMERGENCY = "rbs-emergency";
-const FUNCTION_EMERGENCY_STACK = `${FUNCTION_EMERGENCY}-${pulumi.getStack()}`;
+const FUNCTION_SNAPSHOT_CHECK = "rbs-snapshot-check";
+const FUNCTION_SNAPSHOT_CHECK_STACK = `${FUNCTION_SNAPSHOT_CHECK}-${pulumi.getStack()}`;
 
 // Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
 // Also use `require` instead of `requireSecret`, as requireSecret won't work
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
-const functionEmergency = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_EMERGENCY_STACK, {
+const functionSnapshotCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_SNAPSHOT_CHECK_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await handleSnapshots(
+    await performSnapshotChecks(
       datastore.documentId.get(),
       datastore.collection.get(),
       [pulumiConfig.require(CONFIG_DISCORD_ROLE_COUNCIL), pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
@@ -109,22 +109,22 @@ const functionEmergency = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_E
   },
 });
 
-export const functionEmergencyName = functionEmergency.function.name;
-export const functionEmergencyUrl = functionEmergency.httpsTriggerUrl;
+export const functionSnapshotCheckName = functionSnapshotCheck.function.name;
+export const functionSnapshotCheckUrl = functionSnapshotCheck.httpsTriggerUrl;
 
 // Scheduling
 const schedulerJobEmergency = new gcp.cloudscheduler.Job(
-  FUNCTION_EMERGENCY_STACK,
+  FUNCTION_SNAPSHOT_CHECK_STACK,
   {
     schedule: "* * * * *", // Every minute (the minimum)
     timeZone: "UTC",
     httpTarget: {
       httpMethod: "GET",
-      uri: functionEmergencyUrl,
+      uri: functionSnapshotCheckUrl,
     },
   },
   {
-    dependsOn: [functionEmergency],
+    dependsOn: [functionSnapshotCheck],
   },
 );
 
@@ -163,12 +163,12 @@ createAlertFunctionExecutions(FUNCTION_SUBGRAPH_CHECK_STACK, functionSubgraphChe
   notificationDiscordId,
 ]);
 
-createAlertFunctionError(FUNCTION_EMERGENCY_STACK, functionEmergencyName, 60, [
+createAlertFunctionError(FUNCTION_SNAPSHOT_CHECK_STACK, functionSnapshotCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
 
-createAlertFunctionExecutions(FUNCTION_EMERGENCY_STACK, functionEmergencyName, 60, [
+createAlertFunctionExecutions(FUNCTION_SNAPSHOT_CHECK_STACK, functionSnapshotCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
@@ -285,7 +285,7 @@ new gcp.monitoring.Dashboard(
             {
               "height": 4,
               "widget": {
-                "title": "${FUNCTION_EMERGENCY} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "title": "${FUNCTION_SNAPSHOT_CHECK} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
                 "xyChart": {
                   "chartOptions": {
                     "mode": "COLOR"
@@ -306,7 +306,7 @@ new gcp.monitoring.Dashboard(
                             ],
                             "perSeriesAligner": "ALIGN_SUM"
                           },
-                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionEmergencyName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionSnapshotCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
                         }
                       }
                     }
@@ -413,6 +413,6 @@ new gcp.monitoring.Dashboard(
         }
       }`,
   },
-  { dependsOn: [functionSubgraphCheck, functionEmergency] },
+  { dependsOn: [functionSubgraphCheck, functionSnapshotCheck] },
 );
 export const dashboardName = DASHBOARD_NAME;

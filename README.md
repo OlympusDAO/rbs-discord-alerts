@@ -21,8 +21,8 @@ Pulumi is used to manage the infrastructure, which comprises of:
   2. Fetches all PriceEvent records from the [RBS subgraph](https://github.com/OlympusDAO/rbs-subgraph)
   3. Sends a message using a Discord webhook
   4. Updates the latest block in Firestore
-- Emergency Alerts
-  - Checks for three conditions:
+- Snapshot Checks
+  - Checks for three conditions that would be considered an emergency:
     - Current price below the lower wall price
     - Chainlink and LP price differ
     - Cushion capacity is depleted too often
