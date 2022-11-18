@@ -79,6 +79,12 @@ export const performEventChecks = async (
         )})`,
         inline: true,
       },
+      // Row 2
+      {
+        name: "Event",
+        value: priceEvent.type,
+        inline: false,
+      },
       // Current price
       {
         name: "Current",
