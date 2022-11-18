@@ -30,6 +30,6 @@ if (require.main === module) {
     "default",
     ["1042353289477500950"],
     process.env.WEBHOOK_URL,
-    "https://goerli.etherscan.io/address/0x9ECDA630626a3aa9EF24A53c4Faca1Ce76a1A508#writeContract",
+    "https://goerli.etherscan.io/address/0x196a59fB453da942f062Be4407D923129c759435#writeContract",
   );
 }
