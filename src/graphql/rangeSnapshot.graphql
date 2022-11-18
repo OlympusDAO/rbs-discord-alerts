@@ -28,13 +28,14 @@ query RBSPriceEvents($latestBlock: BigInt!) {
       lowWallPrice
       ohmMovingAveragePrice
       ohmPrice
+      operatorCushionFactor
+      operatorReserveFactor
       thresholdFactor
       timestamp
       treasuryDebtBalance
+      treasuryReserveAddress
       treasuryReserveBalance
       wallSpread
-      operatorReserveFactor
-      operatorCushionFactor
     }
   }
 }
@@ -61,13 +62,14 @@ query LatestRangeSnapshot {
     lowWallPrice
     ohmMovingAveragePrice
     ohmPrice
+    operatorCushionFactor
+    operatorReserveFactor
     thresholdFactor
     timestamp
     treasuryDebtBalance
+    treasuryReserveAddress
     treasuryReserveBalance
     wallSpread
-    operatorReserveFactor
-    operatorCushionFactor
   }
 }
 
@@ -96,13 +98,14 @@ query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     lowWallPrice
     ohmMovingAveragePrice
     ohmPrice
+    operatorCushionFactor
+    operatorReserveFactor
     thresholdFactor
     timestamp
     treasuryDebtBalance
+    treasuryReserveAddress
     treasuryReserveBalance
     wallSpread
-    operatorReserveFactor
-    operatorCushionFactor
   }
 }
 
@@ -131,13 +134,14 @@ query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     lowWallPrice
     ohmMovingAveragePrice
     ohmPrice
+    operatorCushionFactor
+    operatorReserveFactor
     thresholdFactor
     timestamp
     treasuryDebtBalance
+    treasuryReserveAddress
     treasuryReserveBalance
     wallSpread
-    operatorReserveFactor
-    operatorCushionFactor
   }
 }
 
@@ -162,12 +166,13 @@ query RangeSnapshot($block: BigInt!) {
     lowWallPrice
     ohmMovingAveragePrice
     ohmPrice
+    operatorCushionFactor
+    operatorReserveFactor
     thresholdFactor
     timestamp
     treasuryDebtBalance
+    treasuryReserveAddress
     treasuryReserveBalance
     wallSpread
-    operatorReserveFactor
-    operatorCushionFactor
   }
 }

@@ -773,12 +773,13 @@ export type RangeSnapshot = {
   lowWallPrice: Scalars["BigDecimal"];
   ohmMovingAveragePrice?: Maybe<Scalars["BigDecimal"]>;
   ohmPrice?: Maybe<Scalars["BigDecimal"]>;
-  operatorCushionFactor: Scalars["BigDecimal"];
-  operatorReserveFactor: Scalars["BigDecimal"];
+  operatorCushionFactor?: Maybe<Scalars["BigDecimal"]>;
+  operatorReserveFactor?: Maybe<Scalars["BigDecimal"]>;
   thresholdFactor: Scalars["BigDecimal"];
   timestamp: Scalars["BigInt"];
-  treasuryDebtBalance: Scalars["BigDecimal"];
-  treasuryReserveBalance: Scalars["BigDecimal"];
+  treasuryDebtBalance?: Maybe<Scalars["BigDecimal"]>;
+  treasuryReserveAddress?: Maybe<Scalars["Bytes"]>;
+  treasuryReserveBalance?: Maybe<Scalars["BigDecimal"]>;
   wallSpread: Scalars["BigDecimal"];
 };
 
@@ -993,6 +994,12 @@ export type RangeSnapshot_Filter = {
   treasuryDebtBalance_lte?: InputMaybe<Scalars["BigDecimal"]>;
   treasuryDebtBalance_not?: InputMaybe<Scalars["BigDecimal"]>;
   treasuryDebtBalance_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryReserveAddress?: InputMaybe<Scalars["Bytes"]>;
+  treasuryReserveAddress_contains?: InputMaybe<Scalars["Bytes"]>;
+  treasuryReserveAddress_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  treasuryReserveAddress_not?: InputMaybe<Scalars["Bytes"]>;
+  treasuryReserveAddress_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  treasuryReserveAddress_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   treasuryReserveBalance?: InputMaybe<Scalars["BigDecimal"]>;
   treasuryReserveBalance_gt?: InputMaybe<Scalars["BigDecimal"]>;
   treasuryReserveBalance_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -1036,6 +1043,7 @@ export enum RangeSnapshot_OrderBy {
   ThresholdFactor = "thresholdFactor",
   Timestamp = "timestamp",
   TreasuryDebtBalance = "treasuryDebtBalance",
+  TreasuryReserveAddress = "treasuryReserveAddress",
   TreasuryReserveBalance = "treasuryReserveBalance",
   WallSpread = "wallSpread",
 }
@@ -1585,13 +1593,14 @@ export type RbsPriceEventsQuery = {
       lowWallPrice: number;
       ohmMovingAveragePrice?: number | null;
       ohmPrice?: number | null;
+      operatorCushionFactor?: number | null;
+      operatorReserveFactor?: number | null;
       thresholdFactor: number;
       timestamp: number;
-      treasuryDebtBalance: number;
-      treasuryReserveBalance: number;
+      treasuryDebtBalance?: number | null;
+      treasuryReserveAddress?: Uint8Array | null;
+      treasuryReserveBalance?: number | null;
       wallSpread: number;
-      operatorReserveFactor: number;
-      operatorCushionFactor: number;
     };
   }>;
 };
@@ -1621,13 +1630,14 @@ export type LatestRangeSnapshotQuery = {
     lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
     ohmPrice?: number | null;
+    operatorCushionFactor?: number | null;
+    operatorReserveFactor?: number | null;
     thresholdFactor: number;
     timestamp: number;
-    treasuryDebtBalance: number;
-    treasuryReserveBalance: number;
+    treasuryDebtBalance?: number | null;
+    treasuryReserveAddress?: Uint8Array | null;
+    treasuryReserveBalance?: number | null;
     wallSpread: number;
-    operatorReserveFactor: number;
-    operatorCushionFactor: number;
   }>;
 };
 
@@ -1659,13 +1669,14 @@ export type LowerCushionCapacityDepletedQuery = {
     lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
     ohmPrice?: number | null;
+    operatorCushionFactor?: number | null;
+    operatorReserveFactor?: number | null;
     thresholdFactor: number;
     timestamp: number;
-    treasuryDebtBalance: number;
-    treasuryReserveBalance: number;
+    treasuryDebtBalance?: number | null;
+    treasuryReserveAddress?: Uint8Array | null;
+    treasuryReserveBalance?: number | null;
     wallSpread: number;
-    operatorReserveFactor: number;
-    operatorCushionFactor: number;
   }>;
 };
 
@@ -1697,13 +1708,14 @@ export type UpperCushionCapacityDepletedQuery = {
     lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
     ohmPrice?: number | null;
+    operatorCushionFactor?: number | null;
+    operatorReserveFactor?: number | null;
     thresholdFactor: number;
     timestamp: number;
-    treasuryDebtBalance: number;
-    treasuryReserveBalance: number;
+    treasuryDebtBalance?: number | null;
+    treasuryReserveAddress?: Uint8Array | null;
+    treasuryReserveBalance?: number | null;
     wallSpread: number;
-    operatorReserveFactor: number;
-    operatorCushionFactor: number;
   }>;
 };
 
@@ -1734,13 +1746,14 @@ export type RangeSnapshotQuery = {
     lowWallPrice: number;
     ohmMovingAveragePrice?: number | null;
     ohmPrice?: number | null;
+    operatorCushionFactor?: number | null;
+    operatorReserveFactor?: number | null;
     thresholdFactor: number;
     timestamp: number;
-    treasuryDebtBalance: number;
-    treasuryReserveBalance: number;
+    treasuryDebtBalance?: number | null;
+    treasuryReserveAddress?: Uint8Array | null;
+    treasuryReserveBalance?: number | null;
     wallSpread: number;
-    operatorReserveFactor: number;
-    operatorCushionFactor: number;
   }>;
 };
 
@@ -1826,13 +1839,14 @@ export const RbsPriceEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                       { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
                       { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                      { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
+                      { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
                       { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
                       { kind: "Field", name: { kind: "Name", value: "timestamp" } },
                       { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                      { kind: "Field", name: { kind: "Name", value: "treasuryReserveAddress" } },
                       { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
                       { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
-                      { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
-                      { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
                     ],
                   },
                 },
@@ -1892,13 +1906,14 @@ export const LatestRangeSnapshotDocument = {
                 { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "timestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveAddress" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
                 { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
               ],
             },
           },
@@ -1985,13 +2000,14 @@ export const LowerCushionCapacityDepletedDocument = {
                 { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "timestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveAddress" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
                 { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
               ],
             },
           },
@@ -2078,13 +2094,14 @@ export const UpperCushionCapacityDepletedDocument = {
                 { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "timestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveAddress" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
                 { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
               ],
             },
           },
@@ -2161,13 +2178,14 @@ export const RangeSnapshotDocument = {
                 { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
                 { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
                 { kind: "Field", name: { kind: "Name", value: "timestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveAddress" } },
                 { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
                 { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
-                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
               ],
             },
           },
