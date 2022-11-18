@@ -53,6 +53,8 @@ export const checkCapacityDepletion = async (
     fetch,
   });
 
+  // Note: these queries check for ohmPrice being > 0 (being null would indicate that it is not initialised yet)
+
   // Get the lower cushion capacity
   const lowerCushionCapacity = await client
     .query(LowerCushionCapacityDepletedDocument, {

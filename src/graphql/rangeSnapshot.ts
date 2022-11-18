@@ -1974,6 +1974,11 @@ export const LowerCushionCapacityDepletedDocument = {
                       name: { kind: "Name", value: "lowCapacityReserve_lt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
                     },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "ohmPrice_gt" },
+                      value: { kind: "StringValue", value: "0", block: false },
+                    },
                   ],
                 },
               },
@@ -2067,6 +2072,11 @@ export const UpperCushionCapacityDepletedDocument = {
                       kind: "ObjectField",
                       name: { kind: "Name", value: "highCapacityOhm_lt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "ohmPrice_gt" },
+                      value: { kind: "StringValue", value: "0", block: false },
                     },
                   ],
                 },
