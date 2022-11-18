@@ -21,7 +21,7 @@ query RBSPriceEvents($latestBlock: BigInt!) {
       highWallPrice
       id
       lowActive
-      lowCapacityOhm
+      lowCapacityReserve
       lowCushionPrice
       lowLastActiveTimestamp
       lowMarketId
@@ -55,7 +55,7 @@ query LatestRangeSnapshot {
     highWallPrice
     id
     lowActive
-    lowCapacityOhm
+    lowCapacityReserve
     lowCushionPrice
     lowLastActiveTimestamp
     lowMarketId
@@ -77,7 +77,7 @@ query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
   rangeSnapshots(
     orderBy: block
     orderDirection: desc
-    where: { date_gt: $sinceDate, lowCapacityOhm_lt: $belowCapacity }
+    where: { date_gt: $sinceDate, lowCapacityReserve_lt: $belowCapacity }
   ) {
     block
     blockchain
@@ -91,7 +91,7 @@ query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     highWallPrice
     id
     lowActive
-    lowCapacityOhm
+    lowCapacityReserve
     lowCushionPrice
     lowLastActiveTimestamp
     lowMarketId
@@ -127,7 +127,7 @@ query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
     highWallPrice
     id
     lowActive
-    lowCapacityOhm
+    lowCapacityReserve
     lowCushionPrice
     lowLastActiveTimestamp
     lowMarketId
@@ -159,7 +159,7 @@ query RangeSnapshot($block: BigInt!) {
     highWallPrice
     id
     lowActive
-    lowCapacityOhm
+    lowCapacityReserve
     lowCushionPrice
     lowLastActiveTimestamp
     lowMarketId

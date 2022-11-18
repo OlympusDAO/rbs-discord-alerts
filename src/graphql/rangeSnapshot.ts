@@ -766,7 +766,7 @@ export type RangeSnapshot = {
   highWallPrice: Scalars["BigDecimal"];
   id: Scalars["ID"];
   lowActive: Scalars["Boolean"];
-  lowCapacityOhm: Scalars["BigDecimal"];
+  lowCapacityReserve: Scalars["BigDecimal"];
   lowCushionPrice: Scalars["BigDecimal"];
   lowLastActiveTimestamp: Scalars["BigInt"];
   lowMarketId?: Maybe<Scalars["BigInt"]>;
@@ -898,14 +898,14 @@ export type RangeSnapshot_Filter = {
   lowActive_in?: InputMaybe<Array<Scalars["Boolean"]>>;
   lowActive_not?: InputMaybe<Scalars["Boolean"]>;
   lowActive_not_in?: InputMaybe<Array<Scalars["Boolean"]>>;
-  lowCapacityOhm?: InputMaybe<Scalars["BigDecimal"]>;
-  lowCapacityOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
-  lowCapacityOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
-  lowCapacityOhm_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
-  lowCapacityOhm_lt?: InputMaybe<Scalars["BigDecimal"]>;
-  lowCapacityOhm_lte?: InputMaybe<Scalars["BigDecimal"]>;
-  lowCapacityOhm_not?: InputMaybe<Scalars["BigDecimal"]>;
-  lowCapacityOhm_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowCapacityReserve?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityReserve_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityReserve_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityReserve_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowCapacityReserve_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityReserve_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityReserve_not?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCapacityReserve_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   lowCushionPrice?: InputMaybe<Scalars["BigDecimal"]>;
   lowCushionPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
   lowCushionPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -1031,7 +1031,7 @@ export enum RangeSnapshot_OrderBy {
   HighWallPrice = "highWallPrice",
   Id = "id",
   LowActive = "lowActive",
-  LowCapacityOhm = "lowCapacityOhm",
+  LowCapacityReserve = "lowCapacityReserve",
   LowCushionPrice = "lowCushionPrice",
   LowLastActiveTimestamp = "lowLastActiveTimestamp",
   LowMarketId = "lowMarketId",
@@ -1586,7 +1586,7 @@ export type RbsPriceEventsQuery = {
       highWallPrice: number;
       id: string;
       lowActive: boolean;
-      lowCapacityOhm: number;
+      lowCapacityReserve: number;
       lowCushionPrice: number;
       lowLastActiveTimestamp: number;
       lowMarketId?: number | null;
@@ -1623,7 +1623,7 @@ export type LatestRangeSnapshotQuery = {
     highWallPrice: number;
     id: string;
     lowActive: boolean;
-    lowCapacityOhm: number;
+    lowCapacityReserve: number;
     lowCushionPrice: number;
     lowLastActiveTimestamp: number;
     lowMarketId?: number | null;
@@ -1662,7 +1662,7 @@ export type LowerCushionCapacityDepletedQuery = {
     highWallPrice: number;
     id: string;
     lowActive: boolean;
-    lowCapacityOhm: number;
+    lowCapacityReserve: number;
     lowCushionPrice: number;
     lowLastActiveTimestamp: number;
     lowMarketId?: number | null;
@@ -1701,7 +1701,7 @@ export type UpperCushionCapacityDepletedQuery = {
     highWallPrice: number;
     id: string;
     lowActive: boolean;
-    lowCapacityOhm: number;
+    lowCapacityReserve: number;
     lowCushionPrice: number;
     lowLastActiveTimestamp: number;
     lowMarketId?: number | null;
@@ -1739,7 +1739,7 @@ export type RangeSnapshotQuery = {
     highWallPrice: number;
     id: string;
     lowActive: boolean;
-    lowCapacityOhm: number;
+    lowCapacityReserve: number;
     lowCushionPrice: number;
     lowLastActiveTimestamp: number;
     lowMarketId?: number | null;
@@ -1832,7 +1832,7 @@ export const RbsPriceEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
                       { kind: "Field", name: { kind: "Name", value: "id" } },
                       { kind: "Field", name: { kind: "Name", value: "lowActive" } },
-                      { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                      { kind: "Field", name: { kind: "Name", value: "lowCapacityReserve" } },
                       { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
                       { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
                       { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
@@ -1899,7 +1899,7 @@ export const LatestRangeSnapshotDocument = {
                 { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "lowActive" } },
-                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityReserve" } },
                 { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
@@ -1971,7 +1971,7 @@ export const LowerCushionCapacityDepletedDocument = {
                     },
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "lowCapacityOhm_lt" },
+                      name: { kind: "Name", value: "lowCapacityReserve_lt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "belowCapacity" } },
                     },
                   ],
@@ -1993,7 +1993,7 @@ export const LowerCushionCapacityDepletedDocument = {
                 { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "lowActive" } },
-                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityReserve" } },
                 { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
@@ -2087,7 +2087,7 @@ export const UpperCushionCapacityDepletedDocument = {
                 { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "lowActive" } },
-                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityReserve" } },
                 { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
@@ -2171,7 +2171,7 @@ export const RangeSnapshotDocument = {
                 { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "id" } },
                 { kind: "Field", name: { kind: "Name", value: "lowActive" } },
-                { kind: "Field", name: { kind: "Name", value: "lowCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityReserve" } },
                 { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
                 { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
                 { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },

@@ -1,7 +1,7 @@
 generates:
   src/graphql/rangeSnapshot.ts:
     #schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
-    schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.16
+    schema: https://api.studio.thegraph.com/query/28103/rbs/0.0.17
     documents: "src/graphql/rangeSnapshot.graphql"
     plugins:
       - typescript
