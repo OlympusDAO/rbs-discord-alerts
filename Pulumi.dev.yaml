@@ -1,7 +1,7 @@
 config:
   gcp:project: rbs-discord-alerts
   gcp:region: us-east1
-  rbs-discord-alerts:contractUrl: "https://goerli.etherscan.io/address/0x196a59fB453da942f062Be4407D923129c759435#writeContract"
+  rbs-discord-alerts:contractUrl: "https://etherscan.io/address/0x2286d7f9639e8158FaD1169e76d1FbC38247f54b#writeContract"
   rbs-discord-alerts:discordRoleIdCore: "1042353289477500950"
   rbs-discord-alerts:discordRoleIdCouncil: "1042351048569921547"
   rbs-discord-alerts:discordWebhookAlert:
