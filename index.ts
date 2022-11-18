@@ -2,7 +2,7 @@ import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
 
 import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
-import { handleEvents } from "./src/handleEvents";
+import { performEventChecks } from "./src/handlePriceEvents";
 import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 
 const pulumiConfig = new pulumi.Config();
@@ -39,47 +39,47 @@ export const datastoreId = datastore.id;
 const FUNCTION_EXPIRATION_SECONDS = 30;
 
 /**
- * RBS Subgraph Checks
+ * Price Events
  */
-const FUNCTION_SUBGRAPH_CHECK = "rbs-subgraph-check";
-const FUNCTION_SUBGRAPH_CHECK_STACK = `${FUNCTION_SUBGRAPH_CHECK}-${pulumi.getStack()}`;
+const FUNCTION_PRICE_EVENTS = "rbs-price-events";
+const FUNCTION_PRICE_EVENTS_STACK = `${FUNCTION_PRICE_EVENTS}-${pulumi.getStack()}`;
 
 // Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
 // Also use `require` instead of `requireSecret`, as requireSecret won't work
-const webhookSubgraphCheck = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
-const functionSubgraphCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_SUBGRAPH_CHECK_STACK, {
+const webhookAlert = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
+const functionPriceEvents = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_PRICE_EVENTS_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await handleEvents(datastore.documentId.get(), datastore.collection.get(), webhookSubgraphCheck);
+    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
 });
 
-export const functionSubgraphCheckName = functionSubgraphCheck.function.name;
-export const functionSubgraphCheckUrl = functionSubgraphCheck.httpsTriggerUrl;
+export const functionPriceEventsName = functionPriceEvents.function.name;
+export const functionPriceEventsUrl = functionPriceEvents.httpsTriggerUrl;
 
 // Scheduling
-const schedulerJobSubgraphCheck = new gcp.cloudscheduler.Job(
-  FUNCTION_SUBGRAPH_CHECK_STACK,
+const schedulerJobPriceEvents = new gcp.cloudscheduler.Job(
+  FUNCTION_PRICE_EVENTS_STACK,
   {
     schedule: "* * * * *", // Every minute
     timeZone: "UTC",
     httpTarget: {
       httpMethod: "GET",
-      uri: functionSubgraphCheckUrl,
+      uri: functionPriceEventsUrl,
     },
   },
   {
-    dependsOn: [functionSubgraphCheck],
+    dependsOn: [functionPriceEvents],
   },
 );
 
-export const schedulerJobSubgraphCheckName = schedulerJobSubgraphCheck.name;
+export const schedulerJobPriceEventsName = schedulerJobPriceEvents.name;
 
 /**
  * RBS Snapshot Checks
@@ -113,7 +113,7 @@ export const functionSnapshotCheckName = functionSnapshotCheck.function.name;
 export const functionSnapshotCheckUrl = functionSnapshotCheck.httpsTriggerUrl;
 
 // Scheduling
-const schedulerJobEmergency = new gcp.cloudscheduler.Job(
+const schedulerJobSnapshotCheck = new gcp.cloudscheduler.Job(
   FUNCTION_SNAPSHOT_CHECK_STACK,
   {
     schedule: "* * * * *", // Every minute (the minimum)
@@ -128,7 +128,7 @@ const schedulerJobEmergency = new gcp.cloudscheduler.Job(
   },
 );
 
-export const schedulerJobEmergencyName = schedulerJobEmergency.name;
+export const schedulerJobSnapshotCheckName = schedulerJobSnapshotCheck.name;
 
 /**
  * Create Alert Policies
@@ -153,12 +153,12 @@ const notificationDiscord = new gcp.monitoring.NotificationChannel("discord", {
 });
 export const notificationDiscordId = notificationDiscord.id;
 
-createAlertFunctionError(FUNCTION_SUBGRAPH_CHECK_STACK, functionSubgraphCheckName, 60, [
+createAlertFunctionError(FUNCTION_PRICE_EVENTS_STACK, functionPriceEventsName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
 
-createAlertFunctionExecutions(FUNCTION_SUBGRAPH_CHECK_STACK, functionSubgraphCheckName, 60, [
+createAlertFunctionExecutions(FUNCTION_PRICE_EVENTS_STACK, functionPriceEventsName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
@@ -244,7 +244,7 @@ new gcp.monitoring.Dashboard(
             {
               "height": 4,
               "widget": {
-                "title": "${FUNCTION_SUBGRAPH_CHECK} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "title": "${FUNCTION_PRICE_EVENTS} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
                 "xyChart": {
                   "chartOptions": {
                     "mode": "COLOR"
@@ -265,7 +265,7 @@ new gcp.monitoring.Dashboard(
                             ],
                             "perSeriesAligner": "ALIGN_SUM"
                           },
-                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionSubgraphCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionPriceEventsName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
                         }
                       }
                     }
@@ -413,6 +413,6 @@ new gcp.monitoring.Dashboard(
         }
       }`,
   },
-  { dependsOn: [functionSubgraphCheck, functionSnapshotCheck] },
+  { dependsOn: [functionPriceEvents, functionSnapshotCheck] },
 );
 export const dashboardName = DASHBOARD_NAME;

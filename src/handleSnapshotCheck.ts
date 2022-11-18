@@ -4,6 +4,18 @@ import { checkCapacityDepletion } from "./checkCapacity";
 import { checkLowerWall } from "./checkLowerWall";
 import { checkPrice } from "./checkPrice";
 
+/**
+ * Checks regular snapshots of the Range contracts to determine if there are any problems.
+ *
+ * Currently, this checks for conditions that would indicate a manipulation of RBS or
+ * a significant bug. An emergency alert is sent into Discord accordingly.
+ *
+ * @param firestoreDocumentPath
+ * @param firestoreCollectionName
+ * @param mentionRoles
+ * @param webhookUrl
+ * @param contractUrl
+ */
 export const performSnapshotChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,

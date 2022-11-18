@@ -11,7 +11,15 @@ import { shorten } from "./helpers/stringHelper";
 
 const FIELD_LATEST_BLOCK = "events.latestBlock";
 
-export const handleEvents = async (
+/**
+ * Broadcasts into Discord any PriceEvents that are emitted from the RBS contracts.
+ *
+ * @param firestoreDocumentPath
+ * @param firestoreCollectionName
+ * @param webhookUrl
+ * @returns
+ */
+export const performEventChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
   webhookUrl: string,
@@ -108,5 +116,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  handleEvents("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
+  performEventChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
 }
