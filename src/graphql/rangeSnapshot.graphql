@@ -77,7 +77,7 @@ query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
   rangeSnapshots(
     orderBy: block
     orderDirection: desc
-    where: { date_gt: $sinceDate, lowCapacityReserve_lt: $belowCapacity }
+    where: { date_gt: $sinceDate, lowCapacityReserve_lt: $belowCapacity, ohmPrice_gt: "0" }
   ) {
     block
     blockchain
@@ -113,7 +113,7 @@ query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
   rangeSnapshots(
     orderBy: block
     orderDirection: desc
-    where: { date_gt: $sinceDate, highCapacityOhm_lt: $belowCapacity }
+    where: { date_gt: $sinceDate, highCapacityOhm_lt: $belowCapacity, ohmPrice_gt: "0" }
   ) {
     block
     blockchain
