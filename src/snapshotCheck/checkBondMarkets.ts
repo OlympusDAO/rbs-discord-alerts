@@ -100,6 +100,7 @@ const checkCushionUp = (
 
   // Check the tokens
   if (priceEvent.isHigh) {
+    // Market in the high cushion should pay out in OHM
     if (createdMarket.market.payoutToken.toString().toLowerCase() !== ERC20_OHM_V2) {
       errors.push(
         `Expected payout token (${createdMarket.market.payoutToken.toString()}) of market for upper cushion (${
@@ -108,6 +109,7 @@ const checkCushionUp = (
       );
     }
   } else {
+    // Market in the low cushion should pay out in DAI
     if (createdMarket.market.payoutToken.toString().toLowerCase() !== ERC20_DAI) {
       errors.push(
         `Expected payout token (${createdMarket.market.payoutToken.toString()}) of market for lower cushion (${
