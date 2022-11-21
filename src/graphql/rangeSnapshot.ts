@@ -1719,11 +1719,49 @@ export type UpperCushionCapacityDepletedQuery = {
   }>;
 };
 
-export type RangeSnapshotQueryVariables = Exact<{
+export type RangeSnapshotAtBlockQueryVariables = Exact<{
   block: Scalars["BigInt"];
 }>;
 
-export type RangeSnapshotQuery = {
+export type RangeSnapshotAtBlockQuery = {
+  __typename?: "Query";
+  rangeSnapshots: Array<{
+    __typename?: "RangeSnapshot";
+    block: number;
+    blockchain: string;
+    cushionSpread: number;
+    date: string;
+    highActive: boolean;
+    highCapacityOhm: number;
+    highCushionPrice: number;
+    highLastActiveTimestamp: number;
+    highMarketId?: number | null;
+    highWallPrice: number;
+    id: string;
+    lowActive: boolean;
+    lowCapacityReserve: number;
+    lowCushionPrice: number;
+    lowLastActiveTimestamp: number;
+    lowMarketId?: number | null;
+    lowWallPrice: number;
+    ohmMovingAveragePrice?: number | null;
+    ohmPrice?: number | null;
+    operatorCushionFactor?: number | null;
+    operatorReserveFactor?: number | null;
+    thresholdFactor: number;
+    timestamp: number;
+    treasuryDebtBalance?: number | null;
+    treasuryReserveAddress?: Uint8Array | null;
+    treasuryReserveBalance?: number | null;
+    wallSpread: number;
+  }>;
+};
+
+export type RangeSnapshotSinceBlockQueryVariables = Exact<{
+  sinceBlock: Scalars["BigInt"];
+}>;
+
+export type RangeSnapshotSinceBlockQuery = {
   __typename?: "Query";
   rangeSnapshots: Array<{
     __typename?: "RangeSnapshot";
@@ -2120,13 +2158,13 @@ export const UpperCushionCapacityDepletedDocument = {
     },
   ],
 } as unknown as DocumentNode<UpperCushionCapacityDepletedQuery, UpperCushionCapacityDepletedQueryVariables>;
-export const RangeSnapshotDocument = {
+export const RangeSnapshotAtBlockDocument = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "query",
-      name: { kind: "Name", value: "RangeSnapshot" },
+      name: { kind: "Name", value: "RangeSnapshotAtBlock" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -2203,4 +2241,88 @@ export const RangeSnapshotDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<RangeSnapshotQuery, RangeSnapshotQueryVariables>;
+} as unknown as DocumentNode<RangeSnapshotAtBlockQuery, RangeSnapshotAtBlockQueryVariables>;
+export const RangeSnapshotSinceBlockDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "RangeSnapshotSinceBlock" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "rangeSnapshots" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "block" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "EnumValue", value: "desc" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "block_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "cushionSpread" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "highActive" } },
+                { kind: "Field", name: { kind: "Name", value: "highCapacityOhm" } },
+                { kind: "Field", name: { kind: "Name", value: "highCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "highLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "highMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "highWallPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "lowActive" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCapacityReserve" } },
+                { kind: "Field", name: { kind: "Name", value: "lowCushionPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "lowLastActiveTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "lowMarketId" } },
+                { kind: "Field", name: { kind: "Name", value: "lowWallPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmMovingAveragePrice" } },
+                { kind: "Field", name: { kind: "Name", value: "ohmPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorCushionFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "operatorReserveFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "thresholdFactor" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryDebtBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveAddress" } },
+                { kind: "Field", name: { kind: "Name", value: "treasuryReserveBalance" } },
+                { kind: "Field", name: { kind: "Name", value: "wallSpread" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RangeSnapshotSinceBlockQuery, RangeSnapshotSinceBlockQueryVariables>;

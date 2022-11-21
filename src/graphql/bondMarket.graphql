@@ -1,0 +1,59 @@
+query MarketCreatedEvents($sinceBlock: BigInt!) {
+  marketCreatedEvents(orderBy: block, orderDirection: desc, where: { block_gt: $sinceBlock }) {
+    block
+    date
+    id
+    marketId
+    timestamp
+    market {
+      bondContract
+      bondType
+      capacity
+      capacityInQuote
+      closedBlock
+      closedDate
+      closedTimestamp
+      createdBlock
+      createdDate
+      createdTimestamp
+      id
+      initialPrice
+      maxPayout
+      minPrice
+      payoutToken
+      quoteToken
+      totalDebt
+      vesting
+    }
+  }
+}
+
+query MarketClosedEvents($sinceBlock: BigInt!) {
+  marketClosedEvents(orderBy: block, orderDirection: desc, where: { block_gt: $sinceBlock }) {
+    block
+    date
+    id
+    marketId
+    timestamp
+    market {
+      bondContract
+      bondType
+      capacity
+      capacityInQuote
+      closedBlock
+      closedDate
+      closedTimestamp
+      createdBlock
+      createdDate
+      createdTimestamp
+      id
+      initialPrice
+      maxPayout
+      minPrice
+      payoutToken
+      quoteToken
+      totalDebt
+      vesting
+    }
+  }
+}

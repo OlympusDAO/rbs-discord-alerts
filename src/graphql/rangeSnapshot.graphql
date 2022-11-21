@@ -145,8 +145,40 @@ query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
   }
 }
 
-query RangeSnapshot($block: BigInt!) {
+query RangeSnapshotAtBlock($block: BigInt!) {
   rangeSnapshots(orderBy: block, orderDirection: desc, where: { block: $block }) {
+    block
+    blockchain
+    cushionSpread
+    date
+    highActive
+    highCapacityOhm
+    highCushionPrice
+    highLastActiveTimestamp
+    highMarketId
+    highWallPrice
+    id
+    lowActive
+    lowCapacityReserve
+    lowCushionPrice
+    lowLastActiveTimestamp
+    lowMarketId
+    lowWallPrice
+    ohmMovingAveragePrice
+    ohmPrice
+    operatorCushionFactor
+    operatorReserveFactor
+    thresholdFactor
+    timestamp
+    treasuryDebtBalance
+    treasuryReserveAddress
+    treasuryReserveBalance
+    wallSpread
+  }
+}
+
+query RangeSnapshotSinceBlock($sinceBlock: BigInt!) {
+  rangeSnapshots(orderBy: block, orderDirection: desc, where: { block_gt: $sinceBlock }) {
     block
     blockchain
     cushionSpread

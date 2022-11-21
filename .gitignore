@@ -63,5 +63,7 @@ typings/
 # thegraph build
 build
 
+dist/
+
 # Test build files
 tests/.bin/
