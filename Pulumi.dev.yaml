@@ -1,3 +1,14 @@
 config:
   gcp:project: rbs-discord-alerts
   gcp:region: us-east1
+  rbs-discord-alerts:contractUrl: "https://etherscan.io/address/0x2286d7f9639e8158FaD1169e76d1FbC38247f54b#writeContract"
+  rbs-discord-alerts:discordRoleIdCore: "1042353289477500950"
+  rbs-discord-alerts:discordRoleIdCouncil: "1042351048569921547"
+  rbs-discord-alerts:discordWebhookAlert:
+    secure: AAABAFgTLEBnv7xezNMjZXzoKABm6REAV/QgcmPBBmVVEN1dntRQHh35fCr+OXQFa5aT8j1LgBVcADwC3J1e8AnhtEms53oHmCf7qqjJ86GlQNqthafYimOvh+8Gxabtf3Ad7+JKRPKaSRclqSG9YzBYUhzdv42E7p90h7hjDvs7ouiCCoFRFsxcIJzih7JR7PJNONZmp1T8
+  rbs-discord-alerts:discordWebhookEmergency:
+    secure: AAABAMZhqhAo29/Ji13kJFRgG7aX4oz98EgQkYLFHbaBSXgqi9Xxqt4pXiZayIUJjjQLr1wJVrHCJNnJ7acqW/H1RdAA8jD3Y6MCtS07ofymW5CTC2W3jSpN979F25/wgwNvkUpCvW3kncckQEaMaA7/lsJfwN45ruoi2dcdYzplZlacheGOID1eEd+YpQrapaQWWv4XufMU
+  rbs-discord-alerts:notificationEmail:
+    secure: AAABAO3uCMYPWTlhKAmJB2FbG+XVRx4hR+tV0qy8adbGZCwfON1vxjIb6s/c7hd43A==
+  rbs-discord-alerts:notificationEmailDiscord:
+    secure: AAABAP/mqrnMcj5oirqrLQoRpWt+e187ZQ0kmccxZnZjFcgDoumRZMUqOH4Du7qta1E6kXRC1C3mMfMCrQEXuwvddRQ20GrSf8r3sxOY8qrZNw==

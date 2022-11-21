@@ -1,0 +1,10 @@
+query LatestPriceSnapshot {
+  priceSnapshots(orderBy: block, orderDirection: desc, first: 1) {
+    id
+    block
+    date
+    timestamp
+    priceGOhm
+    priceOhm
+  }
+}

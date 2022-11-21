@@ -1,11 +1,11 @@
 import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
-import * as dotenv from "dotenv";
 
-import { handler } from "./src/handler";
+import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
+import { performEventChecks } from "./src/handlePriceEvents";
+import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 
-// Read from .env
-dotenv.config();
+const pulumiConfig = new pulumi.Config();
 
 if (!gcp.config.project) {
   throw new Error("Set the project for the pulumi gcp provider");
@@ -15,78 +15,119 @@ if (!gcp.config.region) {
   throw new Error("Set the region for the pulumi gcp provider");
 }
 
-/**
- * Something is wonky with requireSecret, so the secrets are
- * passed in as environment variables.
- *
- * See: https://github.com/pulumi/pulumi/issues/11257
- */
-const WEBHOOK_URL = process.env.WEBHOOK_URL;
-if (!WEBHOOK_URL) {
-  throw new Error("Set the WEBHOOK_URL environment variable");
-}
+const CONFIG_DISCORD_ROLE_COUNCIL = "discordRoleIdCouncil";
+const CONFIG_DISCORD_ROLE_CORE = "discordRoleIdCore";
+const CONFIG_CONTRACT = "contractUrl";
+const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
+const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
+const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
+const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 
-const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL;
-if (!NOTIFICATION_EMAIL) {
-  throw new Error("Set the NOTIFICATION_EMAIL environment variable");
-}
-
-const NOTIFICATION_EMAIL_DISCORD = process.env.NOTIFICATION_EMAIL_DISCORD;
-if (!NOTIFICATION_EMAIL_DISCORD) {
-  throw new Error("Set the NOTIFICATION_EMAIL_DISCORD environment variable");
-}
-
-const FUNCTION_NAME = "rbs-discord-alerts";
-const FUNCTION_NAME_STACK = `${FUNCTION_NAME}-${pulumi.getStack()}`;
+const PROJECT_NAME = `${gcp.config.project}`;
+const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
 
 // Create the KV store
-const datastore = new gcp.firestore.Document(FUNCTION_NAME_STACK, {
+const FIRESTORE_DOCUMENT_STACK = PROJECT_NAME_STACK;
+const datastore = new gcp.firestore.Document(FIRESTORE_DOCUMENT_STACK, {
   collection: "default",
-  documentId: FUNCTION_NAME_STACK,
+  documentId: FIRESTORE_DOCUMENT_STACK,
   fields: "",
 });
 
 export const datastoreId = datastore.id;
 
-/**
- * Execution: Google Cloud Functions
- */
 const FUNCTION_EXPIRATION_SECONDS = 30;
-const functionSubgraphCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_NAME_STACK, {
+
+// Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
+// Also use `require` instead of `requireSecret`, as requireSecret won't work
+const webhookAlert = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
+const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
+
+/**
+ * Price Events
+ */
+const FUNCTION_PRICE_EVENTS = "rbs-price-events";
+const FUNCTION_PRICE_EVENTS_STACK = `${FUNCTION_PRICE_EVENTS}-${pulumi.getStack()}`;
+
+const functionPriceEvents = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_PRICE_EVENTS_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
   availableMemoryMb: 128,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await handler(datastore.documentId.get(), datastore.collection.get(), WEBHOOK_URL);
+    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert, webhookEmergency);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
 });
 
-export const functionSubgraphCheckName = functionSubgraphCheck.function.name;
-export const functionSubgraphCheckUrl = functionSubgraphCheck.httpsTriggerUrl;
+export const functionPriceEventsName = functionPriceEvents.function.name;
+export const functionPriceEventsUrl = functionPriceEvents.httpsTriggerUrl;
 
-/**
- * Scheduling: Cloud Scheduler
- */
-const schedulerJob = new gcp.cloudscheduler.Job(
-  FUNCTION_NAME_STACK,
+// Scheduling
+const schedulerJobPriceEvents = new gcp.cloudscheduler.Job(
+  FUNCTION_PRICE_EVENTS_STACK,
   {
     schedule: "* * * * *", // Every minute
     timeZone: "UTC",
     httpTarget: {
       httpMethod: "GET",
-      uri: functionSubgraphCheckUrl,
+      uri: functionPriceEventsUrl,
     },
   },
   {
-    dependsOn: [functionSubgraphCheck],
+    dependsOn: [functionPriceEvents],
   },
 );
 
-export const schedulerJobName = schedulerJob.name;
+export const schedulerJobPriceEventsName = schedulerJobPriceEvents.name;
+
+/**
+ * RBS Snapshot Checks
+ */
+const FUNCTION_SNAPSHOT_CHECK = "rbs-snapshot-check";
+const FUNCTION_SNAPSHOT_CHECK_STACK = `${FUNCTION_SNAPSHOT_CHECK}-${pulumi.getStack()}`;
+
+const functionSnapshotCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_SNAPSHOT_CHECK_STACK, {
+  runtime: "nodejs14",
+  timeout: FUNCTION_EXPIRATION_SECONDS,
+  availableMemoryMb: 128,
+  callback: async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performSnapshotChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      [pulumiConfig.require(CONFIG_DISCORD_ROLE_COUNCIL), pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
+      webhookEmergency,
+      pulumiConfig.get(CONFIG_CONTRACT),
+    );
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+});
+
+export const functionSnapshotCheckName = functionSnapshotCheck.function.name;
+export const functionSnapshotCheckUrl = functionSnapshotCheck.httpsTriggerUrl;
+
+// Scheduling
+const schedulerJobSnapshotCheck = new gcp.cloudscheduler.Job(
+  FUNCTION_SNAPSHOT_CHECK_STACK,
+  {
+    schedule: "* * * * *", // Every minute (the minimum)
+    timeZone: "UTC",
+    httpTarget: {
+      httpMethod: "GET",
+      uri: functionSnapshotCheckUrl,
+    },
+  },
+  {
+    dependsOn: [functionSnapshotCheck],
+  },
+);
+
+export const schedulerJobSnapshotCheckName = schedulerJobSnapshotCheck.name;
 
 /**
  * Create Alert Policies
@@ -96,7 +137,7 @@ const notificationEmail = new gcp.monitoring.NotificationChannel("email", {
   displayName: "Email",
   type: "email",
   labels: {
-    email_address: NOTIFICATION_EMAIL,
+    email_address: pulumiConfig.requireSecret(SECRET_NOTIFICATION_EMAIL),
   },
 });
 export const notificationEmailId = notificationEmail.id;
@@ -106,79 +147,33 @@ const notificationDiscord = new gcp.monitoring.NotificationChannel("discord", {
   displayName: "discord",
   type: "email",
   labels: {
-    email_address: NOTIFICATION_EMAIL_DISCORD,
+    email_address: pulumiConfig.requireSecret(SECRET_NOTIFICATION_EMAIL_DISCORD),
   },
 });
 export const notificationDiscordId = notificationDiscord.id;
 
-// Alert when functions crash
-const ALERT_POLICY_FUNCTION_ERROR = `${FUNCTION_NAME}-function-error`;
-const ALERT_POLICY_FUNCTION_ERROR_WINDOW_SECONDS = 5 * 60;
-new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_ERROR, {
-  displayName: ALERT_POLICY_FUNCTION_ERROR,
-  conditions: [
-    {
-      displayName: "Function Status Not OK",
-      conditionThreshold: {
-        filter: pulumi.interpolate`resource.type = "cloud_function" AND resource.labels.function_name = "${functionSubgraphCheckName}" AND metric.type = "cloudfunctions.googleapis.com/function/execution_count" AND metric.labels.status != "ok"`,
-        aggregations: [
-          {
-            alignmentPeriod: `${ALERT_POLICY_FUNCTION_ERROR_WINDOW_SECONDS}s`,
-            crossSeriesReducer: "REDUCE_NONE",
-            perSeriesAligner: "ALIGN_SUM",
-          },
-        ],
-        comparison: "COMPARISON_GT",
-        duration: "0s",
-        trigger: {
-          count: 1,
-        },
-      },
-    },
-  ],
-  alertStrategy: {
-    autoClose: "604800s",
-  },
-  combiner: "OR",
-  enabled: true,
-  notificationChannels: [notificationEmailId, notificationDiscordId],
-});
+createAlertFunctionError(FUNCTION_PRICE_EVENTS_STACK, functionPriceEventsName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
 
-// Alert when there are more executions than expected (1 every minute)
-const ALERT_POLICY_FUNCTION_EXECUTIONS = `${FUNCTION_NAME}-function-executions`;
-const ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS = 5 * 60;
-new gcp.monitoring.AlertPolicy(ALERT_POLICY_FUNCTION_EXECUTIONS, {
-  displayName: ALERT_POLICY_FUNCTION_EXECUTIONS,
-  conditions: [
-    {
-      displayName: `Function Executions > 5 / ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes`,
-      conditionThreshold: {
-        filter: pulumi.interpolate`resource.type = "cloud_function" AND resource.labels.function_name = "${functionSubgraphCheckName}" AND metric.type = "cloudfunctions.googleapis.com/function/execution_count"`,
-        aggregations: [
-          {
-            alignmentPeriod: `${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s`,
-            crossSeriesReducer: "REDUCE_NONE",
-            perSeriesAligner: "ALIGN_SUM",
-          },
-        ],
-        comparison: "COMPARISON_GT",
-        duration: "0s",
-        trigger: {
-          count: 1,
-        },
-        thresholdValue: 10, // > 10 per 5 minutes (higher than expected) will trigger an alert
-      },
-    },
-  ],
-  alertStrategy: {
-    autoClose: "604800s",
-  },
-  combiner: "OR",
-  enabled: true,
-  notificationChannels: [notificationEmailId, notificationDiscordId],
-});
+createAlertFunctionExecutions(FUNCTION_PRICE_EVENTS_STACK, functionPriceEventsName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
 
-const ALERT_POLICY_FIRESTORE_QUERIES = `${FUNCTION_NAME}-firestore-queries`;
+createAlertFunctionError(FUNCTION_SNAPSHOT_CHECK_STACK, functionSnapshotCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_SNAPSHOT_CHECK_STACK, functionSnapshotCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+// One alert for all functions (as it can't be filtered further)
+const ALERT_POLICY_FIRESTORE_QUERIES = `${PROJECT_NAME_STACK}-firestore-queries`;
 const ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS = 5 * 60;
 new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
   displayName: ALERT_POLICY_FIRESTORE_QUERIES,
@@ -233,7 +228,8 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
 /**
  * Create a dashboard for monitoring activity
  */
-const DASHBOARD_NAME = `${FUNCTION_NAME_STACK}`;
+const DASHBOARD_NAME = PROJECT_NAME_STACK;
+const DASHBOARD_WINDOW_SECONDS = 5 * 60;
 new gcp.monitoring.Dashboard(
   DASHBOARD_NAME,
   {
@@ -247,28 +243,28 @@ new gcp.monitoring.Dashboard(
             {
               "height": 4,
               "widget": {
-                "title": "Function Executions per ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes",
+                "title": "${FUNCTION_PRICE_EVENTS} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
                 "xyChart": {
                   "chartOptions": {
                     "mode": "COLOR"
                   },
                   "dataSets": [
                     {
-                      "minAlignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
                       "plotType": "STACKED_AREA",
                       "targetAxis": "Y1",
                       "timeSeriesQuery": {
                         "apiSource": "DEFAULT_CLOUD",
                         "timeSeriesFilter": {
                           "aggregation": {
-                            "alignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
                             "crossSeriesReducer": "REDUCE_SUM",
                             "groupByFields": [
                               "metric.label.status"
                             ],
                             "perSeriesAligner": "ALIGN_SUM"
                           },
-                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionSubgraphCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionPriceEventsName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
                         }
                       }
                     }
@@ -288,21 +284,62 @@ new gcp.monitoring.Dashboard(
             {
               "height": 4,
               "widget": {
-                "title": "Document Reads per ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes",
+                "title": "${FUNCTION_SNAPSHOT_CHECK} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
                 "xyChart": {
                   "chartOptions": {
                     "mode": "COLOR"
                   },
                   "dataSets": [
                     {
-                      "minAlignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
                       "plotType": "STACKED_AREA",
                       "targetAxis": "Y1",
                       "timeSeriesQuery": {
                         "apiSource": "DEFAULT_CLOUD",
                         "timeSeriesFilter": {
                           "aggregation": {
-                            "alignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionSnapshotCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 6,
+              "yPos": 0
+            },
+            {
+              "height": 4,
+              "widget": {
+                "title": "Document Reads per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
                             "crossSeriesReducer": "REDUCE_SUM",
                             "groupByFields": [
                               "metric.label.status"
@@ -325,27 +362,27 @@ new gcp.monitoring.Dashboard(
                 }
               },
               "width": 6,
-              "xPos": 6,
-              "yPos": 0
+              "xPos": 0,
+              "yPos": 4
             },
             {
               "height": 4,
               "widget": {
-                "title": "Document Writes per ${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS / 60} minutes",
+                "title": "Document Writes per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
                 "xyChart": {
                   "chartOptions": {
                     "mode": "COLOR"
                   },
                   "dataSets": [
                     {
-                      "minAlignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
                       "plotType": "STACKED_AREA",
                       "targetAxis": "Y1",
                       "timeSeriesQuery": {
                         "apiSource": "DEFAULT_CLOUD",
                         "timeSeriesFilter": {
                           "aggregation": {
-                            "alignmentPeriod": "${ALERT_POLICY_FUNCTION_EXECUTIONS_WINDOW_SECONDS}s",
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
                             "crossSeriesReducer": "REDUCE_SUM",
                             "groupByFields": [
                               "metric.label.status"
@@ -368,13 +405,13 @@ new gcp.monitoring.Dashboard(
                 }
               },
               "width": 6,
-              "xPos": 0,
+              "xPos": 6,
               "yPos": 4
             }
           ]
         }
       }`,
   },
-  { dependsOn: [functionSubgraphCheck] },
+  { dependsOn: [functionPriceEvents, functionSnapshotCheck] },
 );
 export const dashboardName = DASHBOARD_NAME;

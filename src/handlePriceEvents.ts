@@ -2,19 +2,32 @@ import { Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
+import { RBS_SUBGRAPH_URL } from "./constants";
 import { sendAlert } from "./discord";
-import { PriceEvent, RbsPriceEventsDocument } from "./graphql/generated";
+import { PriceEvent, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
-const FIELD_LATEST_BLOCK = "latestBlock";
-const SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/rbs";
+const FIELD_LATEST_BLOCK = "events.latestBlock";
 
-export const handler = async (
+/**
+ * Performs checks against PriceEvents
+ *
+ * This currently:
+ * - Broadcasts into Discord any PriceEvents that are emitted from the RBS contracts.
+ *
+ * @param firestoreDocumentPath
+ * @param firestoreCollectionName
+ * @param alertWebhookUrl
+ * @param emergencyWebhookUrl
+ * @returns
+ */
+export const performEventChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
-  webhookUrl: string,
+  alertWebhookUrl: string,
+  emergencyWebhookUrl: string,
 ): Promise<void> => {
   // Get last processed block
   const firestoreClient = new Firestore();
@@ -25,7 +38,7 @@ export const handler = async (
 
   // Fetch events since the last processed block
   const client = new Client({
-    url: SUBGRAPH_URL,
+    url: RBS_SUBGRAPH_URL,
     fetch,
   });
   const queryResults = await client
@@ -50,7 +63,7 @@ export const handler = async (
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
-    await sendAlert(webhookUrl, `🚨 RBS Price Event`, ``, [
+    await sendAlert(alertWebhookUrl, "", `🚨 RBS Price Event`, ``, [
       // Row 1
       {
         name: "Date",
@@ -66,30 +79,36 @@ export const handler = async (
         )})`,
         inline: true,
       },
+      // Row 2
+      {
+        name: "Event",
+        value: priceEvent.type,
+        inline: false,
+      },
       // Current price
       {
         name: "Current",
-        value: formatCurrency(priceEvent.price),
+        value: formatCurrency(priceEvent.snapshot.ohmPrice),
         inline: false,
       },
       // High
       {
         name: "High",
-        value: `Wall: ${formatCurrency(priceEvent.wallHighPrice)}\nCushion: ${formatCurrency(
-          priceEvent.cushionHighPrice,
+        value: `Wall: ${formatCurrency(priceEvent.snapshot.highWallPrice)}\nCushion: ${formatCurrency(
+          priceEvent.snapshot.highCushionPrice,
         )}`,
       },
       // Moving average
       {
         name: "Moving Average",
-        value: formatCurrency(priceEvent.priceMovingAverage),
+        value: formatCurrency(priceEvent.snapshot.ohmMovingAveragePrice),
         inline: false,
       },
       // Low
       {
         name: "Low",
-        value: `Cushion: ${formatCurrency(priceEvent.cushionLowPrice)}\nWall: ${formatCurrency(
-          priceEvent.wallLowPrice,
+        value: `Cushion: ${formatCurrency(priceEvent.snapshot.lowCushionPrice)}\nWall: ${formatCurrency(
+          priceEvent.snapshot.lowWallPrice,
         )}`,
       },
     ]);
@@ -104,5 +123,9 @@ export const handler = async (
 
 // Running via CLI
 if (require.main === module) {
-  handler("rbs-discord-alerts-dev", "default", "dummyUrl");
+  if (!process.env.WEBHOOK_URL) {
+    throw new Error("Set the WEBHOOK_URL environment variable");
+  }
+
+  performEventChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL, process.env.WEBHOOK_URL);
 }

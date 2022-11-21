@@ -34,8 +34,14 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
     },
   });
 
+  console.debug(`Discord response status: ${response.status}`);
+  // Ignore rate-limiting
+  if (response.status == 429) {
+    return;
+  }
+
   if (!response.ok) {
-    throw new Error(`Encountered error with Discord webhook: ${response.text()}`);
+    throw new Error(`Encountered error with Discord webhook: ${await response.text()}`);
   }
 };
 
@@ -44,8 +50,23 @@ export const BLANK_EMBED_FIELD = {
   value: "\u200B",
 };
 
+/**
+ * Sends an alert using a Discord webhook.
+ *
+ * Mentions are not parsed within embeds, so any role/user mentions should be contained
+ * within the `content` parameter.
+ *
+ * @param webhook
+ * @param content
+ * @param title
+ * @param description
+ * @param fields
+ * @param footer
+ * @param timestamp
+ */
 export const sendAlert = async (
   webhook: string,
+  content: string,
   title: string,
   description: string,
   fields: EmbedField[],
@@ -53,7 +74,7 @@ export const sendAlert = async (
   timestamp?: string,
 ): Promise<void> => {
   await executeWebhook(webhook, {
-    content: "",
+    content: content,
     embeds: [
       {
         title: title,
@@ -75,4 +96,27 @@ export const sortPriceEmbeds = (fields: EmbedField[], ascending = true): EmbedFi
 
     return ascending ? aValue - bValue : bValue - aValue;
   });
+};
+
+export const getRoleMention = (role: string): string => {
+  return `<@&${role}>`;
+};
+
+/**
+ * Generates Discord role mentions in the correct syntax.
+ *
+ * Passing in an array with two role IDs will result in:
+ * "<@&1111> <@&2222>"
+ *
+ * @param roles
+ * @returns
+ */
+export const getRoleMentions = (roles: string[]): string => {
+  if (roles.length === 0) {
+    return "";
+  }
+
+  return roles.reduce((previousValue, currentValue) => {
+    return `${previousValue} ${getRoleMention(currentValue)}`;
+  }, "");
 };
