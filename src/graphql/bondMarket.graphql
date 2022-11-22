@@ -8,8 +8,7 @@ query MarketCreatedEvents($sinceBlock: BigInt!) {
     market {
       bondContract
       bondType
-      capacity
-      capacityInQuote
+      capacityInQuoteToken
       closedBlock
       closedDate
       closedTimestamp
@@ -17,12 +16,13 @@ query MarketCreatedEvents($sinceBlock: BigInt!) {
       createdDate
       createdTimestamp
       id
-      initialPrice
-      maxPayout
-      minPrice
+      initialPriceInPayoutToken
+      maxPayoutInQuoteToken
+      minPriceInPayoutToken
+      owner
       payoutToken
       quoteToken
-      totalDebt
+      totalDebtInQuoteToken
       vesting
     }
   }
@@ -38,8 +38,7 @@ query MarketClosedEvents($sinceBlock: BigInt!) {
     market {
       bondContract
       bondType
-      capacity
-      capacityInQuote
+      capacityInQuoteToken
       closedBlock
       closedDate
       closedTimestamp
@@ -47,12 +46,13 @@ query MarketClosedEvents($sinceBlock: BigInt!) {
       createdDate
       createdTimestamp
       id
-      initialPrice
-      maxPayout
-      minPrice
+      initialPriceInPayoutToken
+      maxPayoutInQuoteToken
+      minPriceInPayoutToken
+      owner
       payoutToken
       quoteToken
-      totalDebt
+      totalDebtInQuoteToken
       vesting
     }
   }
