@@ -77,6 +77,16 @@ const checkCushionUp = (
   // The marketId is unique, so we are guaranteed that there is only one result
   const createdMarket = createdMarkets[0];
 
+/**
+ * High cushion: quote token DAI, payout token OHM
+ * 
+ * Low cushion: quote token OHM, payout token DAI
+ * 
+ * Price is always in quote token / payout token
+ * 
+ * In subgraph: may need to take inverse to get low cushion in DAI
+ */
+
   // Check that the initial price is on the correct side of the cushion
   if (priceEvent.isHigh) {
     // When high, the initial price should be higher than the cushion price
@@ -88,6 +98,8 @@ const checkCushionUp = (
       );
     }
   } else {
+// no buffer needed
+    
     // When low, the initial price should be lower than the cushion price
     if (createdMarket.market.initialPrice > rangeSnapshot.lowCushionPrice) {
       errors.push(
@@ -98,8 +110,14 @@ const checkCushionUp = (
     }
   }
 
+  // check that initial price = ohmPrice (chainlink)
+
+  // check that market owner is operator? or that market id is set
+
   // Check the tokens
   if (priceEvent.isHigh) {
+    // check that quote token is DAI
+
     // Market in the high cushion should pay out in OHM
     if (createdMarket.market.payoutToken.toString().toLowerCase() !== ERC20_OHM_V2) {
       errors.push(
@@ -109,6 +127,8 @@ const checkCushionUp = (
       );
     }
   } else {
+    // check that quote token is OHM
+
     // Market in the low cushion should pay out in DAI
     if (createdMarket.market.payoutToken.toString().toLowerCase() !== ERC20_DAI) {
       errors.push(
@@ -120,6 +140,10 @@ const checkCushionUp = (
   }
 
   // TODO Check the capacity
+
+  /**
+   * bond market capacity = cushion factor * highCapacityOhm or lowCapacityReserve
+   */
 
   return errors;
 };
@@ -159,7 +183,8 @@ const checkCushionDown = (
     );
   }
 
-  // TODO Check that the capacity is exhausted
+  // bond market can shut down due to capacity exhausted, time duration elapsed or max debt circuit breaker
+  // inform if capacity is not exhausted and time duration has not elapsed
 
   return errors;
 };
@@ -245,8 +270,14 @@ export const checkBondMarkets = async (
     );
 
     // Market created when it shouldn't be
+    // no cushionUp, but market created
+    // will also not have operator address as owner
+
     // Market closed when it shouldn't be
+
+    // Send Discord alerts (shift up into cushionup etc)
   });
 
-  // Send Discord alerts
+
+  // Update latest block
 };
