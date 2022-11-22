@@ -164,6 +164,7 @@ const checkCushionUp = (
 
   if (rangeSnapshot.operatorCushionFactor) {
     // bond market capacity = cushion factor * highCapacityOhm or lowCapacityReserve
+    // TODO units should be consistent
     const expectedCapacity = formatNumber(
       rangeSnapshot.operatorCushionFactor *
         (priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve),
