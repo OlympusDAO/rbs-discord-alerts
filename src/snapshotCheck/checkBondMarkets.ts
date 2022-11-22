@@ -200,9 +200,7 @@ const checkCushionDown = (
   // Check that a market created event was fired
   const closedMarkets = filterClosedEvents(marketClosedEvents, rangeSnapshot.block, marketId);
   if (!closedMarkets.length) {
-    errors.push(
-      `Expected to find a MarketClosedEvent with id (${marketId}) for a CushionDown event, but it was missing.`,
-    );
+    errors.push(`Expected to find a MarketClosedEvent for a CushionDown event, but it was missing.`);
     return errors; // Can't proceed
   }
 
@@ -215,7 +213,52 @@ const checkCushionDown = (
   }
 
   // bond market can shut down due to capacity exhausted, time duration elapsed or max debt circuit breaker
-  // inform if capacity is not exhausted and time duration has not elapsed
+  // TODO inform if capacity is not exhausted and time duration has not elapsed
+
+  return errors;
+};
+
+const checkMarketCreated = (
+  event: MarketCreatedEvent,
+  _rangeSnapshot: RangeSnapshot,
+  cushionUpEvents: PriceEvent[],
+): string[] => {
+  const errors: string[] = [];
+  const matchingCushionUpEvents = cushionUpEvents.filter(
+    priceEvent =>
+      event.marketId == (priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
+  );
+
+  // The owner should be the operator contract
+  if (!isBytesEqual(event.market.owner, OPERATOR_CONTRACT)) {
+    errors.push(
+      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${OPERATOR_CONTRACT}`,
+    );
+  }
+
+  // If a market is created, but there was no CushionUp, it may have been created outside of RBS
+  if (matchingCushionUpEvents.length == 0) {
+    errors.push(`Market was created, but there was no corresponding RBS CushionUp event`);
+  }
+
+  return errors;
+};
+
+const checkMarketClosed = (
+  event: MarketClosedEvent,
+  _rangeSnapshot: RangeSnapshot,
+  cushionDownEvents: PriceEvent[],
+): string[] => {
+  const errors: string[] = [];
+  const matchingCushionDownEvents = cushionDownEvents.filter(
+    priceEvent =>
+      event.marketId == (priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
+  );
+
+  // If a market is closed, but there was no CushionUp, it may have been closed outside of RBS
+  if (matchingCushionDownEvents.length == 0) {
+    errors.push(`Market was closed, but there was no corresponding RBS CushionDown event`);
+  }
 
   return errors;
 };
@@ -259,7 +302,7 @@ export const checkBondMarkets = async (
   }
   const priceEvents = priceEventResults.data.priceEvents;
 
-  // Fetch markets created
+  // Fetch markets created (restricted to OHM)
   const marketsCreatedResults = await bondsClient
     .query(MarketCreatedEventsDocument, {
       sinceBlock: latestBlock,
@@ -272,7 +315,7 @@ export const checkBondMarkets = async (
   }
   const marketCreatedEvents = marketsCreatedResults.data.marketCreatedEvents;
 
-  // Fetch markets closed
+  // Fetch markets closed (restricted to OHM)
   const marketsClosedResults = await bondsClient
     .query(MarketClosedEventsDocument, {
       sinceBlock: latestBlock,
@@ -321,14 +364,37 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    // Market created when it shouldn't be
-    // no cushionUp, but market created
-    // will also not have operator address as owner
+    const marketCreatedEventsAtBlock = filterCreatedEvents(marketCreatedEvents, rangeSnapshot.block);
+    marketCreatedEventsAtBlock.forEach(marketEvent => {
+      const errors = checkMarketCreated(marketEvent, rangeSnapshot, cushionUpEventsAtBlock);
+      if (errors.length == 0) return;
 
-    // Market closed when it shouldn't be
+      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CreatedMarket Discrepancies`, toUnorderedList(errors), [
+        {
+          name: "Market ID",
+          value: `${marketEvent.marketId}`,
+        },
+        { name: "Block", value: `${marketEvent.block}` },
+      ]);
+    });
 
-    // Send Discord alerts (shift up into cushionup etc)
+    const marketClosedEventsAtBlock = filterClosedEvents(marketClosedEvents, rangeSnapshot.block);
+    marketClosedEventsAtBlock.forEach(marketEvent => {
+      const errors = checkMarketClosed(marketEvent, rangeSnapshot, cushionDownEventsAtBlock);
+      if (errors.length == 0) return;
+
+      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 ClosedMarket Discrepancies`, toUnorderedList(errors), [
+        {
+          name: "Market ID",
+          value: `${marketEvent.marketId}`,
+        },
+        { name: "Block", value: `${marketEvent.block}` },
+      ]);
+    });
   });
 
   // Update latest block
+  await firestore.update({
+    [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: latestBlock,
+  });
 };
