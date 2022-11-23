@@ -464,6 +464,7 @@ export type Market = {
   createdTimestamp: Scalars["BigInt"];
   id: Scalars["ID"];
   initialPriceInQuoteToken: Scalars["BigDecimal"];
+  marketId: Scalars["BigInt"];
   maxPayoutInPayoutToken: Scalars["BigDecimal"];
   minPriceInQuoteToken: Scalars["BigDecimal"];
   owner: Scalars["Bytes"];
@@ -476,6 +477,8 @@ export type Market = {
 export type MarketClosedEvent = {
   __typename?: "MarketClosedEvent";
   block: Scalars["BigInt"];
+  bondContract: Scalars["Bytes"];
+  bondType: BondType;
   date: Scalars["String"];
   id: Scalars["ID"];
   market: Market;
@@ -494,6 +497,16 @@ export type MarketClosedEvent_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  bondContract?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_contains?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  bondContract_not?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  bondType?: InputMaybe<BondType>;
+  bondType_in?: InputMaybe<Array<BondType>>;
+  bondType_not?: InputMaybe<BondType>;
+  bondType_not_in?: InputMaybe<Array<BondType>>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -563,6 +576,8 @@ export type MarketClosedEvent_Filter = {
 
 export enum MarketClosedEvent_OrderBy {
   Block = "block",
+  BondContract = "bondContract",
+  BondType = "bondType",
   Date = "date",
   Id = "id",
   Market = "market",
@@ -573,6 +588,8 @@ export enum MarketClosedEvent_OrderBy {
 export type MarketCreatedEvent = {
   __typename?: "MarketCreatedEvent";
   block: Scalars["BigInt"];
+  bondContract: Scalars["Bytes"];
+  bondType: BondType;
   date: Scalars["String"];
   id: Scalars["ID"];
   market: Market;
@@ -591,6 +608,16 @@ export type MarketCreatedEvent_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  bondContract?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_contains?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  bondContract_not?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  bondContract_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  bondType?: InputMaybe<BondType>;
+  bondType_in?: InputMaybe<Array<BondType>>;
+  bondType_not?: InputMaybe<BondType>;
+  bondType_not_in?: InputMaybe<Array<BondType>>;
   date?: InputMaybe<Scalars["String"]>;
   date_contains?: InputMaybe<Scalars["String"]>;
   date_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -660,6 +687,8 @@ export type MarketCreatedEvent_Filter = {
 
 export enum MarketCreatedEvent_OrderBy {
   Block = "block",
+  BondContract = "bondContract",
+  BondType = "bondType",
   Date = "date",
   Id = "id",
   Market = "market",
@@ -776,6 +805,14 @@ export type Market_Filter = {
   initialPriceInQuoteToken_lte?: InputMaybe<Scalars["BigDecimal"]>;
   initialPriceInQuoteToken_not?: InputMaybe<Scalars["BigDecimal"]>;
   initialPriceInQuoteToken_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  marketId?: InputMaybe<Scalars["BigInt"]>;
+  marketId_gt?: InputMaybe<Scalars["BigInt"]>;
+  marketId_gte?: InputMaybe<Scalars["BigInt"]>;
+  marketId_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  marketId_lt?: InputMaybe<Scalars["BigInt"]>;
+  marketId_lte?: InputMaybe<Scalars["BigInt"]>;
+  marketId_not?: InputMaybe<Scalars["BigInt"]>;
+  marketId_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   maxPayoutInPayoutToken?: InputMaybe<Scalars["BigDecimal"]>;
   maxPayoutInPayoutToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
   maxPayoutInPayoutToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -840,6 +877,7 @@ export enum Market_OrderBy {
   CreatedTimestamp = "createdTimestamp",
   Id = "id",
   InitialPriceInQuoteToken = "initialPriceInQuoteToken",
+  MarketId = "marketId",
   MaxPayoutInPayoutToken = "maxPayoutInPayoutToken",
   MinPriceInQuoteToken = "minPriceInQuoteToken",
   Owner = "owner",
@@ -1195,6 +1233,7 @@ export type MarketCreatedEventsQuery = {
       createdTimestamp: number;
       id: string;
       initialPriceInQuoteToken: number;
+      marketId: number;
       maxPayoutInPayoutToken: number;
       minPriceInQuoteToken: number;
       owner: Uint8Array;
@@ -1232,6 +1271,7 @@ export type MarketClosedEventsQuery = {
       createdTimestamp: number;
       id: string;
       initialPriceInQuoteToken: number;
+      marketId: number;
       maxPayoutInPayoutToken: number;
       minPriceInQuoteToken: number;
       owner: Uint8Array;
@@ -1315,6 +1355,7 @@ export const MarketCreatedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "createdTimestamp" } },
                       { kind: "Field", name: { kind: "Name", value: "id" } },
                       { kind: "Field", name: { kind: "Name", value: "initialPriceInQuoteToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "marketId" } },
                       { kind: "Field", name: { kind: "Name", value: "maxPayoutInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "minPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "owner" } },
@@ -1405,6 +1446,7 @@ export const MarketClosedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "createdTimestamp" } },
                       { kind: "Field", name: { kind: "Name", value: "id" } },
                       { kind: "Field", name: { kind: "Name", value: "initialPriceInQuoteToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "marketId" } },
                       { kind: "Field", name: { kind: "Name", value: "maxPayoutInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "minPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "owner" } },

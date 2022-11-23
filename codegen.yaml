@@ -1,6 +1,6 @@
 generates:
   src/graphql/bondMarket.ts:
-    schema: https://api.studio.thegraph.com/query/28103/bonds/0.0.24
+    schema: https://api.studio.thegraph.com/query/28103/bonds/0.0.27
     documents: "src/graphql/bondMarket.graphql"
     plugins:
       - typescript

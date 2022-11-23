@@ -17,6 +17,7 @@ query MarketCreatedEvents($sinceBlock: BigInt!) {
       createdTimestamp
       id
       initialPriceInQuoteToken
+      marketId
       maxPayoutInPayoutToken
       minPriceInQuoteToken
       owner
@@ -47,6 +48,7 @@ query MarketClosedEvents($sinceBlock: BigInt!) {
       createdTimestamp
       id
       initialPriceInQuoteToken
+      marketId
       maxPayoutInPayoutToken
       minPriceInQuoteToken
       owner
