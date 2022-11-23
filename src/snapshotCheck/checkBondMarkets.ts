@@ -1,5 +1,6 @@
 import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
+import fetch from "cross-fetch";
 
 import { BONDS_SUBGRAPH_URL, ERC20_DAI, ERC20_OHM_V2, OPERATOR_CONTRACT, RBS_SUBGRAPH_URL } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
@@ -51,6 +52,11 @@ const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId
   return filteredByBlock.filter(createdEvent => createdEvent.marketId == marketId);
 };
 
+const pushError = (error: string, errors: string[]): void => {
+  console.error(error);
+  errors.push(error);
+};
+
 const checkCushionUp = (
   priceEvent: PriceEvent,
   rangeSnapshot: RangeSnapshot,
@@ -58,24 +64,33 @@ const checkCushionUp = (
 ): string[] => {
   const errors: string[] = [];
   const marketId = priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId;
+  console.info(`\n\nCommencing CushionUp check`);
 
   // Check that the PriceEvent has a marketId set
   if (!marketId) {
-    errors.push(`Expected to find a market id for a CushionUp event, but it was missing on the RangeSnapshot`);
+    pushError(`Expected to find a market id for a CushionUp event, but it was missing on the RangeSnapshot`, errors);
     return errors; // Can't proceed
+  } else {
+    console.debug(`CushionUp event has a market id set: ${marketId}`);
   }
 
   // Check that a market created event was fired by the Bond Protocol contracts
   const createdMarkets = filterCreatedEvents(marketCreatedEvents, rangeSnapshot.block, marketId);
   if (!createdMarkets.length) {
-    errors.push(`Expected to find a MarketCreatedEvent with id (${marketId}) for a CushionUp, but it was missing.`);
+    pushError(
+      `Expected to find a MarketCreatedEvent with id (${marketId}) for a CushionUp, but it was missing.`,
+      errors,
+    );
     return errors; // Can't proceed
+  } else {
+    console.debug(`CushionUp event has a corresponding MarketCreatedEvent`);
   }
 
   // There should only be only event fired, but check anyway
   if (createdMarkets.length > 1) {
-    errors.push(
+    pushError(
       `Expected to find only 1 MarketCreatedEvent with id (${marketId}) for a CushionUp, but there were ${createdMarkets.length}.`,
+      errors,
     );
   }
 
@@ -84,9 +99,12 @@ const checkCushionUp = (
 
   // The owner should be the operator contract
   if (createdMarket.market.owner.toString().toLowerCase() !== OPERATOR_CONTRACT.toLowerCase()) {
-    errors.push(
+    pushError(
       `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${OPERATOR_CONTRACT}`,
+      errors,
     );
+  } else {
+    console.debug(`Market owner is correctly the Olympus operator contract`);
   }
 
   // In the high cushion, the quote token is DAI and the payout token is OHM. To get it into DAI (USD), we need to flip it.
@@ -98,67 +116,90 @@ const checkCushionUp = (
   if (priceEvent.isHigh) {
     // When high, the initial price should be higher than the cushion price
     if (initialPriceUsd < rangeSnapshot.highCushionPrice) {
-      errors.push(
+      pushError(
         `Expected the initial price of the market (${formatCurrency(
           initialPriceUsd,
         )}) to be > the upper cushion price (${formatCurrency(rangeSnapshot.highCushionPrice)})`,
+        errors,
       );
+    } else {
+      console.debug(`Upper market initial price is correctly > upper cushion price`);
     }
   } else {
     // When low, the initial price should be lower than the cushion price
     if (initialPriceUsd > rangeSnapshot.lowCushionPrice) {
-      errors.push(
+      pushError(
         `Expected the initial price of the market (${formatCurrency(
           initialPriceUsd,
         )}) to be < the lower cushion price (${formatCurrency(rangeSnapshot.lowCushionPrice)})`,
+        errors,
       );
+    } else {
+      console.debug(`Lower market initial price is correctly < lower cushion price`);
     }
   }
 
   // The price of OHM should be available
   const ohmPrice = rangeSnapshot.ohmPrice;
   if (!ohmPrice) {
-    errors.push(`Expected RangeSnapshot to have OHM price, but it was not set.`);
+    pushError(`Expected RangeSnapshot to have OHM price, but it was not set.`, errors);
+  } else {
+    console.debug(`OHM price is set`);
   }
 
   // The initial price for the market should be the same as the corresponding snapshot's OHM price (derived from Chainlink)
   if (ohmPrice && formatCurrency(initialPriceUsd, 2) !== formatCurrency(ohmPrice, 2)) {
-    errors.push(
+    pushError(
       `Expected the initial price of the created market (${formatCurrency(
         initialPriceUsd,
         2,
       )}) to match the price of OHM from Chainlink: ${formatCurrency(ohmPrice, 2)}`,
+      errors,
     );
+  } else {
+    console.debug(`Snapshot OHM price and initial price match`);
   }
 
   // Check the tokens
   if (priceEvent.isHigh) {
     // Market in the high cushion accepts DAI
     if (!isBytesEqual(createdMarket.market.quoteToken, ERC20_DAI)) {
-      errors.push(
+      pushError(
         `Expected quote token (${createdMarket.market.quoteToken.toString()}) of upper cushion market to be DAI (${ERC20_DAI})`,
+        errors,
       );
+    } else {
+      console.debug(`Upper market quote token is correctly DAI`);
     }
 
     // Market in the high cushion should pay out in OHM
     if (!isBytesEqual(createdMarket.market.payoutToken, ERC20_OHM_V2)) {
-      errors.push(
+      pushError(
         `Expected payout token (${createdMarket.market.payoutToken.toString()}) of upper cushion market to be OHM V2 (${ERC20_OHM_V2})`,
+        errors,
       );
+    } else {
+      console.debug(`Upper market payout token is correctly OHM`);
     }
   } else {
     // Market in the low cushion accepts OHM
     if (!isBytesEqual(createdMarket.market.quoteToken, ERC20_OHM_V2)) {
-      errors.push(
+      pushError(
         `Expected quote token (${createdMarket.market.quoteToken.toString()}) of lower cushion market to be OHM V2 (${ERC20_OHM_V2})`,
+        errors,
       );
+    } else {
+      console.debug(`Lower market quote token is correctly OHM`);
     }
 
     // Market in the low cushion should pay out in DAI
     if (!isBytesEqual(createdMarket.market.payoutToken, ERC20_DAI)) {
-      errors.push(
+      pushError(
         `Expected payout token (${createdMarket.market.payoutToken.toString()}) of lower cushion market to be DAI (${ERC20_DAI})`,
+        errors,
       );
+    } else {
+      console.debug(`Lower market payout token is correctly DAI`);
     }
   }
 
@@ -174,12 +215,15 @@ const checkCushionUp = (
     const actualCapacity = formatNumber(createdMarket.market.capacityInPayoutToken, CAPACITY_DECIMALS);
 
     if (expectedCapacity !== actualCapacity) {
-      errors.push(
+      pushError(
         `Expected market capacity (${actualCapacity} ${priceEvent.isHigh ? "OHM" : "DAI"}) to be: ${expectedCapacity}`,
+        errors,
       );
+    } else {
+      console.debug(`Market capacity is as expected`);
     }
   } else {
-    errors.push(`Expected the cushion factor to be set, but it wasn't`);
+    pushError(`Expected the cushion factor to be set, but it wasn't`, errors);
   }
 
   return errors;
@@ -192,18 +236,23 @@ const checkCushionDown = (
 ): string[] => {
   const errors: string[] = [];
   const marketId = priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId;
+  console.info(`\n\nCommencing CushionDown check`);
 
   // Check that the marketId is set
   if (!marketId) {
-    errors.push(`Expected to find a market id for a CushionDown event, but it was missing on the RangeSnapshot`);
+    pushError(`Expected to find a market id for a CushionDown event, but it was missing on the RangeSnapshot`, errors);
     return errors; // Can't proceed
+  } else {
+    console.debug(`Market id is set`);
   }
 
   // Check that a market created event was fired
   const closedMarkets = filterClosedEvents(marketClosedEvents, rangeSnapshot.block, marketId);
   if (!closedMarkets.length) {
-    errors.push(`Expected to find a MarketClosedEvent for a CushionDown event, but it was missing.`);
+    pushError(`Expected to find a MarketClosedEvent for a CushionDown event, but it was missing.`, errors);
     return errors; // Can't proceed
+  } else {
+    console.debug(`CushionDown event has a corresponding MarketClosedEvent`);
   }
 
   // The marketId is unique, so we are guaranteed that there is only one result
@@ -211,7 +260,9 @@ const checkCushionDown = (
 
   // Check that the market is actually closed
   if (!closedMarket.market.closedBlock) {
-    errors.push(`Expected market to be closed for a CushionDown event`);
+    pushError(`Expected market to be closed for a CushionDown event`, errors);
+  } else {
+    console.debug(`Market is correctly closed`);
   }
 
   // bond market can shut down due to capacity exhausted, time duration elapsed or max debt circuit breaker
@@ -226,6 +277,8 @@ const checkMarketCreated = (
   cushionUpEvents: PriceEvent[],
 ): string[] => {
   const errors: string[] = [];
+  console.info(`\n\nCommencing market created check`);
+
   const matchingCushionUpEvents = cushionUpEvents.filter(
     priceEvent =>
       event.marketId == (priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
@@ -233,14 +286,19 @@ const checkMarketCreated = (
 
   // The owner should be the operator contract
   if (!isBytesEqual(event.market.owner, OPERATOR_CONTRACT)) {
-    errors.push(
+    pushError(
       `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${OPERATOR_CONTRACT}`,
+      errors,
     );
+  } else {
+    console.debug(`Market owner is correctly the Olympus operator contract`);
   }
 
   // If a market is created, but there was no CushionUp, it may have been created outside of RBS
   if (matchingCushionUpEvents.length == 0) {
-    errors.push(`Market was created, but there was no corresponding RBS CushionUp event`);
+    pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
+  } else {
+    console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
   }
 
   return errors;
@@ -252,6 +310,8 @@ const checkMarketClosed = (
   cushionDownEvents: PriceEvent[],
 ): string[] => {
   const errors: string[] = [];
+  console.info(`\n\nCommencing market closed check`);
+
   const matchingCushionDownEvents = cushionDownEvents.filter(
     priceEvent =>
       event.marketId == (priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
@@ -259,7 +319,9 @@ const checkMarketClosed = (
 
   // If a market is closed, but there was no CushionUp, it may have been closed outside of RBS
   if (matchingCushionDownEvents.length == 0) {
-    errors.push(`Market was closed, but there was no corresponding RBS CushionDown event`);
+    pushError(`Market was closed, but there was no corresponding RBS CushionDown event`, errors);
+  } else {
+    console.debug(`MarketClosedEvent has a corresponding CushionDown event`);
   }
 
   return errors;
@@ -270,6 +332,8 @@ export const checkBondMarkets = async (
   mentionRoles: string[],
   webhookUrl: string,
 ): Promise<void> => {
+  console.info(`\n\n⏰ Checking Bond Market Parameters`);
+
   // Get the latest block
   const firestoreSnapshot = await firestore.get();
   const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
@@ -331,10 +395,13 @@ export const checkBondMarkets = async (
   }
   const marketClosedEvents = marketsClosedResults.data.marketClosedEvents;
 
+  // Ensure the snapshots are in ascending order
   const rangeSnapshotsAsc = rangeSnapshotResults.data.rangeSnapshots.slice().sort((a, b) => a.block - b.block);
 
   // Iterate over blocks and perform checks
   rangeSnapshotsAsc.forEach(rangeSnapshot => {
+    console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
+
     const cushionUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "CushionUp");
     cushionUpEventsAtBlock.forEach(priceEvent => {
       const errors = checkCushionUp(priceEvent, rangeSnapshot, marketCreatedEvents);
