@@ -407,7 +407,8 @@ export const checkBondMarkets = async (
   const marketClosedEvents = marketsClosedResults.data.marketClosedEvents;
 
   // Iterate over blocks and perform checks
-  rangeSnapshotResults.data.rangeSnapshots.forEach(rangeSnapshot => {
+  const rangeSnapshots: RangeSnapshot[] = rangeSnapshotResults.data.rangeSnapshots;
+  rangeSnapshots.forEach(rangeSnapshot => {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
 
     const cushionUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "CushionUp");
