@@ -273,6 +273,7 @@ export const checkBondMarkets = async (
   // Get the latest block
   const firestoreSnapshot = await firestore.get();
   const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
+  let updatedLatestBlock = latestBlock;
 
   // Fetch range snapshots
   const rangeSnapshotClient = new Client({
@@ -393,10 +394,12 @@ export const checkBondMarkets = async (
         { name: "Block", value: `${marketEvent.block}` },
       ]);
     });
+
+    updatedLatestBlock = rangeSnapshot.block;
   });
 
   // Update latest block
   await firestore.update({
-    [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: latestBlock,
+    [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
   });
 };
