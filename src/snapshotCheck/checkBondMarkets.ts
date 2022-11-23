@@ -91,8 +91,8 @@ const checkCushionUp = (
 
   // In the high cushion, the quote token is DAI and the payout token is OHM. To get it into DAI (USD), we need to flip it.
   const initialPriceUsd = priceEvent.isHigh
-    ? 1 / createdMarket.market.initialPriceInPayoutToken
-    : createdMarket.market.initialPriceInPayoutToken;
+    ? 1 / createdMarket.market.initialPriceInQuoteToken
+    : createdMarket.market.initialPriceInQuoteToken;
 
   // Check that the initial price is on the correct side of the cushion
   if (priceEvent.isHigh) {
@@ -163,14 +163,15 @@ const checkCushionUp = (
   }
 
   if (rangeSnapshot.operatorCushionFactor) {
+    const CAPACITY_DECIMALS = 9;
+
     // bond market capacity = cushion factor * highCapacityOhm or lowCapacityReserve
-    // TODO units should be consistent
     const expectedCapacity = formatNumber(
       rangeSnapshot.operatorCushionFactor *
         (priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve),
-      9,
+      CAPACITY_DECIMALS,
     );
-    const actualCapacity = formatNumber(createdMarket.market.capacityInQuoteToken, 9);
+    const actualCapacity = formatNumber(createdMarket.market.capacityInPayoutToken, CAPACITY_DECIMALS);
 
     if (expectedCapacity !== actualCapacity) {
       errors.push(
