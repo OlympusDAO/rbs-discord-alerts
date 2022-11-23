@@ -391,7 +391,7 @@ export const checkBondMarkets = async (
       `Did not receive results from MarketCreatedEvents GraphQL query. Error: ${marketsCreatedResults.error}`,
     );
   }
-  const marketCreatedEvents = marketsCreatedResults.data.marketCreatedEvents;
+  const marketCreatedEvents: MarketCreatedEvent[] = marketsCreatedResults.data.marketCreatedEvents;
 
   // Fetch markets closed (restricted to OHM)
   const marketsClosedResults = await bondsClient
@@ -404,7 +404,7 @@ export const checkBondMarkets = async (
       `Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`,
     );
   }
-  const marketClosedEvents = marketsClosedResults.data.marketClosedEvents;
+  const marketClosedEvents: MarketClosedEvent[] = marketsClosedResults.data.marketClosedEvents;
 
   // Iterate over blocks and perform checks
   const rangeSnapshots: RangeSnapshot[] = rangeSnapshotResults.data.rangeSnapshots;
