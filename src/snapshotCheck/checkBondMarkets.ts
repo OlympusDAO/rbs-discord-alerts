@@ -16,6 +16,7 @@ import {
   RangeSnapshotSinceBlockDocument,
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
+import { getEtherscanTransactionUrl } from "../helpers/contractHelper";
 import { formatCurrency, formatNumber } from "../helpers/numberHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 
@@ -238,25 +239,27 @@ const checkCushionUp = (
   return errors;
 };
 
+/**
+ * This assumes that {marketClosedEvents} is filtered to records for the same block.
+ *
+ * CushionDown events do not have the bond market id, and the id is removed from the range
+ * structure, so it cannot be tracked.
+ *
+ * @param priceEvent
+ * @param rangeSnapshot
+ * @param marketClosedEvents
+ * @returns
+ */
 const checkCushionDown = (
   priceEvent: PriceEvent,
   rangeSnapshot: RangeSnapshot,
   marketClosedEvents: MarketClosedEvent[],
 ): string[] => {
   const errors: string[] = [];
-  const marketId = priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId;
   console.info(`\n\nCommencing CushionDown check`);
 
-  // Check that the marketId is set
-  if (!marketId) {
-    pushError(`Expected to find a market id for a CushionDown event, but it was missing on the RangeSnapshot`, errors);
-    return errors; // Can't proceed
-  } else {
-    console.debug(`Market id is set`);
-  }
-
-  // Check that a market created event was fired
-  const closedMarkets = filterClosedEvents(marketClosedEvents, rangeSnapshot.block, marketId);
+  // Check that a market closed event was fired in the same block
+  const closedMarkets = filterClosedEvents(marketClosedEvents, rangeSnapshot.block);
   if (!closedMarkets.length) {
     pushError(`Expected to find a MarketClosedEvent for a CushionDown event, but it was missing.`, errors);
     return errors; // Can't proceed
@@ -280,6 +283,14 @@ const checkCushionDown = (
   return errors;
 };
 
+/**
+ * This assumes that {cushionUpEvents} is filtered to records for the same block.
+ *
+ * @param event
+ * @param _rangeSnapshot
+ * @param cushionUpEvents
+ * @returns
+ */
 const checkMarketCreated = (
   event: MarketCreatedEvent,
   _rangeSnapshot: RangeSnapshot,
@@ -313,6 +324,17 @@ const checkMarketCreated = (
   return errors;
 };
 
+/**
+ * This assumes that {cushionDownEvents} is filtered to records for the same block.
+ *
+ * CushionDown events do not have the bond market id, and the id is removed from the range
+ * structure, so it cannot be tracked.
+ *
+ * @param event
+ * @param _rangeSnapshot
+ * @param cushionDownEvents
+ * @returns
+ */
 const checkMarketClosed = (
   event: MarketClosedEvent,
   _rangeSnapshot: RangeSnapshot,
@@ -321,13 +343,8 @@ const checkMarketClosed = (
   const errors: string[] = [];
   console.info(`\n\nCommencing market closed check`);
 
-  const matchingCushionDownEvents = cushionDownEvents.filter(
-    priceEvent =>
-      event.marketId == (priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
-  );
-
   // If a market is closed, but there was no CushionUp, it may have been closed outside of RBS
-  if (matchingCushionDownEvents.length == 0) {
+  if (cushionDownEvents.length == 0) {
     pushError(`Market was closed, but there was no corresponding RBS CushionDown event`, errors);
   } else {
     console.debug(`MarketClosedEvent has a corresponding CushionDown event`);
@@ -422,7 +439,7 @@ export const checkBondMarkets = async (
           name: "Market ID",
           value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
         },
-        { name: "Transaction", value: `${priceEvent.transaction}` },
+        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
         { name: "Block", value: `${priceEvent.block}` },
       ]);
     });
@@ -434,11 +451,8 @@ export const checkBondMarkets = async (
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionDown Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        {
-          name: "Market ID",
-          value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
-        },
-        { name: "Transaction", value: `${priceEvent.transaction}` },
+        // marketId is not available
+        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
         { name: "Block", value: `${priceEvent.block}` },
       ]);
     });
