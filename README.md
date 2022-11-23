@@ -26,6 +26,10 @@ Pulumi is used to manage the infrastructure, which comprises of:
     - Current price below the lower wall price
     - Chainlink and LP price differ
     - Cushion capacity is depleted too often
+    - An RBS CusionUp event results in a bond market with incorrect parameters
+    - An RBS CushionDown event results in the non-closure of the bond market
+    - A bond market is created without a corresponding RBS CushionUp event
+    - A bond market is closed without a corresponding RBS CushionDown event
 
 ## Secrets Management
 
