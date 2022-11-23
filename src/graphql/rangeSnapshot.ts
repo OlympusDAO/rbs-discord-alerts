@@ -1826,6 +1826,7 @@ export const RbsPriceEventsDocument = {
                 name: { kind: "Name", value: "orderDirection" },
                 value: { kind: "EnumValue", value: "asc" },
               },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "where" },
@@ -1994,8 +1995,9 @@ export const LowerCushionCapacityDepletedDocument = {
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "orderDirection" },
-                value: { kind: "EnumValue", value: "desc" },
+                value: { kind: "EnumValue", value: "asc" },
               },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "where" },
@@ -2093,7 +2095,7 @@ export const UpperCushionCapacityDepletedDocument = {
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "orderDirection" },
-                value: { kind: "EnumValue", value: "desc" },
+                value: { kind: "EnumValue", value: "asc" },
               },
               {
                 kind: "Argument",
@@ -2189,6 +2191,7 @@ export const RangeSnapshotAtBlockDocument = {
                 name: { kind: "Name", value: "orderDirection" },
                 value: { kind: "EnumValue", value: "desc" },
               },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1" } },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "where" },
@@ -2271,8 +2274,9 @@ export const RangeSnapshotSinceBlockDocument = {
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "orderDirection" },
-                value: { kind: "EnumValue", value: "desc" },
+                value: { kind: "EnumValue", value: "asc" },
               },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "where" },

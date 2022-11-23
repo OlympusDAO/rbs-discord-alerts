@@ -1274,6 +1274,7 @@ export const MarketCreatedEventsDocument = {
                 name: { kind: "Name", value: "orderDirection" },
                 value: { kind: "EnumValue", value: "desc" },
               },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "where" },
@@ -1363,6 +1364,7 @@ export const MarketClosedEventsDocument = {
                 name: { kind: "Name", value: "orderDirection" },
                 value: { kind: "EnumValue", value: "desc" },
               },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "where" },

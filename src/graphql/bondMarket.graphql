@@ -1,5 +1,5 @@
 query MarketCreatedEvents($sinceBlock: BigInt!) {
-  marketCreatedEvents(orderBy: block, orderDirection: desc, where: { block_gt: $sinceBlock }) {
+  marketCreatedEvents(orderBy: block, orderDirection: desc, first: 1000, where: { block_gt: $sinceBlock }) {
     block
     date
     id
@@ -29,7 +29,7 @@ query MarketCreatedEvents($sinceBlock: BigInt!) {
 }
 
 query MarketClosedEvents($sinceBlock: BigInt!) {
-  marketClosedEvents(orderBy: block, orderDirection: desc, where: { block_gt: $sinceBlock }) {
+  marketClosedEvents(orderBy: block, orderDirection: desc, first: 1000, where: { block_gt: $sinceBlock }) {
     block
     date
     id

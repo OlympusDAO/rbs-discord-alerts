@@ -107,10 +107,10 @@ const checkCushionUp = (
     console.debug(`Market owner is correctly the Olympus operator contract`);
   }
 
-  // In the high cushion, the quote token is DAI and the payout token is OHM. To get it into DAI (USD), we need to flip it.
+  // In the low cushion, the initial price is in terms of the quote token, and the quote token is OHM and the payout token is DAI. To get it into DAI (USD), we need to flip it.
   const initialPriceUsd = priceEvent.isHigh
-    ? 1 / createdMarket.market.initialPriceInQuoteToken
-    : createdMarket.market.initialPriceInQuoteToken;
+    ? createdMarket.market.initialPriceInQuoteToken
+    : 1 / createdMarket.market.initialPriceInQuoteToken;
 
   // Check that the initial price is on the correct side of the cushion
   if (priceEvent.isHigh) {
@@ -123,7 +123,12 @@ const checkCushionUp = (
         errors,
       );
     } else {
-      console.debug(`Upper market initial price is correctly > upper cushion price`);
+      console.debug(
+        `Upper market initial price (${initialPriceUsd}) is correctly > upper cushion price ${formatCurrency(
+          rangeSnapshot.highCushionPrice,
+          2,
+        )}`,
+      );
     }
   } else {
     // When low, the initial price should be lower than the cushion price
@@ -135,7 +140,11 @@ const checkCushionUp = (
         errors,
       );
     } else {
-      console.debug(`Lower market initial price is correctly < lower cushion price`);
+      console.debug(
+        `Lower market initial price (${formatCurrency(
+          initialPriceUsd,
+        )}) is correctly < lower cushion price ${formatCurrency(rangeSnapshot.lowCushionPrice, 2)}`,
+      );
     }
   }
 
@@ -144,7 +153,7 @@ const checkCushionUp = (
   if (!ohmPrice) {
     pushError(`Expected RangeSnapshot to have OHM price, but it was not set.`, errors);
   } else {
-    console.debug(`OHM price is set`);
+    console.debug(`OHM price is set: ${formatCurrency(rangeSnapshot.ohmPrice, 2)}`);
   }
 
   // The initial price for the market should be the same as the corresponding snapshot's OHM price (derived from Chainlink)
@@ -157,7 +166,7 @@ const checkCushionUp = (
       errors,
     );
   } else {
-    console.debug(`Snapshot OHM price and initial price match`);
+    console.debug(`Snapshot OHM price and initial price match: ${formatCurrency(initialPriceUsd, 2)}`);
   }
 
   // Check the tokens
@@ -220,7 +229,7 @@ const checkCushionUp = (
         errors,
       );
     } else {
-      console.debug(`Market capacity is as expected`);
+      console.debug(`Market capacity is as expected: ${expectedCapacity}`);
     }
   } else {
     pushError(`Expected the cushion factor to be set, but it wasn't`, errors);
@@ -338,12 +347,14 @@ export const checkBondMarkets = async (
   const firestoreSnapshot = await firestore.get();
   const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
   let updatedLatestBlock = latestBlock;
+  console.info(`Latest block is ${latestBlock}`);
 
   // Fetch range snapshots
   const rangeSnapshotClient = new Client({
     url: RBS_SUBGRAPH_URL,
     fetch,
   });
+  // Snapshots are in ascending order
   const rangeSnapshotResults = await rangeSnapshotClient
     .query(RangeSnapshotSinceBlockDocument, {
       sinceBlock: latestBlock,
@@ -395,11 +406,8 @@ export const checkBondMarkets = async (
   }
   const marketClosedEvents = marketsClosedResults.data.marketClosedEvents;
 
-  // Ensure the snapshots are in ascending order
-  const rangeSnapshotsAsc = rangeSnapshotResults.data.rangeSnapshots.slice().sort((a, b) => a.block - b.block);
-
   // Iterate over blocks and perform checks
-  rangeSnapshotsAsc.forEach(rangeSnapshot => {
+  rangeSnapshotResults.data.rangeSnapshots.forEach(rangeSnapshot => {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
 
     const cushionUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "CushionUp");
@@ -469,4 +477,5 @@ export const checkBondMarkets = async (
   await firestore.update({
     [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
   });
+  console.info(`Updated latest block to ${updatedLatestBlock}`);
 };
