@@ -1,4 +1,20 @@
 generates:
+  src/graphql/bondMarket.ts:
+    schema: https://api.thegraph.com/subgraphs/name/olympusdao/bonds
+    documents: "src/graphql/bondMarket.graphql"
+    plugins:
+      - typescript
+      - typescript-operations
+      - typed-document-node
+    config:
+      preResolveTypes: true
+      scalars:
+        BigDecimal: number
+        BigInt: number
+        Bytes: Uint8Array # https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
+    hooks:
+      afterOneFileWrite:
+        - yarn eslint --config ./.eslintrc.js --fix
   src/graphql/rangeSnapshot.ts:
     schema: https://api.thegraph.com/subgraphs/name/olympusdao/rbs
     documents: "src/graphql/rangeSnapshot.graphql"

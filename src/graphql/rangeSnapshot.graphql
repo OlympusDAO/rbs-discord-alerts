@@ -1,5 +1,5 @@
 query RBSPriceEvents($latestBlock: BigInt!) {
-  priceEvents(orderBy: block, orderDirection: asc, where: { block_gt: $latestBlock }) {
+  priceEvents(orderBy: block, orderDirection: asc, first: 1000, where: { block_gt: $latestBlock }) {
     block
     blockchain
     date
@@ -76,7 +76,8 @@ query LatestRangeSnapshot {
 query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecimal!) {
   rangeSnapshots(
     orderBy: block
-    orderDirection: desc
+    orderDirection: asc
+    first: 1000
     where: { date_gt: $sinceDate, lowCapacityReserve_lt: $belowCapacity, ohmPrice_gt: "0" }
   ) {
     block
@@ -112,7 +113,7 @@ query LowerCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
 query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecimal!) {
   rangeSnapshots(
     orderBy: block
-    orderDirection: desc
+    orderDirection: asc
     where: { date_gt: $sinceDate, highCapacityOhm_lt: $belowCapacity, ohmPrice_gt: "0" }
   ) {
     block
@@ -145,8 +146,40 @@ query UpperCushionCapacityDepleted($sinceDate: String!, $belowCapacity: BigDecim
   }
 }
 
-query RangeSnapshot($block: BigInt!) {
-  rangeSnapshots(orderBy: block, orderDirection: desc, where: { block: $block }) {
+query RangeSnapshotAtBlock($block: BigInt!) {
+  rangeSnapshots(orderBy: block, orderDirection: desc, first: 1, where: { block: $block }) {
+    block
+    blockchain
+    cushionSpread
+    date
+    highActive
+    highCapacityOhm
+    highCushionPrice
+    highLastActiveTimestamp
+    highMarketId
+    highWallPrice
+    id
+    lowActive
+    lowCapacityReserve
+    lowCushionPrice
+    lowLastActiveTimestamp
+    lowMarketId
+    lowWallPrice
+    ohmMovingAveragePrice
+    ohmPrice
+    operatorCushionFactor
+    operatorReserveFactor
+    thresholdFactor
+    timestamp
+    treasuryDebtBalance
+    treasuryReserveAddress
+    treasuryReserveBalance
+    wallSpread
+  }
+}
+
+query RangeSnapshotSinceBlock($sinceBlock: BigInt!) {
+  rangeSnapshots(orderBy: block, orderDirection: asc, first: 1000, where: { block_gt: $sinceBlock }) {
     block
     blockchain
     cushionSpread

@@ -3,3 +3,9 @@ export const formatCurrency = (input: number | null | undefined, decimals = 2): 
 
   return `$${Number(input).toFixed(decimals)}`;
 };
+
+export const formatNumber = (input: number | null | undefined, decimals = 2): string => {
+  if (input == null || typeof input == "undefined") return "N/A";
+
+  return `${Number(input).toFixed(decimals)}`;
+};

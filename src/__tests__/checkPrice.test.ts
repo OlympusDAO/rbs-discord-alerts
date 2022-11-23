@@ -1,4 +1,4 @@
-import { isPriceDeviating } from "../checkPrice";
+import { isPriceDeviating } from "../snapshotCheck/checkPrice";
 
 describe("checkPrice", () => {
   test("chainlink price = lp price", () => {

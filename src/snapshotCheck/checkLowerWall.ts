@@ -4,7 +4,7 @@ import fetch from "cross-fetch";
 
 import { RBS_SUBGRAPH_URL } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
-import { LatestRangeSnapshotDocument, RangeSnapshotDocument } from "../graphql/rangeSnapshot";
+import { LatestRangeSnapshotDocument, RangeSnapshotAtBlockDocument } from "../graphql/rangeSnapshot";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 
@@ -64,7 +64,7 @@ export const checkLowerWall = async (
 
   // Get the lower wall price 6 hours ago
   const previousBlockResults = await rangeSnapshotClient
-    .query(RangeSnapshotDocument, {
+    .query(RangeSnapshotAtBlockDocument, {
       block: historicalBlock,
     })
     .toPromise();

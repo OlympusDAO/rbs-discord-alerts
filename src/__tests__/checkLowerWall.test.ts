@@ -1,4 +1,4 @@
-import { isLowerWallBroken } from "../checkLowerWall";
+import { isLowerWallBroken } from "../snapshotCheck/checkLowerWall";
 
 describe("checkLowerWall", () => {
   test("lower wall price < current price", () => {

@@ -1,5 +1,6 @@
 import { Firestore } from "@google-cloud/firestore";
 
+import { checkBondMarkets } from "./snapshotCheck/checkBondMarkets";
 import { checkCapacityDepletion } from "./snapshotCheck/checkCapacity";
 import { checkLowerWall } from "./snapshotCheck/checkLowerWall";
 import { checkPrice } from "./snapshotCheck/checkPrice";
@@ -29,6 +30,7 @@ export const performSnapshotChecks = async (
   await checkCapacityDepletion(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   await checkPrice(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   await checkLowerWall(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
+  await checkBondMarkets(firestoreDocument, mentionRoles, webhookUrl);
 };
 
 // Running via CLI
