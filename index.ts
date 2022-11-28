@@ -52,7 +52,7 @@ const FUNCTION_PRICE_EVENTS_STACK = `${FUNCTION_PRICE_EVENTS}-${pulumi.getStack(
 const functionPriceEvents = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_PRICE_EVENTS_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
-  availableMemoryMb: 128,
+  availableMemoryMb: 256,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert, webhookEmergency);
@@ -92,7 +92,7 @@ const FUNCTION_SNAPSHOT_CHECK_STACK = `${FUNCTION_SNAPSHOT_CHECK}-${pulumi.getSt
 const functionSnapshotCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_SNAPSHOT_CHECK_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
-  availableMemoryMb: 128,
+  availableMemoryMb: 256,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performSnapshotChecks(
