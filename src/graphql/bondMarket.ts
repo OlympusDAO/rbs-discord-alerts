@@ -42,6 +42,8 @@ export type Market = {
   createdBlock: Scalars["BigInt"];
   createdDate: Scalars["String"];
   createdTimestamp: Scalars["BigInt"];
+  durationActualMilliseconds?: Maybe<Scalars["BigInt"]>;
+  durationMilliseconds: Scalars["BigInt"];
   id: Scalars["ID"];
   initialPriceInQuoteToken: Scalars["BigDecimal"];
   marketId: Scalars["BigInt"];
@@ -369,6 +371,22 @@ export type Market_Filter = {
   createdTimestamp_lte?: InputMaybe<Scalars["BigInt"]>;
   createdTimestamp_not?: InputMaybe<Scalars["BigInt"]>;
   createdTimestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  durationActualMilliseconds?: InputMaybe<Scalars["BigInt"]>;
+  durationActualMilliseconds_gt?: InputMaybe<Scalars["BigInt"]>;
+  durationActualMilliseconds_gte?: InputMaybe<Scalars["BigInt"]>;
+  durationActualMilliseconds_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  durationActualMilliseconds_lt?: InputMaybe<Scalars["BigInt"]>;
+  durationActualMilliseconds_lte?: InputMaybe<Scalars["BigInt"]>;
+  durationActualMilliseconds_not?: InputMaybe<Scalars["BigInt"]>;
+  durationActualMilliseconds_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  durationMilliseconds?: InputMaybe<Scalars["BigInt"]>;
+  durationMilliseconds_gt?: InputMaybe<Scalars["BigInt"]>;
+  durationMilliseconds_gte?: InputMaybe<Scalars["BigInt"]>;
+  durationMilliseconds_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  durationMilliseconds_lt?: InputMaybe<Scalars["BigInt"]>;
+  durationMilliseconds_lte?: InputMaybe<Scalars["BigInt"]>;
+  durationMilliseconds_not?: InputMaybe<Scalars["BigInt"]>;
+  durationMilliseconds_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   id?: InputMaybe<Scalars["ID"]>;
   id_gt?: InputMaybe<Scalars["ID"]>;
   id_gte?: InputMaybe<Scalars["ID"]>;
@@ -455,6 +473,8 @@ export enum Market_OrderBy {
   CreatedBlock = "createdBlock",
   CreatedDate = "createdDate",
   CreatedTimestamp = "createdTimestamp",
+  DurationActualMilliseconds = "durationActualMilliseconds",
+  DurationMilliseconds = "durationMilliseconds",
   Id = "id",
   InitialPriceInQuoteToken = "initialPriceInQuoteToken",
   MarketId = "marketId",
@@ -661,6 +681,8 @@ export type MarketCreatedEventsQuery = {
       createdBlock: number;
       createdDate: string;
       createdTimestamp: number;
+      durationActualMilliseconds?: number | null;
+      durationMilliseconds: number;
       id: string;
       initialPriceInQuoteToken: number;
       marketId: number;
@@ -701,6 +723,8 @@ export type MarketClosedEventsQuery = {
       createdBlock: number;
       createdDate: string;
       createdTimestamp: number;
+      durationActualMilliseconds?: number | null;
+      durationMilliseconds: number;
       id: string;
       initialPriceInQuoteToken: number;
       marketId: number;
@@ -787,6 +811,8 @@ export const MarketCreatedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "createdBlock" } },
                       { kind: "Field", name: { kind: "Name", value: "createdDate" } },
                       { kind: "Field", name: { kind: "Name", value: "createdTimestamp" } },
+                      { kind: "Field", name: { kind: "Name", value: "durationActualMilliseconds" } },
+                      { kind: "Field", name: { kind: "Name", value: "durationMilliseconds" } },
                       { kind: "Field", name: { kind: "Name", value: "id" } },
                       { kind: "Field", name: { kind: "Name", value: "initialPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "marketId" } },
@@ -880,6 +906,8 @@ export const MarketClosedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "createdBlock" } },
                       { kind: "Field", name: { kind: "Name", value: "createdDate" } },
                       { kind: "Field", name: { kind: "Name", value: "createdTimestamp" } },
+                      { kind: "Field", name: { kind: "Name", value: "durationActualMilliseconds" } },
+                      { kind: "Field", name: { kind: "Name", value: "durationMilliseconds" } },
                       { kind: "Field", name: { kind: "Name", value: "id" } },
                       { kind: "Field", name: { kind: "Name", value: "initialPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "marketId" } },
