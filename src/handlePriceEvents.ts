@@ -83,7 +83,12 @@ export const performEventChecks = async (
       {
         name: "Event",
         value: priceEvent.type,
-        inline: false,
+        inline: true,
+      },
+      {
+        name: "Upper/Lower",
+        value: priceEvent.isHigh ? "Upper" : "Lower",
+        inline: true,
       },
       // Current price
       {
