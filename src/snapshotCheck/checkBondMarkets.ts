@@ -58,6 +58,24 @@ const pushError = (error: string, errors: string[]): void => {
   errors.push(error);
 };
 
+/**
+ * Performs check when a CushionUp event is received:
+ * - A bond market id should be available
+ * - Should have a corresponding market created event (only 1)
+ * - The owner of the bond market should be the treasury operator contract
+ * - Upper cushion: the initial price (in USD) of the bond market should be greater than the cushion price
+ * - Lower cushion: the initial price (in USD) of the bond market should be less than the cushion price
+ * - OHM price is available
+ * - The initial price (in USD) of the bond market should be the same as the OHM price derived from the Chainlink oracle
+ * - Upper cushion: bond market accepts DAI and pays out OHM
+ * - Lower cushion: bond market accepts OHM and pays of DAI
+ * - The capacity of the bond market should be correct
+ *
+ * @param priceEvent
+ * @param rangeSnapshot
+ * @param marketCreatedEvents
+ * @returns
+ */
 const checkCushionUp = (
   priceEvent: PriceEvent,
   rangeSnapshot: RangeSnapshot,
@@ -240,6 +258,10 @@ const checkCushionUp = (
 };
 
 /**
+ * Performs checks when a CushionDown event is received:
+ * - Should have a corresponding market closed event
+ * - The bond market should actually be closed
+ *
  * This assumes that {marketClosedEvents} is filtered to records for the same block.
  *
  * CushionDown events do not have the bond market id, and the id is removed from the range
@@ -284,6 +306,10 @@ const checkCushionDown = (
 };
 
 /**
+ * Performs checks when a market created event is received:
+ * - Should have a corresponding CushionUp event
+ * - The owner of the market should be the treasury operator contract
+ *
  * This assumes that {cushionUpEvents} is filtered to records for the same block.
  *
  * @param event
@@ -325,6 +351,9 @@ const checkMarketCreated = (
 };
 
 /**
+ * Performs checks when a market closed event is received:
+ * - Should have a corresponding CushionDown event
+ *
  * This assumes that {cushionDownEvents} is filtered to records for the same block.
  *
  * CushionDown events do not have the bond market id, and the id is removed from the range
@@ -348,6 +377,108 @@ const checkMarketClosed = (
     pushError(`Market was closed, but there was no corresponding RBS CushionDown event`, errors);
   } else {
     console.debug(`MarketClosedEvent has a corresponding CushionDown event`);
+  }
+
+  return errors;
+};
+
+/**
+ * Performs checks on a WallUp event (which occurs when a wall is being re-generated):
+ * - Lower wall: price >= wall price
+ * - Upper wall: price <= wall price
+ * - Bond market is closed
+ */
+const checkWallUp = (wallUpEvent: PriceEvent, rangeSnapshot: RangeSnapshot): string[] => {
+  const errors: string[] = [];
+  console.info("\n\nCommencing wall up check");
+
+  const ohmPrice = rangeSnapshot.ohmPrice;
+  if (!ohmPrice) {
+    pushError(`Expected RangeSnapshot to have OHM price, but it was not set.`, errors);
+    return errors;
+  } else {
+    console.debug(`OHM price is set: ${formatCurrency(rangeSnapshot.ohmPrice, 2)}`);
+  }
+
+  // Check that the price makes sense
+  if (wallUpEvent.isHigh) {
+    if (ohmPrice > rangeSnapshot.highWallPrice) {
+      pushError(
+        `OHM price (${formatCurrency(ohmPrice)}) should be lower than upper wall price (${formatCurrency(
+          rangeSnapshot.highWallPrice,
+        )})`,
+        errors,
+      );
+    }
+  } else {
+    if (ohmPrice < rangeSnapshot.lowWallPrice) {
+      pushError(
+        `OHM price (${formatCurrency(ohmPrice)}) should be higher than lower wall price (${formatCurrency(
+          rangeSnapshot.lowWallPrice,
+        )})`,
+        errors,
+      );
+    }
+  }
+
+  // Check that bond markets are closed
+  if (rangeSnapshot.lowMarketId) {
+    pushError(`Lower bond market should be closed, but is open with id: ${rangeSnapshot.lowMarketId}`, errors);
+  }
+
+  if (rangeSnapshot.highMarketId) {
+    pushError(`Upper bond market should be closed, but is open with id: ${rangeSnapshot.highMarketId}`, errors);
+  }
+
+  return errors;
+};
+
+/**
+ * Performs checks on a WallDown event (which occurs when the price breaks through the wall):
+ * - Lower wall: price <= wall price
+ * - Upper wall: price >= wall price
+ * - Bond market is closed
+ */
+const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot): string[] => {
+  const errors: string[] = [];
+  console.info("\n\nCommencing wall down check");
+
+  const ohmPrice = rangeSnapshot.ohmPrice;
+  if (!ohmPrice) {
+    pushError(`Expected RangeSnapshot to have OHM price, but it was not set.`, errors);
+    return errors;
+  } else {
+    console.debug(`OHM price is set: ${formatCurrency(rangeSnapshot.ohmPrice, 2)}`);
+  }
+
+  // Check that the price makes sense
+  if (wallDownEvent.isHigh) {
+    if (ohmPrice < rangeSnapshot.highWallPrice) {
+      pushError(
+        `OHM price (${formatCurrency(ohmPrice)}) should be higher than upper wall price (${formatCurrency(
+          rangeSnapshot.highWallPrice,
+        )})`,
+        errors,
+      );
+    }
+  } else {
+    if (ohmPrice > rangeSnapshot.lowWallPrice) {
+      pushError(
+        `OHM price (${formatCurrency(ohmPrice)}) should be lower than lower wall price (${formatCurrency(
+          rangeSnapshot.lowWallPrice,
+        )})`,
+        errors,
+      );
+    }
+  }
+
+  // Check that bond markets are closed
+  if (rangeSnapshot.lowMarketId) {
+    pushError(`Lower bond market should be closed, but is open with id: ${rangeSnapshot.lowMarketId}`, errors);
+  }
+
+  if (rangeSnapshot.highMarketId) {
+    pushError(`Upper bond market should be closed, but is open with id: ${rangeSnapshot.highMarketId}`, errors);
   }
 
   return errors;
@@ -450,6 +581,32 @@ export const checkBondMarkets = async (
       if (errors.length == 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionDown Discrepancies`, toUnorderedList(errors), [
+        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+        // marketId is not available
+        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        { name: "Block", value: `${priceEvent.block}` },
+      ]);
+    });
+
+    const wallUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "WallUp");
+    wallUpEventsAtBlock.forEach(priceEvent => {
+      const errors = checkWallUp(priceEvent, rangeSnapshot);
+      if (errors.length == 0) return;
+
+      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallUp Discrepancies`, toUnorderedList(errors), [
+        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+        // marketId is not available
+        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        { name: "Block", value: `${priceEvent.block}` },
+      ]);
+    });
+
+    const wallDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "WallDown");
+    wallDownEventsAtBlock.forEach(priceEvent => {
+      const errors = checkWallDown(priceEvent, rangeSnapshot);
+      if (errors.length == 0) return;
+
+      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallDown Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
         // marketId is not available
         { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
