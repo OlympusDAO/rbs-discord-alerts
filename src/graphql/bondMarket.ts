@@ -51,7 +51,9 @@ export type Market = {
   minPriceInQuoteToken: Scalars["BigDecimal"];
   owner: Scalars["Bytes"];
   payoutToken: Scalars["Bytes"];
+  purchasedInQuoteToken: Scalars["BigDecimal"];
   quoteToken: Scalars["Bytes"];
+  soldInPayoutToken: Scalars["BigDecimal"];
   totalDebtInPayoutToken: Scalars["BigDecimal"];
   vesting: Scalars["BigInt"];
 };
@@ -439,12 +441,28 @@ export type Market_Filter = {
   payoutToken_not?: InputMaybe<Scalars["Bytes"]>;
   payoutToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
   payoutToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  purchasedInQuoteToken?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  purchasedInQuoteToken_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_not?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   quoteToken?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_contains?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   quoteToken_not?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  soldInPayoutToken?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  soldInPayoutToken_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_not?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   totalDebtInPayoutToken?: InputMaybe<Scalars["BigDecimal"]>;
   totalDebtInPayoutToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
   totalDebtInPayoutToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -482,7 +500,9 @@ export enum Market_OrderBy {
   MinPriceInQuoteToken = "minPriceInQuoteToken",
   Owner = "owner",
   PayoutToken = "payoutToken",
+  PurchasedInQuoteToken = "purchasedInQuoteToken",
   QuoteToken = "quoteToken",
+  SoldInPayoutToken = "soldInPayoutToken",
   TotalDebtInPayoutToken = "totalDebtInPayoutToken",
   Vesting = "vesting",
 }
@@ -690,7 +710,9 @@ export type MarketCreatedEventsQuery = {
       minPriceInQuoteToken: number;
       owner: Uint8Array;
       payoutToken: Uint8Array;
+      purchasedInQuoteToken: number;
       quoteToken: Uint8Array;
+      soldInPayoutToken: number;
       totalDebtInPayoutToken: number;
       vesting: number;
     };
@@ -732,7 +754,9 @@ export type MarketClosedEventsQuery = {
       minPriceInQuoteToken: number;
       owner: Uint8Array;
       payoutToken: Uint8Array;
+      purchasedInQuoteToken: number;
       quoteToken: Uint8Array;
+      soldInPayoutToken: number;
       totalDebtInPayoutToken: number;
       vesting: number;
     };
@@ -820,7 +844,9 @@ export const MarketCreatedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "minPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "owner" } },
                       { kind: "Field", name: { kind: "Name", value: "payoutToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "purchasedInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "quoteToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "soldInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "totalDebtInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "vesting" } },
                     ],
@@ -915,7 +941,9 @@ export const MarketClosedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "minPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "owner" } },
                       { kind: "Field", name: { kind: "Name", value: "payoutToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "purchasedInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "quoteToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "soldInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "totalDebtInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "vesting" } },
                     ],

@@ -26,7 +26,9 @@ query MarketCreatedEvents($sinceBlock: BigInt!) {
       minPriceInQuoteToken
       owner
       payoutToken
+      purchasedInQuoteToken
       quoteToken
+      soldInPayoutToken
       totalDebtInPayoutToken
       vesting
     }
@@ -61,7 +63,9 @@ query MarketClosedEvents($sinceBlock: BigInt!) {
       minPriceInQuoteToken
       owner
       payoutToken
+      purchasedInQuoteToken
       quoteToken
+      soldInPayoutToken
       totalDebtInPayoutToken
       vesting
     }
