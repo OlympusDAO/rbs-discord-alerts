@@ -322,8 +322,12 @@ const checkCushionDown = (
     console.debug(`Market is correctly closed`);
   }
 
+  const durationExceeded =
+    closedMarket.market.durationActualMilliseconds &&
+    closedMarket.market.durationActualMilliseconds > closedMarket.market.durationMilliseconds;
+
   // bond market can shut down due to capacity exhausted, time duration elapsed or max debt circuit breaker
-  // TODO inform if capacity is not exhausted and time duration has not elapsed
+  // TODO inform if capacity is not exhausted and time duration has not elapsed and OHM price is outside of cushion
 
   return errors;
 };
