@@ -17,7 +17,7 @@ import {
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "../helpers/contractHelper";
-import { formatCurrency, formatNumber } from "../helpers/numberHelper";
+import { castFloat, castFloatNullable, formatCurrency, formatNumber } from "../helpers/numberHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 
 const FUNCTION_KEY = "checkBondMarkets";
@@ -82,7 +82,9 @@ const checkCushionUp = (
   marketCreatedEvents: MarketCreatedEvent[],
 ): string[] => {
   const errors: string[] = [];
-  const marketId = priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId;
+  const marketId = castFloatNullable(
+    priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId,
+  );
   console.info(`\n\nCommencing CushionUp check`);
 
   // Check that the PriceEvent has a marketId set
@@ -127,52 +129,54 @@ const checkCushionUp = (
   }
 
   // In the low cushion, the initial price is in terms of the quote token, and the quote token is OHM and the payout token is DAI. To get it into DAI (USD), we need to flip it.
-  const initialPriceUsd = priceEvent.isHigh
-    ? createdMarket.market.initialPriceInQuoteToken
-    : 1 / createdMarket.market.initialPriceInQuoteToken;
+  const initialPriceUsd: number = priceEvent.isHigh
+    ? castFloat(createdMarket.market.initialPriceInQuoteToken)
+    : 1 / castFloat(createdMarket.market.initialPriceInQuoteToken);
 
   // Check that the initial price is on the correct side of the cushion
   if (priceEvent.isHigh) {
+    const highCushionPrice = castFloat(rangeSnapshot.highCushionPrice);
     // When high, the initial price should be higher than the cushion price
-    if (initialPriceUsd < rangeSnapshot.highCushionPrice) {
+    if (initialPriceUsd < highCushionPrice) {
       pushError(
         `Expected the initial price of the market (${formatCurrency(
           initialPriceUsd,
-        )}) to be > the upper cushion price (${formatCurrency(rangeSnapshot.highCushionPrice)})`,
+        )}) to be > the upper cushion price (${formatCurrency(highCushionPrice)})`,
         errors,
       );
     } else {
       console.debug(
         `Upper market initial price (${initialPriceUsd}) is correctly > upper cushion price ${formatCurrency(
-          rangeSnapshot.highCushionPrice,
+          highCushionPrice,
           2,
         )}`,
       );
     }
   } else {
+    const lowCushionPrice = castFloat(rangeSnapshot.lowCushionPrice);
     // When low, the initial price should be lower than the cushion price
-    if (initialPriceUsd > rangeSnapshot.lowCushionPrice) {
+    if (initialPriceUsd > lowCushionPrice) {
       pushError(
         `Expected the initial price of the market (${formatCurrency(
           initialPriceUsd,
-        )}) to be < the lower cushion price (${formatCurrency(rangeSnapshot.lowCushionPrice)})`,
+        )}) to be < the lower cushion price (${formatCurrency(lowCushionPrice)})`,
         errors,
       );
     } else {
       console.debug(
         `Lower market initial price (${formatCurrency(
           initialPriceUsd,
-        )}) is correctly < lower cushion price ${formatCurrency(rangeSnapshot.lowCushionPrice, 2)}`,
+        )}) is correctly < lower cushion price ${formatCurrency(lowCushionPrice, 2)}`,
       );
     }
   }
 
   // The price of OHM should be available
-  const ohmPrice = rangeSnapshot.ohmPrice;
+  const ohmPrice = castFloatNullable(rangeSnapshot.ohmPrice);
   if (!ohmPrice) {
     pushError(`Expected RangeSnapshot to have OHM price, but it was not set.`, errors);
   } else {
-    console.debug(`OHM price is set: ${formatCurrency(rangeSnapshot.ohmPrice, 2)}`);
+    console.debug(`OHM price is set: ${formatCurrency(ohmPrice, 2)}`);
   }
 
   // The initial price for the market should be the same as the corresponding snapshot's OHM price (derived from Chainlink)
@@ -231,16 +235,17 @@ const checkCushionUp = (
     }
   }
 
-  if (rangeSnapshot.operatorCushionFactor) {
+  const operatorCushionFactor = castFloatNullable(rangeSnapshot.operatorCushionFactor);
+  if (operatorCushionFactor) {
     const CAPACITY_DECIMALS = 9;
 
     // bond market capacity = cushion factor * highCapacityOhm or lowCapacityReserve
     const expectedCapacity = formatNumber(
-      rangeSnapshot.operatorCushionFactor *
-        (priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve),
+      operatorCushionFactor *
+        castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve),
       CAPACITY_DECIMALS,
     );
-    const actualCapacity = formatNumber(createdMarket.market.capacityInPayoutToken, CAPACITY_DECIMALS);
+    const actualCapacity = formatNumber(castFloat(createdMarket.market.capacityInPayoutToken), CAPACITY_DECIMALS);
 
     if (expectedCapacity !== actualCapacity) {
       pushError(
@@ -327,7 +332,8 @@ const checkMarketCreated = (
 
   const matchingCushionUpEvents = cushionUpEvents.filter(
     priceEvent =>
-      event.marketId == (priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
+      castFloat(event.marketId) ==
+      castFloatNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
   );
 
   // The owner should be the operator contract
@@ -392,29 +398,32 @@ const checkWallUp = (wallUpEvent: PriceEvent, rangeSnapshot: RangeSnapshot): str
   const errors: string[] = [];
   console.info("\n\nCommencing wall up check");
 
-  const ohmPrice = rangeSnapshot.ohmPrice;
+  // GraphQL sometimes returns numbers as strings (even though they are typed as numbers), so we force it to be a number
+  const ohmPrice = castFloatNullable(rangeSnapshot.ohmPrice);
   if (!ohmPrice) {
     pushError(`Expected RangeSnapshot to have OHM price, but it was not set.`, errors);
     return errors;
   } else {
-    console.debug(`OHM price is set: ${formatCurrency(rangeSnapshot.ohmPrice, 2)}`);
+    console.debug(`OHM price is set: ${formatCurrency(ohmPrice, 2)}`);
   }
 
   // Check that the price makes sense
   if (wallUpEvent.isHigh) {
-    if (ohmPrice > rangeSnapshot.highWallPrice) {
+    const highWallPrice = castFloat(rangeSnapshot.highWallPrice);
+    if (ohmPrice > highWallPrice) {
       pushError(
         `OHM price (${formatCurrency(ohmPrice)}) should be lower than upper wall price (${formatCurrency(
-          rangeSnapshot.highWallPrice,
+          highWallPrice,
         )})`,
         errors,
       );
     }
   } else {
-    if (ohmPrice < rangeSnapshot.lowWallPrice) {
+    const lowWallPrice = castFloat(rangeSnapshot.lowWallPrice);
+    if (ohmPrice < lowWallPrice) {
       pushError(
         `OHM price (${formatCurrency(ohmPrice)}) should be higher than lower wall price (${formatCurrency(
-          rangeSnapshot.lowWallPrice,
+          lowWallPrice,
         )})`,
         errors,
       );
@@ -443,29 +452,31 @@ const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot):
   const errors: string[] = [];
   console.info("\n\nCommencing wall down check");
 
-  const ohmPrice = rangeSnapshot.ohmPrice;
+  const ohmPrice = castFloatNullable(rangeSnapshot.ohmPrice);
   if (!ohmPrice) {
     pushError(`Expected RangeSnapshot to have OHM price, but it was not set.`, errors);
     return errors;
   } else {
-    console.debug(`OHM price is set: ${formatCurrency(rangeSnapshot.ohmPrice, 2)}`);
+    console.debug(`OHM price is set: ${formatCurrency(ohmPrice, 2)}`);
   }
 
   // Check that the price makes sense
   if (wallDownEvent.isHigh) {
-    if (ohmPrice < rangeSnapshot.highWallPrice) {
+    const highWallPrice = castFloat(rangeSnapshot.highWallPrice);
+    if (ohmPrice < highWallPrice) {
       pushError(
         `OHM price (${formatCurrency(ohmPrice)}) should be higher than upper wall price (${formatCurrency(
-          rangeSnapshot.highWallPrice,
+          highWallPrice,
         )})`,
         errors,
       );
     }
   } else {
-    if (ohmPrice > rangeSnapshot.lowWallPrice) {
+    const lowWallPrice = castFloat(rangeSnapshot.lowWallPrice);
+    if (ohmPrice > lowWallPrice) {
       pushError(
         `OHM price (${formatCurrency(ohmPrice)}) should be lower than lower wall price (${formatCurrency(
-          rangeSnapshot.lowWallPrice,
+          lowWallPrice,
         )})`,
         errors,
       );

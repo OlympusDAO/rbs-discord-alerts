@@ -6,6 +6,7 @@ import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
+import { castFloat, castFloatNullable } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 
@@ -58,7 +59,7 @@ export const checkPrice = async (
 
   // Grab the OHM price from the RangeSnapshot, which is derived from the Chainlink oracle.
   const latestRangeSnapshot = rangeSnapshotResults.data.rangeSnapshots[0];
-  const chainlinkPrice = latestRangeSnapshot.ohmPrice;
+  const chainlinkPrice = castFloatNullable(latestRangeSnapshot.ohmPrice);
 
   // It can be null, in which case we skip the check
   if (!chainlinkPrice) {
@@ -80,7 +81,7 @@ export const checkPrice = async (
 
   // Grab the OHM price from the PriceSnapshot, which is derived from the liquidity pools.
   const latestPriceSnapshot = priceSnapshotResults.data.priceSnapshots[0];
-  const lpPrice = latestPriceSnapshot.priceOhm;
+  const lpPrice = castFloat(latestPriceSnapshot.priceOhm);
 
   const result = isPriceDeviating(chainlinkPrice, lpPrice);
   if (!result[0]) {
