@@ -5,6 +5,7 @@ import fetch from "cross-fetch";
 import { RBS_SUBGRAPH_URL } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotAtBlockDocument } from "../graphql/rangeSnapshot";
+import { castFloat, castFloatNullable, castInt } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 
@@ -51,8 +52,8 @@ export const checkLowerWall = async (
   }
 
   const latestSnapshot = latestBlockResults.data.rangeSnapshots[0];
-  const latestBlock = latestSnapshot.block;
-  const latestPrice = latestSnapshot.ohmPrice;
+  const latestBlock = castInt(latestSnapshot.block);
+  const latestPrice = castFloatNullable(latestSnapshot.ohmPrice);
   // It can be null, in which case we skip the check
   if (!latestPrice) {
     console.warn(`RangeSnapshot at block ${latestBlock} had an empty OHM price. Skipping.`);
@@ -79,7 +80,7 @@ export const checkLowerWall = async (
     return;
   }
 
-  const historicalLowerWallPrice = previousBlockResults.data.rangeSnapshots[0].lowWallPrice;
+  const historicalLowerWallPrice = castFloat(previousBlockResults.data.rangeSnapshots[0].lowWallPrice);
 
   const result = isLowerWallBroken(historicalLowerWallPrice, latestPrice);
   if (!result[0]) {
