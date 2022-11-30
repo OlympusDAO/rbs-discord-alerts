@@ -324,10 +324,22 @@ const checkCushionDown = (
 
   const durationExceeded =
     closedMarket.market.durationActualMilliseconds &&
-    closedMarket.market.durationActualMilliseconds > closedMarket.market.durationMilliseconds;
+    closedMarket.market.durationActualMilliseconds >= closedMarket.market.durationMilliseconds;
+  const priceOutsideCushion =
+    priceEvent.snapshot.ohmPrice &&
+    (priceEvent.isHigh
+      ? priceEvent.snapshot.ohmPrice > priceEvent.snapshot.highWallPrice
+      : priceEvent.snapshot.lowWallPrice);
+  const capacityExhausted = false; // TODO implement check capacity = sold
 
-  // bond market can shut down due to capacity exhausted, time duration elapsed or max debt circuit breaker
-  // TODO inform if capacity is not exhausted and time duration has not elapsed and OHM price is outside of cushion
+  if (!durationExceeded && !priceOutsideCushion && !capacityExhausted) {
+    pushError(
+      `Expected market to be closed due to one of the following (but it was not): duration exceeded, price outside cushion, capacity exhausted`,
+      errors,
+    );
+  } else {
+    console.debug(`Reason for market closure seems OK`);
+  }
 
   return errors;
 };
