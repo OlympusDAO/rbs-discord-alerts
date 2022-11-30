@@ -52,7 +52,7 @@ const FUNCTION_PRICE_EVENTS_STACK = `${FUNCTION_PRICE_EVENTS}-${pulumi.getStack(
 const functionPriceEvents = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_PRICE_EVENTS_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
-  availableMemoryMb: 128,
+  availableMemoryMb: 256,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert, webhookEmergency);
@@ -92,7 +92,7 @@ const FUNCTION_SNAPSHOT_CHECK_STACK = `${FUNCTION_SNAPSHOT_CHECK}-${pulumi.getSt
 const functionSnapshotCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_SNAPSHOT_CHECK_STACK, {
   runtime: "nodejs14",
   timeout: FUNCTION_EXPIRATION_SECONDS,
-  availableMemoryMb: 128,
+  availableMemoryMb: 256,
   callback: async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performSnapshotChecks(
@@ -175,11 +175,16 @@ createAlertFunctionExecutions(FUNCTION_SNAPSHOT_CHECK_STACK, functionSnapshotChe
 // One alert for all functions (as it can't be filtered further)
 const ALERT_POLICY_FIRESTORE_QUERIES = `${PROJECT_NAME_STACK}-firestore-queries`;
 const ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS = 5 * 60;
+const FIRESTORE_WRITE_PER_WINDOW = 15;
+const FIRESTORE_READ_PER_WINDOW = 60;
+
 new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
   displayName: ALERT_POLICY_FIRESTORE_QUERIES,
   conditions: [
     {
-      displayName: `Firestore Read Activity > 10 / ${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60} minutes`,
+      displayName: `Firestore Read Activity > ${FIRESTORE_READ_PER_WINDOW} / ${
+        ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60
+      } minutes`,
       conditionThreshold: {
         filter: pulumi.interpolate`resource.type = "firestore_instance" AND resource.labels.project_id = "${gcp.config.project}" AND metric.type = "firestore.googleapis.com/document/read_count"`,
         aggregations: [
@@ -194,11 +199,13 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
         trigger: {
           count: 1,
         },
-        thresholdValue: 10, // > 10 per 5 minutes (higher than expected) will trigger an alert
+        thresholdValue: FIRESTORE_READ_PER_WINDOW, // > FIRESTORE_READ_PER_WINDOW per 5 minutes (higher than expected) will trigger an alert
       },
     },
     {
-      displayName: `Firestore Write Activity > 10 / ${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60} minutes`,
+      displayName: `Firestore Write Activity > ${FIRESTORE_WRITE_PER_WINDOW} / ${
+        ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60
+      } minutes`,
       conditionThreshold: {
         filter: pulumi.interpolate`resource.type = "firestore_instance" AND resource.labels.project_id = "${gcp.config.project}" AND metric.type = "firestore.googleapis.com/document/write_count"`,
         aggregations: [
@@ -213,7 +220,7 @@ new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
         trigger: {
           count: 1,
         },
-        thresholdValue: 10, // > 10 per 5 minutes (higher than expected) will trigger an alert
+        thresholdValue: FIRESTORE_WRITE_PER_WINDOW, // > FIRESTORE_WRITE_PER_WINDOW per 5 minutes (higher than expected) will trigger an alert
       },
     },
   ],

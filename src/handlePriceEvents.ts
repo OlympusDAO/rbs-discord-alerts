@@ -4,12 +4,27 @@ import fetch from "cross-fetch";
 
 import { RBS_SUBGRAPH_URL } from "./constants";
 import { sendAlert } from "./discord";
-import { PriceEvent, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
+import { PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
 const FIELD_LATEST_BLOCK = "events.latestBlock";
+
+const getPriceEventExplanation = (priceEvent: PriceEvent): string => {
+  switch (priceEvent.type) {
+    case PriceEventType.WallUp:
+      return "Walls are periodically re-generated to re-fill capacity";
+    case PriceEventType.WallDown:
+      return "The price has broken through the wall, resulting in price discovery";
+    case PriceEventType.CushionUp:
+      return "The price has entered the cushion, resulting in the creation of a bond market";
+    case PriceEventType.CushionDown:
+      return "The price has returned into range from the cushion, resulting in the closure of the bond market";
+    default:
+      throw new Error(`Unknown price event type: ${priceEvent.type}`);
+  }
+};
 
 /**
  * Performs checks against PriceEvents
@@ -83,7 +98,12 @@ export const performEventChecks = async (
       {
         name: "Event",
         value: priceEvent.type,
-        inline: false,
+        inline: true,
+      },
+      {
+        name: "Upper/Lower",
+        value: priceEvent.isHigh ? "Upper" : "Lower",
+        inline: true,
       },
       // Current price
       {
@@ -110,6 +130,11 @@ export const performEventChecks = async (
         value: `Cushion: ${formatCurrency(priceEvent.snapshot.lowCushionPrice)}\nWall: ${formatCurrency(
           priceEvent.snapshot.lowWallPrice,
         )}`,
+      },
+      {
+        name: "Description",
+        value: getPriceEventExplanation(priceEvent),
+        inline: false,
       },
     ]);
   }
