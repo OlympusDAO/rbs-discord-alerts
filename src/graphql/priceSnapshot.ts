@@ -352,15 +352,23 @@ export type ProtocolMetric = {
   currentIndex: Scalars["BigDecimal"];
   date: Scalars["String"];
   gOhmPrice: Scalars["BigDecimal"];
+  gOhmSyntheticSupply?: Maybe<Scalars["BigDecimal"]>;
   gOhmTotalSupply: Scalars["BigDecimal"];
   id: Scalars["ID"];
+  marketCap?: Maybe<Scalars["BigDecimal"]>;
   nextDistributedOhm: Scalars["BigDecimal"];
   nextEpochRebase: Scalars["BigDecimal"];
+  ohmCirculatingSupply?: Maybe<Scalars["BigDecimal"]>;
+  ohmFloatingSupply?: Maybe<Scalars["BigDecimal"]>;
   ohmPrice: Scalars["BigDecimal"];
   ohmTotalSupply: Scalars["BigDecimal"];
   sOhmCirculatingSupply: Scalars["BigDecimal"];
   timestamp: Scalars["BigInt"];
   totalValueLocked: Scalars["BigDecimal"];
+  treasuryLiquidBacking?: Maybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic?: Maybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerOhmFloating?: Maybe<Scalars["BigDecimal"]>;
+  treasuryMarketValue?: Maybe<Scalars["BigDecimal"]>;
 };
 
 export type ProtocolMetric_Filter = {
@@ -418,6 +426,14 @@ export type ProtocolMetric_Filter = {
   gOhmPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   gOhmPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   gOhmPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  gOhmSyntheticSupply?: InputMaybe<Scalars["BigDecimal"]>;
+  gOhmSyntheticSupply_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  gOhmSyntheticSupply_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  gOhmSyntheticSupply_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  gOhmSyntheticSupply_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  gOhmSyntheticSupply_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  gOhmSyntheticSupply_not?: InputMaybe<Scalars["BigDecimal"]>;
+  gOhmSyntheticSupply_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   gOhmTotalSupply?: InputMaybe<Scalars["BigDecimal"]>;
   gOhmTotalSupply_gt?: InputMaybe<Scalars["BigDecimal"]>;
   gOhmTotalSupply_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -434,6 +450,14 @@ export type ProtocolMetric_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  marketCap?: InputMaybe<Scalars["BigDecimal"]>;
+  marketCap_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  marketCap_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  marketCap_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  marketCap_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  marketCap_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  marketCap_not?: InputMaybe<Scalars["BigDecimal"]>;
+  marketCap_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   nextDistributedOhm?: InputMaybe<Scalars["BigDecimal"]>;
   nextDistributedOhm_gt?: InputMaybe<Scalars["BigDecimal"]>;
   nextDistributedOhm_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -450,6 +474,22 @@ export type ProtocolMetric_Filter = {
   nextEpochRebase_lte?: InputMaybe<Scalars["BigDecimal"]>;
   nextEpochRebase_not?: InputMaybe<Scalars["BigDecimal"]>;
   nextEpochRebase_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  ohmCirculatingSupply?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmCirculatingSupply_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmCirculatingSupply_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmCirculatingSupply_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  ohmCirculatingSupply_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmCirculatingSupply_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmCirculatingSupply_not?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmCirculatingSupply_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  ohmFloatingSupply?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmFloatingSupply_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmFloatingSupply_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmFloatingSupply_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  ohmFloatingSupply_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmFloatingSupply_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmFloatingSupply_not?: InputMaybe<Scalars["BigDecimal"]>;
+  ohmFloatingSupply_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   ohmPrice?: InputMaybe<Scalars["BigDecimal"]>;
   ohmPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
   ohmPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -490,6 +530,38 @@ export type ProtocolMetric_Filter = {
   totalValueLocked_lte?: InputMaybe<Scalars["BigDecimal"]>;
   totalValueLocked_not?: InputMaybe<Scalars["BigDecimal"]>;
   totalValueLocked_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryLiquidBacking?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryLiquidBackingPerGOhmSynthetic_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic_not?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerGOhmSynthetic_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryLiquidBackingPerOhmFloating?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerOhmFloating_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerOhmFloating_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerOhmFloating_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryLiquidBackingPerOhmFloating_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerOhmFloating_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerOhmFloating_not?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBackingPerOhmFloating_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryLiquidBacking_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBacking_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBacking_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryLiquidBacking_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBacking_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBacking_not?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryLiquidBacking_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryMarketValue?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryMarketValue_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryMarketValue_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryMarketValue_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  treasuryMarketValue_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryMarketValue_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryMarketValue_not?: InputMaybe<Scalars["BigDecimal"]>;
+  treasuryMarketValue_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
 };
 
 export enum ProtocolMetric_OrderBy {
@@ -498,15 +570,23 @@ export enum ProtocolMetric_OrderBy {
   CurrentIndex = "currentIndex",
   Date = "date",
   GOhmPrice = "gOhmPrice",
+  GOhmSyntheticSupply = "gOhmSyntheticSupply",
   GOhmTotalSupply = "gOhmTotalSupply",
   Id = "id",
+  MarketCap = "marketCap",
   NextDistributedOhm = "nextDistributedOhm",
   NextEpochRebase = "nextEpochRebase",
+  OhmCirculatingSupply = "ohmCirculatingSupply",
+  OhmFloatingSupply = "ohmFloatingSupply",
   OhmPrice = "ohmPrice",
   OhmTotalSupply = "ohmTotalSupply",
   SOhmCirculatingSupply = "sOhmCirculatingSupply",
   Timestamp = "timestamp",
   TotalValueLocked = "totalValueLocked",
+  TreasuryLiquidBacking = "treasuryLiquidBacking",
+  TreasuryLiquidBackingPerGOhmSynthetic = "treasuryLiquidBackingPerGOhmSynthetic",
+  TreasuryLiquidBackingPerOhmFloating = "treasuryLiquidBackingPerOhmFloating",
+  TreasuryMarketValue = "treasuryMarketValue",
 }
 
 export type Query = {
