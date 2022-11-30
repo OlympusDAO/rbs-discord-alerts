@@ -503,12 +503,14 @@ export const checkBondMarkets = async (
     fetch,
   });
   // Snapshots are in ascending order
+  console.debug(`Fetching RangeSnapshot records since block ${latestBlock}`);
   const rangeSnapshotResults = await rangeSnapshotClient
     .query(RangeSnapshotSinceBlockDocument, {
       sinceBlock: latestBlock,
     })
     .toPromise();
-  if (!rangeSnapshotResults.data || rangeSnapshotResults.data.rangeSnapshots.length == 0) {
+  // This previously checked for a 0 length array returned. However, if indexing lags slightly, we could get 0 records. Hence, it should not be an error.
+  if (!rangeSnapshotResults.data) {
     throw new Error(`Did not receive results from RangeSnapshot GraphQL query. Error: ${rangeSnapshotResults.error}`);
   }
 
@@ -518,6 +520,7 @@ export const checkBondMarkets = async (
   });
 
   // Fetch PriceEvents
+  console.debug(`Fetching PriceEvent records since block ${latestBlock}`);
   const priceEventResults = await rangeSnapshotClient
     .query(RbsPriceEventsDocument, {
       latestBlock: latestBlock,
@@ -529,6 +532,7 @@ export const checkBondMarkets = async (
   const priceEvents = priceEventResults.data.priceEvents;
 
   // Fetch markets created (restricted to OHM)
+  console.debug(`Fetching MarketCreatedEvent records since block ${latestBlock}`);
   const marketsCreatedResults = await bondsClient
     .query(MarketCreatedEventsDocument, {
       sinceBlock: latestBlock,
@@ -542,6 +546,7 @@ export const checkBondMarkets = async (
   const marketCreatedEvents: MarketCreatedEvent[] = marketsCreatedResults.data.marketCreatedEvents;
 
   // Fetch markets closed (restricted to OHM)
+  console.debug(`Fetching MarketClosedEvent records since block ${latestBlock}`);
   const marketsClosedResults = await bondsClient
     .query(MarketClosedEventsDocument, {
       sinceBlock: latestBlock,
@@ -556,6 +561,7 @@ export const checkBondMarkets = async (
 
   // Iterate over blocks and perform checks
   const rangeSnapshots: RangeSnapshot[] = rangeSnapshotResults.data.rangeSnapshots;
+  console.info(`Processing ${rangeSnapshots.length} RangeSnapshot records`);
   rangeSnapshots.forEach(rangeSnapshot => {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
 
