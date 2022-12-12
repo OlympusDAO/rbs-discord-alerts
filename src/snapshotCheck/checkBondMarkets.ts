@@ -2,7 +2,15 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { BONDS_SUBGRAPH_URL, ERC20_DAI, ERC20_OHM_V2, OPERATOR_CONTRACT, RBS_SUBGRAPH_URL } from "../constants";
+import {
+  BONDS_SUBGRAPH_URL,
+  ERC20_DAI,
+  ERC20_OHM_V2,
+  OPERATOR_CONTRACT_V1,
+  OPERATOR_CONTRACT_V1_1,
+  OPERATOR_CONTRACT_V1_1_BLOCK,
+  RBS_SUBGRAPH_URL,
+} from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
   MarketClosedEvent,
@@ -17,7 +25,7 @@ import {
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "../helpers/contractHelper";
-import { castFloat, castFloatNullable, formatCurrency, formatNumber } from "../helpers/numberHelper";
+import { castFloat, castFloatNullable, castInt, formatCurrency, formatNumber } from "../helpers/numberHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 
 const FUNCTION_KEY = "checkBondMarkets";
@@ -56,6 +64,15 @@ const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId
 const pushError = (error: string, errors: string[]): void => {
   console.error(error);
   errors.push(error);
+};
+
+const getCurrentOperatorContractAddress = (block: number): string => {
+  // Handle RBS 1.1 contracts
+  if (castInt(block) >= OPERATOR_CONTRACT_V1_1_BLOCK) {
+    return OPERATOR_CONTRACT_V1_1.toLowerCase();
+  }
+
+  return OPERATOR_CONTRACT_V1.toLowerCase();
 };
 
 /**
@@ -118,10 +135,11 @@ const checkCushionUp = (
   // The marketId is unique, so we are guaranteed that there is only one result
   const createdMarket = createdMarkets[0];
 
+  const currentOperatorAddress = getCurrentOperatorContractAddress(createdMarket.block);
   // The owner should be the operator contract
-  if (createdMarket.market.owner.toString().toLowerCase() !== OPERATOR_CONTRACT.toLowerCase()) {
+  if (createdMarket.market.owner.toString().toLowerCase() !== currentOperatorAddress) {
     pushError(
-      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${OPERATOR_CONTRACT}`,
+      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress}`,
       errors,
     );
   } else {
@@ -337,9 +355,10 @@ const checkMarketCreated = (
   );
 
   // The owner should be the operator contract
-  if (!isBytesEqual(event.market.owner, OPERATOR_CONTRACT)) {
+  const currentOperatorAddress = getCurrentOperatorContractAddress(event.block);
+  if (!isBytesEqual(event.market.owner, currentOperatorAddress)) {
     pushError(
-      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${OPERATOR_CONTRACT}`,
+      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress}`,
       errors,
     );
   } else {
