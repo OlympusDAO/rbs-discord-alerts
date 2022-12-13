@@ -11,8 +11,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  BigDecimal: number;
-  BigInt: number;
+  BigDecimal: string;
+  BigInt: string;
   Bytes: Uint8Array;
 };
 
@@ -1586,11 +1586,11 @@ export type LatestPriceSnapshotQuery = {
   priceSnapshots: Array<{
     __typename?: "PriceSnapshot";
     id: string;
-    block: number;
+    block: string;
     date: string;
-    timestamp: number;
-    priceGOhm: number;
-    priceOhm: number;
+    timestamp: string;
+    priceGOhm: string;
+    priceOhm: string;
   }>;
 };
 

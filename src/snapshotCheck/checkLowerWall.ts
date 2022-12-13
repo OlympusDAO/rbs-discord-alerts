@@ -66,7 +66,7 @@ export const checkLowerWall = async (
   // Get the lower wall price 6 hours ago
   const previousBlockResults = await rangeSnapshotClient
     .query(RangeSnapshotAtBlockDocument, {
-      block: historicalBlock,
+      block: historicalBlock.toString(),
     })
     .toPromise();
   if (!previousBlockResults.data) {

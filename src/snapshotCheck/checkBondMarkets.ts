@@ -32,7 +32,7 @@ const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
 
 const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): PriceEvent[] => {
-  const filteredByBlock = events.filter(priceEvent => priceEvent.block == block);
+  const filteredByBlock = events.filter(priceEvent => castInt(priceEvent.block) == block);
 
   if (!type) {
     return filteredByBlock;
@@ -42,23 +42,23 @@ const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): 
 };
 
 const filterCreatedEvents = (events: MarketCreatedEvent[], block: number, marketId?: number): MarketCreatedEvent[] => {
-  const filteredByBlock = events.filter(createdEvent => createdEvent.block == block);
+  const filteredByBlock = events.filter(createdEvent => castInt(createdEvent.block) == block);
 
   if (!marketId) {
     return filteredByBlock;
   }
 
-  return filteredByBlock.filter(createdEvent => createdEvent.marketId == marketId);
+  return filteredByBlock.filter(createdEvent => castInt(createdEvent.marketId) == marketId);
 };
 
 const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId?: number): MarketClosedEvent[] => {
-  const filteredByBlock = events.filter(closedEvent => closedEvent.block == block);
+  const filteredByBlock = events.filter(closedEvent => castInt(closedEvent.block) == block);
 
   if (!marketId) {
     return filteredByBlock;
   }
 
-  return filteredByBlock.filter(createdEvent => createdEvent.marketId == marketId);
+  return filteredByBlock.filter(createdEvent => castInt(createdEvent.marketId) == marketId);
 };
 
 const pushError = (error: string, errors: string[]): void => {
@@ -113,7 +113,7 @@ const checkCushionUp = (
   }
 
   // Check that a market created event was fired by the Bond Protocol contracts
-  const createdMarkets = filterCreatedEvents(marketCreatedEvents, rangeSnapshot.block, marketId);
+  const createdMarkets = filterCreatedEvents(marketCreatedEvents, castInt(rangeSnapshot.block), marketId);
   if (!createdMarkets.length) {
     pushError(
       `Expected to find a MarketCreatedEvent with id (${marketId}) for a CushionUp, but it was missing.`,
@@ -135,7 +135,7 @@ const checkCushionUp = (
   // The marketId is unique, so we are guaranteed that there is only one result
   const createdMarket = createdMarkets[0];
 
-  const currentOperatorAddress = getCurrentOperatorContractAddress(createdMarket.block);
+  const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(createdMarket.block));
   // The owner should be the operator contract
   if (createdMarket.market.owner.toString().toLowerCase() !== currentOperatorAddress) {
     pushError(
@@ -304,7 +304,7 @@ const checkCushionDown = (
   console.info(`\n\nCommencing CushionDown check`);
 
   // Check that a market closed event was fired in the same block
-  const closedMarkets = filterClosedEvents(marketClosedEvents, rangeSnapshot.block);
+  const closedMarkets = filterClosedEvents(marketClosedEvents, castInt(rangeSnapshot.block));
   if (!closedMarkets.length) {
     pushError(`Expected to find a MarketClosedEvent for a CushionDown event, but it was missing.`, errors);
     return errors; // Can't proceed
@@ -371,7 +371,7 @@ const checkMarketCreated = (
   );
 
   // The owner should be the operator contract
-  const currentOperatorAddress = getCurrentOperatorContractAddress(event.block);
+  const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(event.block));
   if (!isBytesEqual(event.market.owner, currentOperatorAddress)) {
     pushError(
       `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress}`,
@@ -552,7 +552,7 @@ export const checkBondMarkets = async (
   console.debug(`Fetching RangeSnapshot records since block ${latestBlock}`);
   const rangeSnapshotResults = await rangeSnapshotClient
     .query(RangeSnapshotSinceBlockDocument, {
-      sinceBlock: latestBlock,
+      sinceBlock: latestBlock.toString(),
     })
     .toPromise();
   // This previously checked for a 0 length array returned. However, if indexing lags slightly, we could get 0 records. Hence, it should not be an error.
@@ -569,7 +569,7 @@ export const checkBondMarkets = async (
   console.debug(`Fetching PriceEvent records since block ${latestBlock}`);
   const priceEventResults = await rangeSnapshotClient
     .query(RbsPriceEventsDocument, {
-      latestBlock: latestBlock,
+      latestBlock: latestBlock.toString(),
     })
     .toPromise();
   if (!priceEventResults.data) {
@@ -581,7 +581,7 @@ export const checkBondMarkets = async (
   console.debug(`Fetching MarketCreatedEvent records since block ${latestBlock}`);
   const marketsCreatedResults = await bondsClient
     .query(MarketCreatedEventsDocument, {
-      sinceBlock: latestBlock,
+      sinceBlock: latestBlock.toString(),
     })
     .toPromise();
   if (!marketsCreatedResults.data) {
@@ -595,7 +595,7 @@ export const checkBondMarkets = async (
   console.debug(`Fetching MarketClosedEvent records since block ${latestBlock}`);
   const marketsClosedResults = await bondsClient
     .query(MarketClosedEventsDocument, {
-      sinceBlock: latestBlock,
+      sinceBlock: latestBlock.toString(),
     })
     .toPromise();
   if (!marketsClosedResults.data) {
@@ -610,8 +610,9 @@ export const checkBondMarkets = async (
   console.info(`Processing ${rangeSnapshots.length} RangeSnapshot records`);
   rangeSnapshots.forEach(rangeSnapshot => {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
+    const rangeSnapshotBlock = castInt(rangeSnapshot.block);
 
-    const cushionUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "CushionUp");
+    const cushionUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "CushionUp");
     cushionUpEventsAtBlock.forEach(priceEvent => {
       const errors = checkCushionUp(priceEvent, rangeSnapshot, marketCreatedEvents);
       if (errors.length == 0) return;
@@ -627,7 +628,7 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const cushionDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "CushionDown");
+    const cushionDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "CushionDown");
     cushionDownEventsAtBlock.forEach(priceEvent => {
       const errors = checkCushionDown(priceEvent, rangeSnapshot, marketClosedEvents);
       if (errors.length == 0) return;
@@ -640,7 +641,7 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const wallUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "WallUp");
+    const wallUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallUp");
     wallUpEventsAtBlock.forEach(priceEvent => {
       const errors = checkWallUp(priceEvent, rangeSnapshot);
       if (errors.length == 0) return;
@@ -653,7 +654,7 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const wallDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshot.block, "WallDown");
+    const wallDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallDown");
     wallDownEventsAtBlock.forEach(priceEvent => {
       const errors = checkWallDown(priceEvent, rangeSnapshot);
       if (errors.length == 0) return;
@@ -666,7 +667,7 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const marketCreatedEventsAtBlock = filterCreatedEvents(marketCreatedEvents, rangeSnapshot.block);
+    const marketCreatedEventsAtBlock = filterCreatedEvents(marketCreatedEvents, rangeSnapshotBlock);
     marketCreatedEventsAtBlock.forEach(marketEvent => {
       const errors = checkMarketCreated(marketEvent, rangeSnapshot, cushionUpEventsAtBlock);
       if (errors.length == 0) return;
@@ -680,7 +681,7 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const marketClosedEventsAtBlock = filterClosedEvents(marketClosedEvents, rangeSnapshot.block);
+    const marketClosedEventsAtBlock = filterClosedEvents(marketClosedEvents, rangeSnapshotBlock);
     marketClosedEventsAtBlock.forEach(marketEvent => {
       const errors = checkMarketClosed(marketEvent, rangeSnapshot, cushionDownEventsAtBlock);
       if (errors.length == 0) return;
@@ -694,7 +695,7 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    updatedLatestBlock = rangeSnapshot.block;
+    updatedLatestBlock = rangeSnapshotBlock;
   });
 
   // Update latest block
