@@ -258,20 +258,20 @@ const checkCushionUp = (
     const CAPACITY_DECIMALS = 9;
 
     // bond market capacity = cushion factor * highCapacityOhm or lowCapacityReserve
-    const expectedCapacity = formatNumber(
+    const expectedCapacity =
       operatorCushionFactor *
-        castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve),
-      CAPACITY_DECIMALS,
-    );
-    const actualCapacity = formatNumber(castFloat(createdMarket.market.capacityInPayoutToken), CAPACITY_DECIMALS);
+      castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve);
+    const actualCapacity = castFloat(createdMarket.market.capacityInPayoutToken);
 
     if (expectedCapacity !== actualCapacity) {
       pushError(
-        `Expected market capacity (${actualCapacity} ${priceEvent.isHigh ? "OHM" : "DAI"}) to be: ${expectedCapacity}`,
+        `Expected market capacity (${formatNumber(actualCapacity, CAPACITY_DECIMALS)} ${
+          priceEvent.isHigh ? "OHM" : "DAI"
+        }) to be: ${formatNumber(expectedCapacity, CAPACITY_DECIMALS)}`,
         errors,
       );
     } else {
-      console.debug(`Market capacity is as expected: ${expectedCapacity}`);
+      console.debug(`Market capacity is as expected: ${formatNumber(expectedCapacity, CAPACITY_DECIMALS)}`);
     }
   } else {
     pushError(`Expected the cushion factor to be set, but it wasn't`, errors);
@@ -302,6 +302,7 @@ const checkCushionDown = (
 ): string[] => {
   const errors: string[] = [];
   console.info(`\n\nCommencing CushionDown check`);
+  console.debug(`Price event: ${JSON.stringify(priceEvent, null, 2)}`);
 
   // Check that a market closed event was fired in the same block
   const closedMarkets = filterClosedEvents(marketClosedEvents, castInt(rangeSnapshot.block));
@@ -314,27 +315,43 @@ const checkCushionDown = (
 
   // The marketId is unique, so we are guaranteed that there is only one result
   const closedMarket = closedMarkets[0];
+  console.debug(`MarketClosedEvent: ${JSON.stringify(closedMarket, null, 2)}`);
 
   // Check that the market is actually closed
   if (!closedMarket.market.closedBlock) {
     pushError(`Expected market to be closed for a CushionDown event`, errors);
   } else {
-    console.debug(`Market is correctly closed`);
+    console.debug(`Market has been closed`);
   }
 
-  const durationExceeded =
-    closedMarket.market.durationActualMilliseconds &&
-    closedMarket.market.durationActualMilliseconds >= closedMarket.market.durationMilliseconds;
-  const priceOutsideCushion =
-    priceEvent.snapshot.ohmPrice &&
-    (priceEvent.isHigh
-      ? priceEvent.snapshot.ohmPrice > priceEvent.snapshot.highWallPrice
-      : priceEvent.snapshot.lowWallPrice);
-  const capacityExhausted = false; // TODO implement check capacity = sold
+  // Check that the market was closed for the right reason(s)
+  // Duration exceeded, price outside wall, price in range or capacity exhausted
+  const actualDuration: number | null = castFloatNullable(closedMarket.market.durationActualMilliseconds);
+  const durationExceeded: boolean = actualDuration
+    ? actualDuration >= castFloat(closedMarket.market.durationMilliseconds)
+    : false;
+  console.debug(`Duration Exceeded? ${durationExceeded}`);
+  const ohmPrice: number | null = castFloatNullable(priceEvent.snapshot.ohmPrice);
+  const priceOutsideWall: boolean = ohmPrice
+    ? priceEvent.isHigh
+      ? ohmPrice > castFloat(priceEvent.snapshot.highWallPrice)
+      : ohmPrice < castFloat(priceEvent.snapshot.lowWallPrice)
+    : false;
+  console.debug(`Price Outside Wall? ${priceOutsideWall}`);
+  const priceInRange: boolean = ohmPrice
+    ? priceEvent.isHigh
+      ? ohmPrice < castFloat(priceEvent.snapshot.highCushionPrice)
+      : ohmPrice > castFloat(priceEvent.snapshot.lowCushionPrice)
+    : false;
+  console.debug(`Price In Range? ${priceInRange}`);
+  const capacityExhausted: boolean =
+    castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve) ==
+    castFloat(closedMarket.market.soldInPayoutToken);
+  console.debug(`Capacity Exhausted? ${capacityExhausted}`);
 
-  if (!durationExceeded && !priceOutsideCushion && !capacityExhausted) {
+  if (!durationExceeded && !priceInRange && !priceOutsideWall && !capacityExhausted) {
     pushError(
-      `Expected market to be closed due to one of the following (but it was not): duration exceeded, price outside cushion, capacity exhausted`,
+      `Expected market (${closedMarket.marketId}) to be closed due to one of the following (but it was not): duration exceeded, price outside wall, price in range, capacity exhausted`,
       errors,
     );
   } else {
