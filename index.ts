@@ -2,6 +2,7 @@ import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
 
 import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
+import { createFunction } from "./pulumi/httpCallbackFunction";
 import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
 import { performSnapshotChecks } from "./src/handleSnapshotCheck";
@@ -27,6 +28,9 @@ const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
 
+const DEFAULT_MEMORY_MB = 256;
+const DEFAULT_RUNTIME = "nodejs14";
+
 // Create the KV store
 const FIRESTORE_DOCUMENT_STACK = PROJECT_NAME_STACK;
 const datastore = new gcp.firestore.Document(FIRESTORE_DOCUMENT_STACK, {
@@ -50,39 +54,20 @@ const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 const FUNCTION_PRICE_EVENTS = "rbs-price-events";
 const FUNCTION_PRICE_EVENTS_STACK = `${FUNCTION_PRICE_EVENTS}-${pulumi.getStack()}`;
 
-const functionPriceEvents = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_PRICE_EVENTS_STACK, {
-  runtime: "nodejs14",
-  timeout: FUNCTION_EXPIRATION_SECONDS,
-  availableMemoryMb: 256,
-  callback: async (req, res) => {
+const [functionPriceEvents, functionPriceEventsName] = createFunction(
+  FUNCTION_PRICE_EVENTS_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert, webhookEmergency);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-});
-
-export const functionPriceEventsName = functionPriceEvents.function.name;
-export const functionPriceEventsUrl = functionPriceEvents.httpsTriggerUrl;
-
-// Scheduling
-const schedulerJobPriceEvents = new gcp.cloudscheduler.Job(
-  FUNCTION_PRICE_EVENTS_STACK,
-  {
-    schedule: "* * * * *", // Every minute
-    timeZone: "UTC",
-    httpTarget: {
-      httpMethod: "GET",
-      uri: functionPriceEventsUrl,
-    },
-  },
-  {
-    dependsOn: [functionPriceEvents],
-  },
+  "* * * * *", // Every minute
 );
-
-export const schedulerJobPriceEventsName = schedulerJobPriceEvents.name;
 
 /**
  * RBS Snapshot Checks
@@ -90,11 +75,12 @@ export const schedulerJobPriceEventsName = schedulerJobPriceEvents.name;
 const FUNCTION_SNAPSHOT_CHECK = "rbs-snapshot-check";
 const FUNCTION_SNAPSHOT_CHECK_STACK = `${FUNCTION_SNAPSHOT_CHECK}-${pulumi.getStack()}`;
 
-const functionSnapshotCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_SNAPSHOT_CHECK_STACK, {
-  runtime: "nodejs14",
-  timeout: FUNCTION_EXPIRATION_SECONDS,
-  availableMemoryMb: 256,
-  callback: async (req, res) => {
+const [functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
+  FUNCTION_SNAPSHOT_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performSnapshotChecks(
       datastore.documentId.get(),
@@ -107,28 +93,8 @@ const functionSnapshotCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTI
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-});
-
-export const functionSnapshotCheckName = functionSnapshotCheck.function.name;
-export const functionSnapshotCheckUrl = functionSnapshotCheck.httpsTriggerUrl;
-
-// Scheduling
-const schedulerJobSnapshotCheck = new gcp.cloudscheduler.Job(
-  FUNCTION_SNAPSHOT_CHECK_STACK,
-  {
-    schedule: "* * * * *", // Every minute (the minimum)
-    timeZone: "UTC",
-    httpTarget: {
-      httpMethod: "GET",
-      uri: functionSnapshotCheckUrl,
-    },
-  },
-  {
-    dependsOn: [functionSnapshotCheck],
-  },
+  "* * * * *", // Every minute
 );
-
-export const schedulerJobSnapshotCheckName = schedulerJobSnapshotCheck.name;
 
 /**
  * RBS Heartbeat Checks
@@ -136,11 +102,12 @@ export const schedulerJobSnapshotCheckName = schedulerJobSnapshotCheck.name;
 const FUNCTION_HEARTBEAT_CHECK = "rbs-heartbeat-check";
 const FUNCTION_HEARTBEAT_CHECK_STACK = `${FUNCTION_HEARTBEAT_CHECK}-${pulumi.getStack()}`;
 
-const functionHeartbeatCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_HEARTBEAT_CHECK_STACK, {
-  runtime: "nodejs14",
-  timeout: FUNCTION_EXPIRATION_SECONDS,
-  availableMemoryMb: 256,
-  callback: async (req, res) => {
+const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
+  FUNCTION_HEARTBEAT_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performHeartbeatChecks(
       datastore.documentId.get(),
@@ -152,28 +119,8 @@ const functionHeartbeatCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCT
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-});
-
-export const functionHeartbeatCheckName = functionHeartbeatCheck.function.name;
-export const functionHeartbeatCheckUrl = functionHeartbeatCheck.httpsTriggerUrl;
-
-// Scheduling
-const schedulerJobHeartbeatCheck = new gcp.cloudscheduler.Job(
-  FUNCTION_HEARTBEAT_CHECK_STACK,
-  {
-    schedule: "* * * * *", // Every minute (the minimum)
-    timeZone: "UTC",
-    httpTarget: {
-      httpMethod: "GET",
-      uri: functionHeartbeatCheckUrl,
-    },
-  },
-  {
-    dependsOn: [functionHeartbeatCheck],
-  },
+  "* * * * *", // Every minute
 );
-
-export const schedulerJobHeartbeatCheckName = schedulerJobHeartbeatCheck.name;
 
 /**
  * Create Alert Policies
