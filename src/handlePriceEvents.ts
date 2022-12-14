@@ -42,6 +42,7 @@ export const performEventChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
   alertWebhookUrl: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emergencyWebhookUrl: string,
 ): Promise<void> => {
   // Get last processed block

@@ -209,3 +209,14 @@ query RangeSnapshotSinceBlock($sinceBlock: BigInt!) {
     wallSpread
   }
 }
+
+query BeatsSinceBlock($sinceBlock: BigInt!) {
+  beats(orderBy: block, orderDirection: asc) {
+    block
+    blockchain
+    date
+    id
+    timestamp
+    transaction
+  }
+}

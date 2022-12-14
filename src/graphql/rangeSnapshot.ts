@@ -16,6 +16,340 @@ export type Scalars = {
   Bytes: Uint8Array;
 };
 
+export type Beat = {
+  __typename?: "Beat";
+  block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
+  date: Scalars["String"];
+  id: Scalars["ID"];
+  timestamp: Scalars["BigInt"];
+  transaction: Scalars["Bytes"];
+};
+
+export type BeatRewardIssued = {
+  __typename?: "BeatRewardIssued";
+  block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
+  date: Scalars["String"];
+  id: Scalars["ID"];
+  rewardAmount: Scalars["BigDecimal"];
+  rewardToken: Scalars["Bytes"];
+  timestamp: Scalars["BigInt"];
+  to: Scalars["Bytes"];
+  transaction: Scalars["Bytes"];
+};
+
+export type BeatRewardIssued_Filter = {
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  block?: InputMaybe<Scalars["BigInt"]>;
+  block_gt?: InputMaybe<Scalars["BigInt"]>;
+  block_gte?: InputMaybe<Scalars["BigInt"]>;
+  block_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  block_lt?: InputMaybe<Scalars["BigInt"]>;
+  block_lte?: InputMaybe<Scalars["BigInt"]>;
+  block_not?: InputMaybe<Scalars["BigInt"]>;
+  block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date?: InputMaybe<Scalars["String"]>;
+  date_contains?: InputMaybe<Scalars["String"]>;
+  date_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_ends_with?: InputMaybe<Scalars["String"]>;
+  date_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_gt?: InputMaybe<Scalars["String"]>;
+  date_gte?: InputMaybe<Scalars["String"]>;
+  date_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_lt?: InputMaybe<Scalars["String"]>;
+  date_lte?: InputMaybe<Scalars["String"]>;
+  date_not?: InputMaybe<Scalars["String"]>;
+  date_not_contains?: InputMaybe<Scalars["String"]>;
+  date_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_not_starts_with?: InputMaybe<Scalars["String"]>;
+  date_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_starts_with?: InputMaybe<Scalars["String"]>;
+  date_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  id_gt?: InputMaybe<Scalars["ID"]>;
+  id_gte?: InputMaybe<Scalars["ID"]>;
+  id_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id_lt?: InputMaybe<Scalars["ID"]>;
+  id_lte?: InputMaybe<Scalars["ID"]>;
+  id_not?: InputMaybe<Scalars["ID"]>;
+  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  rewardAmount?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  rewardAmount_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_not?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  rewardToken?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_contains?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  rewardToken_not?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  timestamp?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  to?: InputMaybe<Scalars["Bytes"]>;
+  to_contains?: InputMaybe<Scalars["Bytes"]>;
+  to_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  to_not?: InputMaybe<Scalars["Bytes"]>;
+  to_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  to_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction?: InputMaybe<Scalars["Bytes"]>;
+  transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_not?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+};
+
+export enum BeatRewardIssued_OrderBy {
+  Block = "block",
+  Blockchain = "blockchain",
+  Date = "date",
+  Id = "id",
+  RewardAmount = "rewardAmount",
+  RewardToken = "rewardToken",
+  Timestamp = "timestamp",
+  To = "to",
+  Transaction = "transaction",
+}
+
+export type BeatRewardUpdated = {
+  __typename?: "BeatRewardUpdated";
+  block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
+  date: Scalars["String"];
+  id: Scalars["ID"];
+  rewardAmount: Scalars["BigDecimal"];
+  rewardToken: Scalars["Bytes"];
+  timestamp: Scalars["BigInt"];
+  token: Scalars["Bytes"];
+  transaction: Scalars["Bytes"];
+};
+
+export type BeatRewardUpdated_Filter = {
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  block?: InputMaybe<Scalars["BigInt"]>;
+  block_gt?: InputMaybe<Scalars["BigInt"]>;
+  block_gte?: InputMaybe<Scalars["BigInt"]>;
+  block_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  block_lt?: InputMaybe<Scalars["BigInt"]>;
+  block_lte?: InputMaybe<Scalars["BigInt"]>;
+  block_not?: InputMaybe<Scalars["BigInt"]>;
+  block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date?: InputMaybe<Scalars["String"]>;
+  date_contains?: InputMaybe<Scalars["String"]>;
+  date_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_ends_with?: InputMaybe<Scalars["String"]>;
+  date_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_gt?: InputMaybe<Scalars["String"]>;
+  date_gte?: InputMaybe<Scalars["String"]>;
+  date_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_lt?: InputMaybe<Scalars["String"]>;
+  date_lte?: InputMaybe<Scalars["String"]>;
+  date_not?: InputMaybe<Scalars["String"]>;
+  date_not_contains?: InputMaybe<Scalars["String"]>;
+  date_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_not_starts_with?: InputMaybe<Scalars["String"]>;
+  date_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_starts_with?: InputMaybe<Scalars["String"]>;
+  date_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  id_gt?: InputMaybe<Scalars["ID"]>;
+  id_gte?: InputMaybe<Scalars["ID"]>;
+  id_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id_lt?: InputMaybe<Scalars["ID"]>;
+  id_lte?: InputMaybe<Scalars["ID"]>;
+  id_not?: InputMaybe<Scalars["ID"]>;
+  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  rewardAmount?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  rewardAmount_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_not?: InputMaybe<Scalars["BigDecimal"]>;
+  rewardAmount_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  rewardToken?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_contains?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  rewardToken_not?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  timestamp?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  token?: InputMaybe<Scalars["Bytes"]>;
+  token_contains?: InputMaybe<Scalars["Bytes"]>;
+  token_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  token_not?: InputMaybe<Scalars["Bytes"]>;
+  token_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  token_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction?: InputMaybe<Scalars["Bytes"]>;
+  transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_not?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+};
+
+export enum BeatRewardUpdated_OrderBy {
+  Block = "block",
+  Blockchain = "blockchain",
+  Date = "date",
+  Id = "id",
+  RewardAmount = "rewardAmount",
+  RewardToken = "rewardToken",
+  Timestamp = "timestamp",
+  Token = "token",
+  Transaction = "transaction",
+}
+
+export type Beat_Filter = {
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  block?: InputMaybe<Scalars["BigInt"]>;
+  block_gt?: InputMaybe<Scalars["BigInt"]>;
+  block_gte?: InputMaybe<Scalars["BigInt"]>;
+  block_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  block_lt?: InputMaybe<Scalars["BigInt"]>;
+  block_lte?: InputMaybe<Scalars["BigInt"]>;
+  block_not?: InputMaybe<Scalars["BigInt"]>;
+  block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date?: InputMaybe<Scalars["String"]>;
+  date_contains?: InputMaybe<Scalars["String"]>;
+  date_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_ends_with?: InputMaybe<Scalars["String"]>;
+  date_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_gt?: InputMaybe<Scalars["String"]>;
+  date_gte?: InputMaybe<Scalars["String"]>;
+  date_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_lt?: InputMaybe<Scalars["String"]>;
+  date_lte?: InputMaybe<Scalars["String"]>;
+  date_not?: InputMaybe<Scalars["String"]>;
+  date_not_contains?: InputMaybe<Scalars["String"]>;
+  date_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_not_starts_with?: InputMaybe<Scalars["String"]>;
+  date_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_starts_with?: InputMaybe<Scalars["String"]>;
+  date_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  id_gt?: InputMaybe<Scalars["ID"]>;
+  id_gte?: InputMaybe<Scalars["ID"]>;
+  id_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id_lt?: InputMaybe<Scalars["ID"]>;
+  id_lte?: InputMaybe<Scalars["ID"]>;
+  id_not?: InputMaybe<Scalars["ID"]>;
+  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  timestamp?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  transaction?: InputMaybe<Scalars["Bytes"]>;
+  transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_not?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+};
+
+export enum Beat_OrderBy {
+  Block = "block",
+  Blockchain = "blockchain",
+  Date = "date",
+  Id = "id",
+  Timestamp = "timestamp",
+  Transaction = "transaction",
+}
+
 export type BlockChangedFilter = {
   number_gte: Scalars["Int"];
 };
@@ -584,6 +918,12 @@ export type Query = {
   __typename?: "Query";
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
+  beat?: Maybe<Beat>;
+  beatRewardIssued?: Maybe<BeatRewardIssued>;
+  beatRewardIssueds: Array<BeatRewardIssued>;
+  beatRewardUpdated?: Maybe<BeatRewardUpdated>;
+  beatRewardUpdateds: Array<BeatRewardUpdated>;
+  beats: Array<Beat>;
   movingAverageDurationChanged?: Maybe<MovingAverageDurationChanged>;
   movingAverageDurationChangeds: Array<MovingAverageDurationChanged>;
   newObservation?: Maybe<NewObservation>;
@@ -606,6 +946,54 @@ export type Query = {
 
 export type Query_MetaArgs = {
   block?: InputMaybe<Block_Height>;
+};
+
+export type QueryBeatArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type QueryBeatRewardIssuedArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type QueryBeatRewardIssuedsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<BeatRewardIssued_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<BeatRewardIssued_Filter>;
+};
+
+export type QueryBeatRewardUpdatedArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type QueryBeatRewardUpdatedsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<BeatRewardUpdated_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<BeatRewardUpdated_Filter>;
+};
+
+export type QueryBeatsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<Beat_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<Beat_Filter>;
 };
 
 export type QueryMovingAverageDurationChangedArgs = {
@@ -1156,6 +1544,12 @@ export type Subscription = {
   __typename?: "Subscription";
   /** Access to subgraph metadata */
   _meta?: Maybe<_Meta_>;
+  beat?: Maybe<Beat>;
+  beatRewardIssued?: Maybe<BeatRewardIssued>;
+  beatRewardIssueds: Array<BeatRewardIssued>;
+  beatRewardUpdated?: Maybe<BeatRewardUpdated>;
+  beatRewardUpdateds: Array<BeatRewardUpdated>;
+  beats: Array<Beat>;
   movingAverageDurationChanged?: Maybe<MovingAverageDurationChanged>;
   movingAverageDurationChangeds: Array<MovingAverageDurationChanged>;
   newObservation?: Maybe<NewObservation>;
@@ -1178,6 +1572,54 @@ export type Subscription = {
 
 export type Subscription_MetaArgs = {
   block?: InputMaybe<Block_Height>;
+};
+
+export type SubscriptionBeatArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionBeatRewardIssuedArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionBeatRewardIssuedsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<BeatRewardIssued_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<BeatRewardIssued_Filter>;
+};
+
+export type SubscriptionBeatRewardUpdatedArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionBeatRewardUpdatedsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<BeatRewardUpdated_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<BeatRewardUpdated_Filter>;
+};
+
+export type SubscriptionBeatsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<Beat_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<Beat_Filter>;
 };
 
 export type SubscriptionMovingAverageDurationChangedArgs = {
@@ -1795,6 +2237,23 @@ export type RangeSnapshotSinceBlockQuery = {
   }>;
 };
 
+export type BeatsSinceBlockQueryVariables = Exact<{
+  sinceBlock: Scalars["BigInt"];
+}>;
+
+export type BeatsSinceBlockQuery = {
+  __typename?: "Query";
+  beats: Array<{
+    __typename?: "Beat";
+    block: string;
+    blockchain: string;
+    date: string;
+    id: string;
+    timestamp: string;
+    transaction: Uint8Array;
+  }>;
+};
+
 export const RbsPriceEventsDocument = {
   kind: "Document",
   definitions: [
@@ -2330,3 +2789,52 @@ export const RangeSnapshotSinceBlockDocument = {
     },
   ],
 } as unknown as DocumentNode<RangeSnapshotSinceBlockQuery, RangeSnapshotSinceBlockQueryVariables>;
+export const BeatsSinceBlockDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "BeatsSinceBlock" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "beats" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "block" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "EnumValue", value: "asc" },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "transaction" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<BeatsSinceBlockQuery, BeatsSinceBlockQueryVariables>;
