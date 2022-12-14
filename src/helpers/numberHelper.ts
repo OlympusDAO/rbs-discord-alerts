@@ -10,6 +10,12 @@ export const formatNumber = (input: number | null | undefined, decimals = 2): st
   return `${Number(input).toFixed(decimals)}`;
 };
 
+export const formatPercent = (input: number | null | undefined, decimals = 2): string => {
+  if (input == null || typeof input == "undefined") return "N/A";
+
+  return `${Number(input * 100).toFixed(decimals)}%`;
+};
+
 /**
  * GraphQL sometimes returns strings as numbers (even though the typing is `number`),
  * so we do a runtime check of the type and parse it as a float if needed.

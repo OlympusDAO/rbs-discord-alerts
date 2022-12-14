@@ -3,6 +3,7 @@
     "main": "index.ts",
     "scripts": {
         "execute:events": "export $(cat .env | xargs) && ts-node src/handlePriceEvents.ts",
+        "execute:heartbeats": "export $(cat .env | xargs) && ts-node src/handleHeartbeat.ts",
         "execute:snapshots": "export $(cat .env | xargs) && ts-node src/handleSnapshotCheck.ts",
         "codegen": "graphql-codegen",
         "build": "tsc"
