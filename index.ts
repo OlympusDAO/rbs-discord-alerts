@@ -2,6 +2,7 @@ import * as gcp from "@pulumi/gcp";
 import * as pulumi from "@pulumi/pulumi";
 
 import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
+import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
 import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 
@@ -130,6 +131,51 @@ const schedulerJobSnapshotCheck = new gcp.cloudscheduler.Job(
 export const schedulerJobSnapshotCheckName = schedulerJobSnapshotCheck.name;
 
 /**
+ * RBS Heartbeat Checks
+ */
+const FUNCTION_HEARTBEAT_CHECK = "rbs-heartbeat-check";
+const FUNCTION_HEARTBEAT_CHECK_STACK = `${FUNCTION_HEARTBEAT_CHECK}-${pulumi.getStack()}`;
+
+const functionHeartbeatCheck = new gcp.cloudfunctions.HttpCallbackFunction(FUNCTION_HEARTBEAT_CHECK_STACK, {
+  runtime: "nodejs14",
+  timeout: FUNCTION_EXPIRATION_SECONDS,
+  availableMemoryMb: 256,
+  callback: async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performHeartbeatChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      webhookAlert,
+      webhookEmergency,
+    );
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+});
+
+export const functionHeartbeatCheckName = functionHeartbeatCheck.function.name;
+export const functionHeartbeatCheckUrl = functionHeartbeatCheck.httpsTriggerUrl;
+
+// Scheduling
+const schedulerJobHeartbeatCheck = new gcp.cloudscheduler.Job(
+  FUNCTION_HEARTBEAT_CHECK_STACK,
+  {
+    schedule: "* * * * *", // Every minute (the minimum)
+    timeZone: "UTC",
+    httpTarget: {
+      httpMethod: "GET",
+      uri: functionHeartbeatCheckUrl,
+    },
+  },
+  {
+    dependsOn: [functionHeartbeatCheck],
+  },
+);
+
+export const schedulerJobHeartbeatCheckName = schedulerJobHeartbeatCheck.name;
+
+/**
  * Create Alert Policies
  */
 // Email notification channel
@@ -168,6 +214,16 @@ createAlertFunctionError(FUNCTION_SNAPSHOT_CHECK_STACK, functionSnapshotCheckNam
 ]);
 
 createAlertFunctionExecutions(FUNCTION_SNAPSHOT_CHECK_STACK, functionSnapshotCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
@@ -332,6 +388,47 @@ new gcp.monitoring.Dashboard(
             {
               "height": 4,
               "widget": {
+                "title": "${FUNCTION_HEARTBEAT_CHECK} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionHeartbeatCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 0,
+              "yPos": 4
+            },
+            {
+              "height": 4,
+              "widget": {
                 "title": "Document Reads per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
                 "xyChart": {
                   "chartOptions": {
@@ -370,7 +467,7 @@ new gcp.monitoring.Dashboard(
               },
               "width": 6,
               "xPos": 0,
-              "yPos": 4
+              "yPos": 8
             },
             {
               "height": 4,
@@ -413,12 +510,12 @@ new gcp.monitoring.Dashboard(
               },
               "width": 6,
               "xPos": 6,
-              "yPos": 4
+              "yPos": 8
             }
           ]
         }
       }`,
   },
-  { dependsOn: [functionPriceEvents, functionSnapshotCheck] },
+  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck] },
 );
 export const dashboardName = DASHBOARD_NAME;
