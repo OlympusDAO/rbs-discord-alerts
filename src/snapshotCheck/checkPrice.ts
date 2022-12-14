@@ -12,6 +12,7 @@ import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelpe
 
 const PRICE_DELTA = 0.05; // 5%
 const FUNCTION_KEY = "checkPrice";
+const ALERT_THRESHOLD_SECONDS = 1 * 60 * 60; // 1 hour
 
 export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [boolean, string] => {
   const priceDiff = chainlinkPrice - lpPrice;
@@ -62,7 +63,7 @@ export const checkPrice = async (
   contractUrl?: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Price Manipulation`);
-  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
+  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
   // Grab latest RangeSnapshot
   const rangeSnapshotClient = new Client({
