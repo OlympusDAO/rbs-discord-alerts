@@ -211,7 +211,7 @@ query RangeSnapshotSinceBlock($sinceBlock: BigInt!) {
 }
 
 query BeatsSinceBlock($sinceBlock: BigInt!) {
-  beats(orderBy: block, orderDirection: asc) {
+  beats(orderBy: block, orderDirection: asc, where: { block_gt: $sinceBlock }) {
     block
     blockchain
     date

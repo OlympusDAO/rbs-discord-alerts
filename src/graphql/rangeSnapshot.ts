@@ -2820,6 +2820,20 @@ export const BeatsSinceBlockDocument = {
                 name: { kind: "Name", value: "orderDirection" },
                 value: { kind: "EnumValue", value: "asc" },
               },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "block_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "sinceBlock" } },
+                    },
+                  ],
+                },
+              },
             ],
             selectionSet: {
               kind: "SelectionSet",
