@@ -6,12 +6,13 @@ import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
-import { castFloat, castFloatNullable } from "../helpers/numberHelper";
+import { castFloat, castFloatNullable, formatPercent } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 
-const PRICE_DELTA = 0.1; // 10%
+const PRICE_DELTA = 0.05; // 5%
 const FUNCTION_KEY = "checkPrice";
+const ALERT_THRESHOLD_SECONDS = 1 * 60 * 60; // 1 hour
 
 export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [boolean, string] => {
   const priceDiff = chainlinkPrice - lpPrice;
@@ -27,15 +28,34 @@ export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [bool
   );
 
   if (chainlinkRelativePriceDiff < PRICE_DELTA && lpRelativePriceDiff < PRICE_DELTA) {
+    console.info(
+      `Chainlink (${chainlinkPrice}) and LP (${lpPrice}) prices are within price delta of ${formatPercent(
+        PRICE_DELTA,
+      )}: ${formatPercent(chainlinkRelativePriceDiff)}, ${formatPercent(lpRelativePriceDiff)}`,
+    );
     return [false, ""];
   }
 
   return [
     true,
-    `Chainlink (${chainlinkPrice}) and LP (${lpPrice}) prices differ by > ${PRICE_DELTA}: ${chainlinkRelativePriceDiff}.\n\nPotential manipulation of the Chainlink price oracle.`,
+    `Chainlink (${chainlinkPrice}) and LP (${lpPrice}) prices differ by > ${formatPercent(
+      PRICE_DELTA,
+    )}: ${formatPercent(chainlinkRelativePriceDiff)}, ${formatPercent(
+      lpRelativePriceDiff,
+    )}.\n\nPotential manipulation of the Chainlink price oracle.`,
   ];
 };
 
+/**
+ * Compares the price in the RangeSnapshot (derived from the Chainlink price feed currently) against
+ * the price in the PriceSnapshot (derived from the protocol-owned liquidity with the deepest liquidity).
+ *
+ * @param firestore
+ * @param mentionRoles
+ * @param webhookUrl
+ * @param contractUrl
+ * @returns
+ */
 export const checkPrice = async (
   firestore: DocumentReference,
   mentionRoles: string[],
@@ -43,7 +63,7 @@ export const checkPrice = async (
   contractUrl?: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Price Manipulation`);
-  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY);
+  const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
   // Grab latest RangeSnapshot
   const rangeSnapshotClient = new Client({

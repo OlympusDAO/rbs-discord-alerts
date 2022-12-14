@@ -59,7 +59,7 @@ export const checkCapacityDepletion = async (
   const lowerCushionCapacity = await client
     .query(LowerCushionCapacityDepletedDocument, {
       sinceDate: sinceDateString,
-      belowCapacity: CUSHION_CAPACITY_THRESHOLD,
+      belowCapacity: CUSHION_CAPACITY_THRESHOLD.toString(),
     })
     .toPromise();
   if (!lowerCushionCapacity.data) {
@@ -72,7 +72,7 @@ export const checkCapacityDepletion = async (
   const upperCushionCapacity = await client
     .query(UpperCushionCapacityDepletedDocument, {
       sinceDate: sinceDateString,
-      belowCapacity: CUSHION_CAPACITY_THRESHOLD,
+      belowCapacity: CUSHION_CAPACITY_THRESHOLD.toString(),
     })
     .toPromise();
   if (!upperCushionCapacity.data) {

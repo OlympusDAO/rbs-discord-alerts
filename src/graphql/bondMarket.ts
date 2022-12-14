@@ -11,8 +11,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  BigDecimal: number;
-  BigInt: number;
+  BigDecimal: string;
+  BigInt: string;
   Bytes: Uint8Array;
 };
 
@@ -51,7 +51,9 @@ export type Market = {
   minPriceInQuoteToken: Scalars["BigDecimal"];
   owner: Scalars["Bytes"];
   payoutToken: Scalars["Bytes"];
+  purchasedInQuoteToken: Scalars["BigDecimal"];
   quoteToken: Scalars["Bytes"];
+  soldInPayoutToken: Scalars["BigDecimal"];
   totalDebtInPayoutToken: Scalars["BigDecimal"];
   vesting: Scalars["BigInt"];
 };
@@ -439,12 +441,28 @@ export type Market_Filter = {
   payoutToken_not?: InputMaybe<Scalars["Bytes"]>;
   payoutToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
   payoutToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  purchasedInQuoteToken?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  purchasedInQuoteToken_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_not?: InputMaybe<Scalars["BigDecimal"]>;
+  purchasedInQuoteToken_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   quoteToken?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_contains?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   quoteToken_not?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
   quoteToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  soldInPayoutToken?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  soldInPayoutToken_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_not?: InputMaybe<Scalars["BigDecimal"]>;
+  soldInPayoutToken_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   totalDebtInPayoutToken?: InputMaybe<Scalars["BigDecimal"]>;
   totalDebtInPayoutToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
   totalDebtInPayoutToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -482,7 +500,9 @@ export enum Market_OrderBy {
   MinPriceInQuoteToken = "minPriceInQuoteToken",
   Owner = "owner",
   PayoutToken = "payoutToken",
+  PurchasedInQuoteToken = "purchasedInQuoteToken",
   QuoteToken = "quoteToken",
+  SoldInPayoutToken = "soldInPayoutToken",
   TotalDebtInPayoutToken = "totalDebtInPayoutToken",
   Vesting = "vesting",
 }
@@ -663,36 +683,38 @@ export type MarketCreatedEventsQuery = {
   __typename?: "Query";
   marketCreatedEvents: Array<{
     __typename?: "MarketCreatedEvent";
-    block: number;
+    block: string;
     bondContract: Uint8Array;
     bondType: BondType;
     date: string;
     id: string;
-    marketId: number;
-    timestamp: number;
+    marketId: string;
+    timestamp: string;
     market: {
       __typename?: "Market";
       bondContract: Uint8Array;
       bondType: BondType;
-      capacityInPayoutToken: number;
-      closedBlock?: number | null;
+      capacityInPayoutToken: string;
+      closedBlock?: string | null;
       closedDate?: string | null;
-      closedTimestamp?: number | null;
-      createdBlock: number;
+      closedTimestamp?: string | null;
+      createdBlock: string;
       createdDate: string;
-      createdTimestamp: number;
-      durationActualMilliseconds?: number | null;
-      durationMilliseconds: number;
+      createdTimestamp: string;
+      durationActualMilliseconds?: string | null;
+      durationMilliseconds: string;
       id: string;
-      initialPriceInQuoteToken: number;
-      marketId: number;
-      maxPayoutInPayoutToken: number;
-      minPriceInQuoteToken: number;
+      initialPriceInQuoteToken: string;
+      marketId: string;
+      maxPayoutInPayoutToken: string;
+      minPriceInQuoteToken: string;
       owner: Uint8Array;
       payoutToken: Uint8Array;
+      purchasedInQuoteToken: string;
       quoteToken: Uint8Array;
-      totalDebtInPayoutToken: number;
-      vesting: number;
+      soldInPayoutToken: string;
+      totalDebtInPayoutToken: string;
+      vesting: string;
     };
   }>;
 };
@@ -705,36 +727,38 @@ export type MarketClosedEventsQuery = {
   __typename?: "Query";
   marketClosedEvents: Array<{
     __typename?: "MarketClosedEvent";
-    block: number;
+    block: string;
     bondContract: Uint8Array;
     bondType: BondType;
     date: string;
     id: string;
-    marketId: number;
-    timestamp: number;
+    marketId: string;
+    timestamp: string;
     market: {
       __typename?: "Market";
       bondContract: Uint8Array;
       bondType: BondType;
-      capacityInPayoutToken: number;
-      closedBlock?: number | null;
+      capacityInPayoutToken: string;
+      closedBlock?: string | null;
       closedDate?: string | null;
-      closedTimestamp?: number | null;
-      createdBlock: number;
+      closedTimestamp?: string | null;
+      createdBlock: string;
       createdDate: string;
-      createdTimestamp: number;
-      durationActualMilliseconds?: number | null;
-      durationMilliseconds: number;
+      createdTimestamp: string;
+      durationActualMilliseconds?: string | null;
+      durationMilliseconds: string;
       id: string;
-      initialPriceInQuoteToken: number;
-      marketId: number;
-      maxPayoutInPayoutToken: number;
-      minPriceInQuoteToken: number;
+      initialPriceInQuoteToken: string;
+      marketId: string;
+      maxPayoutInPayoutToken: string;
+      minPriceInQuoteToken: string;
       owner: Uint8Array;
       payoutToken: Uint8Array;
+      purchasedInQuoteToken: string;
       quoteToken: Uint8Array;
-      totalDebtInPayoutToken: number;
-      vesting: number;
+      soldInPayoutToken: string;
+      totalDebtInPayoutToken: string;
+      vesting: string;
     };
   }>;
 };
@@ -820,7 +844,9 @@ export const MarketCreatedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "minPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "owner" } },
                       { kind: "Field", name: { kind: "Name", value: "payoutToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "purchasedInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "quoteToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "soldInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "totalDebtInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "vesting" } },
                     ],
@@ -915,7 +941,9 @@ export const MarketClosedEventsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "minPriceInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "owner" } },
                       { kind: "Field", name: { kind: "Name", value: "payoutToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "purchasedInQuoteToken" } },
                       { kind: "Field", name: { kind: "Name", value: "quoteToken" } },
+                      { kind: "Field", name: { kind: "Name", value: "soldInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "totalDebtInPayoutToken" } },
                       { kind: "Field", name: { kind: "Name", value: "vesting" } },
                     ],

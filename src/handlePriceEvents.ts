@@ -6,7 +6,7 @@ import { RBS_SUBGRAPH_URL } from "./constants";
 import { sendAlert } from "./discord";
 import { PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { formatCurrency } from "./helpers/numberHelper";
+import { castFloat, castFloatNullable, castInt, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
 const FIELD_LATEST_BLOCK = "events.latestBlock";
@@ -42,6 +42,7 @@ export const performEventChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
   alertWebhookUrl: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emergencyWebhookUrl: string,
 ): Promise<void> => {
   // Get last processed block
@@ -58,7 +59,7 @@ export const performEventChecks = async (
   });
   const queryResults = await client
     .query(RbsPriceEventsDocument, {
-      latestBlock: latestBlock || 0,
+      latestBlock: (latestBlock || 0).toString(),
     })
     .toPromise();
   if (!queryResults.data) {
@@ -83,7 +84,7 @@ export const performEventChecks = async (
       {
         name: "Date",
         // Display in the local user's timezone. Expects the timestamp in seconds.
-        value: `<t:${priceEvent.timestamp / 1000}>`,
+        value: `<t:${castInt(priceEvent.timestamp) / 1000}>`,
         inline: true,
       },
       {
@@ -108,27 +109,27 @@ export const performEventChecks = async (
       // Current price
       {
         name: "Current",
-        value: formatCurrency(priceEvent.snapshot.ohmPrice),
+        value: formatCurrency(castFloatNullable(priceEvent.snapshot.ohmPrice)),
         inline: false,
       },
       // High
       {
         name: "High",
-        value: `Wall: ${formatCurrency(priceEvent.snapshot.highWallPrice)}\nCushion: ${formatCurrency(
-          priceEvent.snapshot.highCushionPrice,
+        value: `Wall: ${formatCurrency(castFloat(priceEvent.snapshot.highWallPrice))}\nCushion: ${formatCurrency(
+          castFloat(priceEvent.snapshot.highCushionPrice),
         )}`,
       },
       // Moving average
       {
         name: "Moving Average",
-        value: formatCurrency(priceEvent.snapshot.ohmMovingAveragePrice),
+        value: formatCurrency(castFloatNullable(priceEvent.snapshot.ohmMovingAveragePrice)),
         inline: false,
       },
       // Low
       {
         name: "Low",
-        value: `Cushion: ${formatCurrency(priceEvent.snapshot.lowCushionPrice)}\nWall: ${formatCurrency(
-          priceEvent.snapshot.lowWallPrice,
+        value: `Cushion: ${formatCurrency(castFloat(priceEvent.snapshot.lowCushionPrice))}\nWall: ${formatCurrency(
+          castFloat(priceEvent.snapshot.lowWallPrice),
         )}`,
       },
       {

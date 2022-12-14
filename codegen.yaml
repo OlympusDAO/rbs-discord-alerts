@@ -1,3 +1,7 @@
+## NOTE:
+## BigDecimal and BigInt are typed to strings here, because that is what the GraphQL API returns.
+## Specifying "number" as the type will result in the typings referring to numbers, but the underlying
+## value will be a string, which makes the code behave unpredictably. Better to be explicit and force casting.
 generates:
   src/graphql/bondMarket.ts:
     schema: https://api.thegraph.com/subgraphs/name/olympusdao/bonds
@@ -9,8 +13,8 @@ generates:
     config:
       preResolveTypes: true
       scalars:
-        BigDecimal: number
-        BigInt: number
+        BigDecimal: string
+        BigInt: string
         Bytes: Uint8Array # https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
     hooks:
       afterOneFileWrite:
@@ -25,8 +29,8 @@ generates:
     config:
       preResolveTypes: true
       scalars:
-        BigDecimal: number
-        BigInt: number
+        BigDecimal: string
+        BigInt: string
         Bytes: Uint8Array # https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
     hooks:
       afterOneFileWrite:
@@ -41,8 +45,8 @@ generates:
     config:
       preResolveTypes: true
       scalars:
-        BigDecimal: number
-        BigInt: number
+        BigDecimal: string
+        BigInt: string
         Bytes: Uint8Array # https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
     hooks:
       afterOneFileWrite:
