@@ -25,11 +25,20 @@ import {
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "../helpers/contractHelper";
-import { castFloat, castFloatNullable, castInt, formatCurrency, formatNumber } from "../helpers/numberHelper";
+import {
+  castFloat,
+  castFloatNullable,
+  castInt,
+  castIntNullable,
+  formatCurrency,
+  formatNumber,
+  numbersEqual,
+} from "../helpers/numberHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 
 const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
+const CAPACITY_DECIMALS = 9;
 
 const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): PriceEvent[] => {
   const filteredByBlock = events.filter(priceEvent => castInt(priceEvent.block) == block);
@@ -137,7 +146,7 @@ const checkCushionUp = (
 
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(createdMarket.block));
   // The owner should be the operator contract
-  if (createdMarket.market.owner.toString().toLowerCase() !== currentOperatorAddress) {
+  if (!isBytesEqual(createdMarket.market.owner, currentOperatorAddress)) {
     pushError(
       `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress}`,
       errors,
@@ -198,7 +207,7 @@ const checkCushionUp = (
   }
 
   // The initial price for the market should be the same as the corresponding snapshot's OHM price (derived from Chainlink)
-  if (ohmPrice && formatCurrency(initialPriceUsd, 2) !== formatCurrency(ohmPrice, 2)) {
+  if (ohmPrice && !numbersEqual(initialPriceUsd, ohmPrice, 2)) {
     pushError(
       `Expected the initial price of the created market (${formatCurrency(
         initialPriceUsd,
@@ -255,15 +264,13 @@ const checkCushionUp = (
 
   const operatorCushionFactor = castFloatNullable(rangeSnapshot.operatorCushionFactor);
   if (operatorCushionFactor) {
-    const CAPACITY_DECIMALS = 9;
-
     // bond market capacity = cushion factor * highCapacityOhm or lowCapacityReserve
     const expectedCapacity =
       operatorCushionFactor *
       castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve);
     const actualCapacity = castFloat(createdMarket.market.capacityInPayoutToken);
 
-    if (expectedCapacity !== actualCapacity) {
+    if (!numbersEqual(expectedCapacity, actualCapacity, CAPACITY_DECIMALS)) {
       pushError(
         `Expected market capacity (${formatNumber(actualCapacity, CAPACITY_DECIMALS)} ${
           priceEvent.isHigh ? "OHM" : "DAI"
@@ -344,9 +351,11 @@ const checkCushionDown = (
       : ohmPrice > castFloat(priceEvent.snapshot.lowCushionPrice)
     : false;
   console.debug(`Price In Range? ${priceInRange}`);
-  const capacityExhausted: boolean =
-    castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve) ==
-    castFloat(closedMarket.market.soldInPayoutToken);
+  const capacityExhausted: boolean = numbersEqual(
+    castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve),
+    castFloat(closedMarket.market.soldInPayoutToken),
+    CAPACITY_DECIMALS,
+  );
   console.debug(`Capacity Exhausted? ${capacityExhausted}`);
 
   if (!durationExceeded && !priceInRange && !priceOutsideWall && !capacityExhausted) {
@@ -383,8 +392,8 @@ const checkMarketCreated = (
 
   const matchingCushionUpEvents = cushionUpEvents.filter(
     priceEvent =>
-      castFloat(event.marketId) ==
-      castFloatNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
+      castInt(event.marketId) ==
+      castIntNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
   );
 
   // The owner should be the operator contract
