@@ -34,6 +34,7 @@ import {
   formatNumber,
   numbersEqual,
 } from "../helpers/numberHelper";
+import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 
 const FUNCTION_KEY = "checkBondMarkets";
@@ -560,6 +561,7 @@ export const checkBondMarkets = async (
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
+  contractUrl?: string,
 ): Promise<void> => {
   console.info(`\n\n⏰ Checking Bond Market Parameters`);
 
@@ -651,6 +653,7 @@ export const checkBondMarkets = async (
         },
         { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
         { name: "Block", value: `${priceEvent.block}` },
+        ...getShutdownEmbedField(contractUrl),
       ]);
     });
 
@@ -664,6 +667,7 @@ export const checkBondMarkets = async (
         // marketId is not available
         { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
         { name: "Block", value: `${priceEvent.block}` },
+        ...getShutdownEmbedField(contractUrl),
       ]);
     });
 
@@ -677,6 +681,7 @@ export const checkBondMarkets = async (
         // marketId is not available
         { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
         { name: "Block", value: `${priceEvent.block}` },
+        ...getShutdownEmbedField(contractUrl),
       ]);
     });
 
@@ -690,6 +695,7 @@ export const checkBondMarkets = async (
         // marketId is not available
         { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
         { name: "Block", value: `${priceEvent.block}` },
+        ...getShutdownEmbedField(contractUrl),
       ]);
     });
 
@@ -704,6 +710,7 @@ export const checkBondMarkets = async (
           value: `${marketEvent.marketId}`,
         },
         { name: "Block", value: `${marketEvent.block}` },
+        ...getShutdownEmbedField(contractUrl),
       ]);
     });
 
@@ -718,6 +725,7 @@ export const checkBondMarkets = async (
           value: `${marketEvent.marketId}`,
         },
         { name: "Block", value: `${marketEvent.block}` },
+        ...getShutdownEmbedField(contractUrl),
       ]);
     });
 

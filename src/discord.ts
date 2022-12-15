@@ -120,3 +120,13 @@ export const getRoleMentions = (roles: string[]): string => {
     return `${previousValue} ${getRoleMention(currentValue)}`;
   }, "");
 };
+
+/**
+ * Display in the local user's timezone
+ *
+ * @param timestampMilliseconds
+ * @returns
+ */
+export const getRelativeTimestamp = (timestampMilliseconds: number): string => {
+  return `<t:${timestampMilliseconds / 1000}>`;
+};
