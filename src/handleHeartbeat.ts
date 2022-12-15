@@ -124,20 +124,26 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrl: 
 
   // Send alert
   console.error(`Heartbeat should have happened by now. Throwing alarm.`);
-  await sendAlert(webhookUrl, "", `🚨 Late Heartbeat`, `Heartbeat did not happen on time`, [
-    {
-      name: "Last Heartbeat",
-      value: getRelativeTimestamp(latestBeatDate.getTime()),
-    },
-    {
-      name: "Expected Heartbeat (with threshold)",
-      value: getRelativeTimestamp(expectedHeartbeatDate.getTime()),
-    },
-    {
-      name: "Contract",
-      value: getEtherscanAddressUrl(HEART_CONTRACT_V1_1, "mainnet"),
-    },
-  ]);
+  await sendAlert(
+    webhookUrl,
+    "",
+    `🚨 Late Heartbeat`,
+    `Heartbeat did not happen on time.\n\nSubsequent alerts are throttled for ${ALERT_THRESHOLD_SECONDS / 60} minutes.`,
+    [
+      {
+        name: "Last Heartbeat",
+        value: getRelativeTimestamp(latestBeatDate.getTime()),
+      },
+      {
+        name: "Expected Heartbeat (with threshold)",
+        value: getRelativeTimestamp(expectedHeartbeatDate.getTime()),
+      },
+      {
+        name: "Contract",
+        value: getEtherscanAddressUrl(HEART_CONTRACT_V1_1, "mainnet"),
+      },
+    ],
+  );
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestoreDocument, FUNCTION_KEY, new Date());
