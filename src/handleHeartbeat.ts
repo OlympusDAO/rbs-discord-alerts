@@ -108,7 +108,9 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrl: 
   // Check that enough time has passed since the previous heartbeat
   const expectedHeartbeatDate = new Date(latestBeatDate.getTime() + HEARTBEAT_FREQUENCY_MS + HEARTBEAT_THRESHOLD_MS);
   console.log(
-    `Expected heartbeat (with threshold of ${HEARTBEAT_THRESHOLD_MS} milliseconds) is: ${expectedHeartbeatDate.toISOString()}`,
+    `Expected heartbeat (with threshold of ${
+      HEARTBEAT_THRESHOLD_MS / (60 * 1000)
+    } minutes) is: ${expectedHeartbeatDate.toISOString()}`,
   );
   if (Date.now() <= expectedHeartbeatDate.getTime()) {
     console.log(`Expected heartbeat date has not been reached. Nothing to report.`);
