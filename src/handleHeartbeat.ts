@@ -154,6 +154,7 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrl: 
  *
  * This currently:
  * - Broadcasts into Discord any heartbeat events that are emitted from the RBS contracts.
+ * - Checks for missed/delayed heartbeats
  *
  * @param firestoreDocumentPath
  * @param firestoreCollectionName
