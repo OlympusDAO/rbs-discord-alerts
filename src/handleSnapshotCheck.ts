@@ -30,7 +30,7 @@ export const performSnapshotChecks = async (
   await checkCapacityDepletion(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   await checkPrice(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   await checkLowerWall(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
-  await checkBondMarkets(firestoreDocument, mentionRoles, webhookUrl);
+  await checkBondMarkets(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
 };
 
 // Running via CLI
@@ -44,6 +44,6 @@ if (require.main === module) {
     "default",
     ["1042353289477500950"],
     process.env.WEBHOOK_URL,
-    "https://etherscan.io/address/0x2286d7f9639e8158FaD1169e76d1FbC38247f54b#writeContract",
+    "https://etherscan.io/address/0x1Ce568DbB34B2631aCDB5B453c3195EA0070EC65#writeContract",
   );
 }
