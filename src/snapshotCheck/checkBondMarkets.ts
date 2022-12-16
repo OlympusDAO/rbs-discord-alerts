@@ -647,16 +647,25 @@ export const checkBondMarkets = async (
       const errors = checkCushionUp(priceEvent, rangeSnapshot, marketCreatedEvents);
       if (errors.length == 0) return;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionUp Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        {
-          name: "Market ID",
-          value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
-        },
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
+      sendAlert(
+        webhookUrl,
+        getRoleMentions(mentionRoles),
+        `🚨 CushionUp Discrepancies`,
+        toUnorderedList(errors),
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          {
+            name: "Market ID",
+            value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
+          },
+          { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        undefined,
+        undefined,
+        `${priceEvent.date}: CushionUp Discrepancies`,
+      );
     });
 
     const cushionDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "CushionDown");
@@ -664,13 +673,22 @@ export const checkBondMarkets = async (
       const errors = checkCushionDown(priceEvent, rangeSnapshot, marketClosedEvents);
       if (errors.length == 0) return;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionDown Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
+      sendAlert(
+        webhookUrl,
+        getRoleMentions(mentionRoles),
+        `🚨 CushionDown Discrepancies`,
+        toUnorderedList(errors),
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          // marketId is not available
+          { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        undefined,
+        undefined,
+        `${priceEvent.date}: CushionDown Discrepancies`,
+      );
     });
 
     const wallUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallUp");
@@ -678,13 +696,22 @@ export const checkBondMarkets = async (
       const errors = checkWallUp(priceEvent, rangeSnapshot);
       if (errors.length == 0) return;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallUp Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
+      sendAlert(
+        webhookUrl,
+        getRoleMentions(mentionRoles),
+        `🚨 WallUp Discrepancies`,
+        toUnorderedList(errors),
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          // marketId is not available
+          { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        undefined,
+        undefined,
+        `${priceEvent.date}: WallUp Discrepancies`,
+      );
     });
 
     const wallDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallDown");
@@ -692,13 +719,22 @@ export const checkBondMarkets = async (
       const errors = checkWallDown(priceEvent, rangeSnapshot);
       if (errors.length == 0) return;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallDown Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
+      sendAlert(
+        webhookUrl,
+        getRoleMentions(mentionRoles),
+        `🚨 WallDown Discrepancies`,
+        toUnorderedList(errors),
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          // marketId is not available
+          { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        undefined,
+        undefined,
+        `${priceEvent.date}: CushionDown Discrepancies`,
+      );
     });
 
     const marketCreatedEventsAtBlock = filterCreatedEvents(marketCreatedEvents, rangeSnapshotBlock);
@@ -706,14 +742,23 @@ export const checkBondMarkets = async (
       const errors = checkMarketCreated(marketEvent, rangeSnapshot, cushionUpEventsAtBlock);
       if (errors.length == 0) return;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CreatedMarket Discrepancies`, toUnorderedList(errors), [
-        {
-          name: "Market ID",
-          value: `${marketEvent.marketId}`,
-        },
-        { name: "Block", value: `${marketEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
+      sendAlert(
+        webhookUrl,
+        getRoleMentions(mentionRoles),
+        `🚨 CreatedMarket Discrepancies`,
+        toUnorderedList(errors),
+        [
+          {
+            name: "Market ID",
+            value: `${marketEvent.marketId}`,
+          },
+          { name: "Block", value: `${marketEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        undefined,
+        undefined,
+        `${marketEvent.date}: CreatedMarket Discrepancies`,
+      );
     });
 
     const marketClosedEventsAtBlock = filterClosedEvents(marketClosedEvents, rangeSnapshotBlock);
@@ -721,14 +766,23 @@ export const checkBondMarkets = async (
       const errors = checkMarketClosed(marketEvent, rangeSnapshot, cushionDownEventsAtBlock);
       if (errors.length == 0) return;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 ClosedMarket Discrepancies`, toUnorderedList(errors), [
-        {
-          name: "Market ID",
-          value: `${marketEvent.marketId}`,
-        },
-        { name: "Block", value: `${marketEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
+      sendAlert(
+        webhookUrl,
+        getRoleMentions(mentionRoles),
+        `🚨 ClosedMarket Discrepancies`,
+        toUnorderedList(errors),
+        [
+          {
+            name: "Market ID",
+            value: `${marketEvent.marketId}`,
+          },
+          { name: "Block", value: `${marketEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        undefined,
+        undefined,
+        `${marketEvent.date}: ClosedMarket Discrepancies`,
+      );
     });
 
     updatedLatestBlock = rangeSnapshotBlock;
