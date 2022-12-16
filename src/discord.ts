@@ -22,6 +22,7 @@ type DiscordMessage = {
    */
   content: string;
   embeds: Embed[];
+  thread_name?: string;
 };
 
 const executeWebhook = async (webhook: string, content: DiscordMessage): Promise<void> => {
@@ -63,6 +64,7 @@ export const BLANK_EMBED_FIELD = {
  * @param fields
  * @param footer
  * @param timestamp
+ * @param thread specify the thread name to create (for forum channels only)
  */
 export const sendAlert = async (
   webhook: string,
@@ -72,6 +74,7 @@ export const sendAlert = async (
   fields: EmbedField[],
   footer?: string,
   timestamp?: string,
+  thread?: string,
 ): Promise<void> => {
   await executeWebhook(webhook, {
     content: content,
@@ -86,6 +89,7 @@ export const sendAlert = async (
         timestamp: timestamp,
       },
     ],
+    thread_name: thread,
   });
 };
 
