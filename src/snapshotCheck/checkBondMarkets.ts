@@ -454,7 +454,7 @@ const checkMarketClosed = (
  * Performs checks on a WallUp event (which occurs when a wall is being re-generated):
  * - Lower wall: price >= wall price
  * - Upper wall: price <= wall price
- * - Bond market is closed
+ * - Relevant bond market is closed (e.g. high bond market for high WallUp)
  */
 const checkWallUp = (wallUpEvent: PriceEvent, rangeSnapshot: RangeSnapshot): string[] => {
   const errors: string[] = [];
@@ -492,13 +492,15 @@ const checkWallUp = (wallUpEvent: PriceEvent, rangeSnapshot: RangeSnapshot): str
     }
   }
 
-  // Check that bond markets are closed
-  if (rangeSnapshot.lowMarketId) {
-    pushError(`Lower bond market should be closed, but is open with id: ${rangeSnapshot.lowMarketId}`, errors);
-  }
-
-  if (rangeSnapshot.highMarketId) {
-    pushError(`Upper bond market should be closed, but is open with id: ${rangeSnapshot.highMarketId}`, errors);
+  // Check that the relevant bond market is closed
+  if (wallUpEvent.isHigh) {
+    if (rangeSnapshot.highMarketId) {
+      pushError(`Upper bond market should be closed, but is open with id: ${rangeSnapshot.highMarketId}`, errors);
+    }
+  } else {
+    if (rangeSnapshot.lowMarketId) {
+      pushError(`Lower bond market should be closed, but is open with id: ${rangeSnapshot.lowMarketId}`, errors);
+    }
   }
 
   return errors;
@@ -508,7 +510,7 @@ const checkWallUp = (wallUpEvent: PriceEvent, rangeSnapshot: RangeSnapshot): str
  * Performs checks on a WallDown event (which occurs when the price breaks through the wall):
  * - Lower wall: price <= wall price
  * - Upper wall: price >= wall price
- * - Bond market is closed
+ * - All bond markets are closed
  */
 const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot): string[] => {
   const errors: string[] = [];
