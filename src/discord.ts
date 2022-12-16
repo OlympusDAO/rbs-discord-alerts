@@ -25,9 +25,20 @@ type DiscordMessage = {
   thread_name?: string;
 };
 
-const executeWebhook = async (webhook: string, content: DiscordMessage): Promise<void> => {
+const generateWebhookUrl = (webhook: string, threadId?: string): string => {
+  return `${webhook}?wait=true${threadId ? `&thread_id=${threadId}` : ""}`;
+};
+
+/**
+ *
+ * @param webhook
+ * @param content
+ * @param threadId specify this parameter to send a message into a particular thread
+ * @returns
+ */
+const executeWebhook = async (webhook: string, content: DiscordMessage, threadId?: string): Promise<void> => {
   console.log(`Sending request to Discord webhook: ${JSON.stringify(content, null, 2)}`);
-  const response = await fetch(webhook, {
+  const response = await fetch(generateWebhookUrl(webhook), {
     method: "POST",
     body: JSON.stringify(content),
     headers: {
@@ -35,15 +46,18 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
     },
   });
 
-  console.debug(`Discord response status: ${response.status}`);
+  console.log(`Discord response status: ${response.status}`);
   // Ignore rate-limiting
   if (response.status == 429) {
+    console.log(`Rate-limited`);
     return;
   }
 
   if (!response.ok) {
     throw new Error(`Encountered error with Discord webhook: ${await response.text()}`);
   }
+
+  console.log(`Successfully sent Discord message. Response: ${await response.text()}`);
 };
 
 export const BLANK_EMBED_FIELD = {
