@@ -40,6 +40,7 @@ import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
 const CAPACITY_DECIMALS = 9;
+const ORACLE_UPDATE_THRESHOLD = 0.02; // 2% swing required to force the oracle to update
 
 const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): PriceEvent[] => {
   const filteredByBlock = events.filter(priceEvent => castInt(priceEvent.block) == block);
@@ -452,9 +453,17 @@ const checkMarketClosed = (
 
 /**
  * Performs checks on a WallUp event (which occurs when a wall is being re-generated):
- * - Lower wall: price >= wall price
- * - Upper wall: price <= wall price
- * - Relevant bond market is closed (e.g. high bond market for high WallUp)
+ *
+ * Upper:
+ * - Current price <= target price
+ * - Upper cushion is closed
+ *
+ * Lower:
+ * - Current price >= target price
+ * - Lower cushion is closed
+ *
+ * Justification:
+ * Walls should not regen unless the price is on the opposite side of the target value. I.e. if the upper wall regens, then current price <= target price for that block.
  */
 const checkWallUp = (wallUpEvent: PriceEvent, rangeSnapshot: RangeSnapshot): string[] => {
   const errors: string[] = [];
@@ -508,9 +517,20 @@ const checkWallUp = (wallUpEvent: PriceEvent, rangeSnapshot: RangeSnapshot): str
 
 /**
  * Performs checks on a WallDown event (which occurs when the price breaks through the wall):
- * - Lower wall: price <= wall price
- * - Upper wall: price >= wall price
- * - All bond markets are closed
+ *
+ * Upper:
+ * - Current price >= wall price / 1.02
+ * - Cushion closed
+ *
+ * Lower:
+ * - Current price <= wall price / 0.98
+ * - Cushion closed
+ *
+ * Justification:
+ *
+ * For WallDown, the price check is not as strict given we can have a delay between the oracle and the actual price on the pool. Additionally, the cushions should only be impacted by the wall on the same side.
+ *
+ * For example, if the Lower Wall is $8.85, the cushion goes down due to capacity running out, and the oracle thinks the price is $8.90, then you could have a lot of swaps against the wall, push the LP price to $8.85 or lower and have a WallDown without triggering an oracle update since it has to move by 2% to refresh.
  */
 const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot): string[] => {
   const errors: string[] = [];
@@ -526,7 +546,7 @@ const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot):
 
   // Check that the price makes sense
   if (wallDownEvent.isHigh) {
-    const highWallPrice = castFloat(rangeSnapshot.highWallPrice);
+    const highWallPrice = castFloat(rangeSnapshot.highWallPrice) / (1 + ORACLE_UPDATE_THRESHOLD);
     if (ohmPrice < highWallPrice) {
       pushError(
         `OHM price (${formatCurrency(ohmPrice)}) should be higher than upper wall price (${formatCurrency(
@@ -536,7 +556,7 @@ const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot):
       );
     }
   } else {
-    const lowWallPrice = castFloat(rangeSnapshot.lowWallPrice);
+    const lowWallPrice = castFloat(rangeSnapshot.lowWallPrice) / (1 - ORACLE_UPDATE_THRESHOLD);
     if (ohmPrice > lowWallPrice) {
       pushError(
         `OHM price (${formatCurrency(ohmPrice)}) should be lower than lower wall price (${formatCurrency(
@@ -548,12 +568,14 @@ const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot):
   }
 
   // Check that bond markets are closed
-  if (rangeSnapshot.lowMarketId) {
-    pushError(`Lower bond market should be closed, but is open with id: ${rangeSnapshot.lowMarketId}`, errors);
-  }
-
-  if (rangeSnapshot.highMarketId) {
-    pushError(`Upper bond market should be closed, but is open with id: ${rangeSnapshot.highMarketId}`, errors);
+  if (wallDownEvent.isHigh) {
+    if (rangeSnapshot.highMarketId) {
+      pushError(`Upper bond market should be closed, but is open with id: ${rangeSnapshot.highMarketId}`, errors);
+    }
+  } else {
+    if (rangeSnapshot.lowMarketId) {
+      pushError(`Lower bond market should be closed, but is open with id: ${rangeSnapshot.lowMarketId}`, errors);
+    }
   }
 
   return errors;
