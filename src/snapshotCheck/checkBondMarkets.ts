@@ -39,7 +39,7 @@ import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 
 const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
-const CAPACITY_DECIMALS = 9;
+const CAPACITY_DECIMALS = 0; // Whole number
 const ORACLE_UPDATE_THRESHOLD = 0.02; // 2% swing required to force the oracle to update
 
 const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): PriceEvent[] => {
