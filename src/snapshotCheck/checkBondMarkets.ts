@@ -293,6 +293,7 @@ const checkCushionUp = (
  * Performs checks when a CushionDown event is received:
  * - Should have a corresponding market closed event
  * - The bond market should actually be closed
+ * - The market was closed for the correct reasons
  *
  * This assumes that {marketClosedEvents} is filtered to records for the same block.
  *
@@ -302,12 +303,14 @@ const checkCushionUp = (
  * @param priceEvent
  * @param rangeSnapshot
  * @param marketClosedEvents
+ * @param wallUpEvents
  * @returns
  */
 const checkCushionDown = (
   priceEvent: PriceEvent,
   rangeSnapshot: RangeSnapshot,
   marketClosedEvents: MarketClosedEvent[],
+  wallUpEvents: PriceEvent[],
 ): string[] => {
   const errors: string[] = [];
   console.info(`\n\nCommencing CushionDown check`);
@@ -334,12 +337,13 @@ const checkCushionDown = (
   }
 
   // Check that the market was closed for the right reason(s)
-  // Duration exceeded, price outside wall, price in range or capacity exhausted
+  // Duration should have been exceeded, price outside wall, price in range or capacity exhausted
   const actualDuration: number | null = castFloatNullable(closedMarket.market.durationActualMilliseconds);
   const durationExceeded: boolean = actualDuration
     ? actualDuration >= castFloat(closedMarket.market.durationMilliseconds)
     : false;
   console.debug(`Duration Exceeded? ${durationExceeded}`);
+  // Price should be outside the wall
   const ohmPrice: number | null = castFloatNullable(priceEvent.snapshot.ohmPrice);
   const priceOutsideWall: boolean = ohmPrice
     ? priceEvent.isHigh
@@ -347,22 +351,29 @@ const checkCushionDown = (
       : ohmPrice < castFloat(priceEvent.snapshot.lowWallPrice)
     : false;
   console.debug(`Price Outside Wall? ${priceOutsideWall}`);
+  // Price should be outside the range
   const priceInRange: boolean = ohmPrice
     ? priceEvent.isHigh
       ? ohmPrice < castFloat(priceEvent.snapshot.highCushionPrice)
       : ohmPrice > castFloat(priceEvent.snapshot.lowCushionPrice)
     : false;
   console.debug(`Price In Range? ${priceInRange}`);
+  // Bond market capacity should be exhausted
   const capacityExhausted: boolean = numbersEqual(
     castFloat(priceEvent.isHigh ? priceEvent.snapshot.highCapacityOhm : priceEvent.snapshot.lowCapacityReserve),
     castFloat(closedMarket.market.soldInPayoutToken),
     CAPACITY_DECIMALS,
   );
   console.debug(`Capacity Exhausted? ${capacityExhausted}`);
+  // The wall should have been manually regenerated
+  const hasWallUpRegenerationEvent: boolean =
+    wallUpEvents.filter(wallUpEvent => wallUpEvent.isHigh == priceEvent.isHigh).length > 0;
+  console.debug(`Has WallUp event? ${hasWallUpRegenerationEvent}`);
 
-  if (!durationExceeded && !priceInRange && !priceOutsideWall && !capacityExhausted) {
+  // If none of the above conditions are true, then the bond market was closed for an unknown reason, and we want to alert about that
+  if (!durationExceeded && !priceInRange && !priceOutsideWall && !capacityExhausted && !hasWallUpRegenerationEvent) {
     pushError(
-      `Expected market (${closedMarket.marketId}) to be closed due to one of the following (but it was not): duration exceeded, price outside wall, price in range, capacity exhausted`,
+      `Expected market (${closedMarket.marketId}) to be closed due to one of the following (but it was not): duration exceeded, price outside wall, price in range, capacity exhausted, wall regeneration`,
       errors,
     );
   } else {
@@ -663,8 +674,11 @@ export const checkBondMarkets = async (
   rangeSnapshots.forEach(rangeSnapshot => {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
     const rangeSnapshotBlock = castInt(rangeSnapshot.block);
-
     const cushionUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "CushionUp");
+    const cushionDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "CushionDown");
+    const wallUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallUp");
+    const wallDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallDown");
+
     cushionUpEventsAtBlock.forEach(priceEvent => {
       const errors = checkCushionUp(priceEvent, rangeSnapshot, marketCreatedEvents);
       if (errors.length == 0) return;
@@ -681,9 +695,8 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const cushionDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "CushionDown");
     cushionDownEventsAtBlock.forEach(priceEvent => {
-      const errors = checkCushionDown(priceEvent, rangeSnapshot, marketClosedEvents);
+      const errors = checkCushionDown(priceEvent, rangeSnapshot, marketClosedEvents, wallUpEventsAtBlock);
       if (errors.length == 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionDown Discrepancies`, toUnorderedList(errors), [
@@ -695,7 +708,6 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const wallUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallUp");
     wallUpEventsAtBlock.forEach(priceEvent => {
       const errors = checkWallUp(priceEvent, rangeSnapshot);
       if (errors.length == 0) return;
@@ -709,7 +721,6 @@ export const checkBondMarkets = async (
       ]);
     });
 
-    const wallDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallDown");
     wallDownEventsAtBlock.forEach(priceEvent => {
       const errors = checkWallDown(priceEvent, rangeSnapshot);
       if (errors.length == 0) return;

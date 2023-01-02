@@ -22,7 +22,7 @@ Pulumi is used to manage the infrastructure, which comprises of:
   3. Sends a message using a Discord webhook
   4. Updates the latest block in Firestore
 - Snapshot Checks
-  - Checks for three conditions that would be considered an emergency:
+  - Checks for conditions that would be considered an emergency:
     - Current price below the lower wall price
     - Chainlink and LP price differ
     - Cushion capacity is depleted too often
