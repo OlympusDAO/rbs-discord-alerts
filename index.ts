@@ -21,6 +21,7 @@ const CONFIG_DISCORD_ROLE_COUNCIL = "discordRoleIdCouncil";
 const CONFIG_DISCORD_ROLE_CORE = "discordRoleIdCore";
 const CONFIG_CONTRACT = "contractUrl";
 const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
+const SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY = "discordWebhookAlertCommunity";
 const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
@@ -45,7 +46,8 @@ const FUNCTION_EXPIRATION_SECONDS = 30;
 
 // Pull the secret into a const to work around: https://github.com/pulumi/pulumi/issues/11257
 // Also use `require` instead of `requireSecret`, as requireSecret won't work
-const webhookAlert = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
+const webhookAlertDAO = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
+const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY);
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 
 /**
@@ -61,7 +63,10 @@ const [functionPriceEvents, functionPriceEventsName] = createFunction(
   DEFAULT_RUNTIME,
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlert, webhookEmergency);
+    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), [
+      webhookAlertDAO,
+      webhookAlertCommunity,
+    ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
@@ -109,12 +114,10 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
   DEFAULT_RUNTIME,
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performHeartbeatChecks(
-      datastore.documentId.get(),
-      datastore.collection.get(),
-      webhookAlert,
-      webhookEmergency,
-    );
+    await performHeartbeatChecks(datastore.documentId.get(), datastore.collection.get(), [
+      webhookAlertDAO,
+      webhookAlertCommunity,
+    ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();

@@ -3,7 +3,7 @@ import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
 import { HEART_CONTRACT_V1_1, RBS_SUBGRAPH_URL } from "./constants";
-import { getRelativeTimestamp, sendAlert } from "./discord";
+import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castInt } from "./helpers/numberHelper";
@@ -23,10 +23,10 @@ const ALERT_THRESHOLD_SECONDS = 1 * 60 * 60; // 1 hour
  * Sends a Discord alert when a heartbeat event is recorded
  *
  * @param firestoreDocument
- * @param alertWebhookUrl
+ * @param alertWebhookUrls
  * @returns
  */
-const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWebhookUrl: string): Promise<void> => {
+const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWebhookUrls: string[]): Promise<void> => {
   console.info(`\n\nSending heartbeat alerts`);
   const firestoreDocumentObject = await firestoreDocument.get();
   const latestBlock: number | undefined = firestoreDocumentObject.get(FIELD_LATEST_BLOCK);
@@ -60,7 +60,7 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
   // Send Discord message
   for (let i = 0; i < beatEvents.length; i++) {
     const beatEvent = beatEvents[i];
-    await sendAlert(alertWebhookUrl, "", `⏰ Heartbeat`, ``, [
+    const fields: EmbedField[] = [
       // Row 1
       {
         name: "Date",
@@ -75,7 +75,11 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
         )})`,
         inline: true,
       },
-    ]);
+    ];
+
+    for (let j = 0; j < alertWebhookUrls.length; j++) {
+      await sendAlert(alertWebhookUrls[j], "", `⏰ Heartbeat`, ``, fields);
+    }
   }
 
   // Update last processed block
@@ -90,10 +94,10 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
  * Sends a Discord alert if a heartbeat did not occur by the expected date (with a buffer of `HEARTBEAT_THRESHOLD_MS`)
  *
  * @param firestoreDocument
- * @param webhookUrl
+ * @param webhookUrls
  * @returns
  */
-const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrl: string): Promise<void> => {
+const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls: string[]): Promise<void> => {
   console.info(`\n\nChecking heartbeat timing`);
   const firestoreDocumentObject = await firestoreDocument.get();
   const latestBeatDateString: string | undefined = firestoreDocumentObject.get(FIELD_HEARTBEAT_DATE);
@@ -126,26 +130,32 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrl: 
 
   // Send alert
   console.error(`Heartbeat should have happened by now. Throwing alarm.`);
-  await sendAlert(
-    webhookUrl,
-    "",
-    `🚨 Late Heartbeat`,
-    `Heartbeat did not happen on time.\n\nSubsequent alerts are throttled for ${ALERT_THRESHOLD_SECONDS / 60} minutes.`,
-    [
-      {
-        name: "Last Heartbeat",
-        value: getRelativeTimestamp(latestBeatDate.getTime()),
-      },
-      {
-        name: "Expected Heartbeat (with threshold)",
-        value: getRelativeTimestamp(expectedHeartbeatDate.getTime()),
-      },
-      {
-        name: "Contract",
-        value: getEtherscanAddressUrl(HEART_CONTRACT_V1_1, "mainnet"),
-      },
-    ],
-  );
+  const fields: EmbedField[] = [
+    {
+      name: "Last Heartbeat",
+      value: getRelativeTimestamp(latestBeatDate.getTime()),
+    },
+    {
+      name: "Expected Heartbeat (with threshold)",
+      value: getRelativeTimestamp(expectedHeartbeatDate.getTime()),
+    },
+    {
+      name: "Contract",
+      value: getEtherscanAddressUrl(HEART_CONTRACT_V1_1, "mainnet"),
+    },
+  ];
+
+  for (let i = 0; i < webhookUrls.length; i++) {
+    await sendAlert(
+      webhookUrls[i],
+      "",
+      `🚨 Late Heartbeat`,
+      `Heartbeat did not happen on time.\n\nSubsequent alerts are throttled for ${
+        ALERT_THRESHOLD_SECONDS / 60
+      } minutes.`,
+      fields,
+    );
+  }
 
   // Update lastAlarmDate
   await updateLastAlertDate(firestoreDocument, FUNCTION_KEY, new Date());
@@ -160,23 +170,21 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrl: 
  *
  * @param firestoreDocumentPath
  * @param firestoreCollectionName
- * @param alertWebhookUrl
+ * @param alertWebhookUrls
  * @param _emergencyWebhookUrl
  * @returns
  */
 export const performHeartbeatChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
-  alertWebhookUrl: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  emergencyWebhookUrl: string,
+  alertWebhookUrls: string[],
 ): Promise<void> => {
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  sendHeartbeatAlert(firestoreDocument, alertWebhookUrl);
-  checkHeartbeat(firestoreDocument, alertWebhookUrl);
+  sendHeartbeatAlert(firestoreDocument, alertWebhookUrls);
+  checkHeartbeat(firestoreDocument, alertWebhookUrls);
 };
 
 // Running via CLI
@@ -185,5 +193,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performHeartbeatChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL, process.env.WEBHOOK_URL);
+  performHeartbeatChecks("rbs-discord-alerts-dev", "default", [process.env.WEBHOOK_URL]);
 }

@@ -6,6 +6,8 @@ config:
   rbs-discord-alerts:discordRoleIdCouncil: "1042351048569921547"
   rbs-discord-alerts:discordWebhookAlert:
     secure: AAABAFgTLEBnv7xezNMjZXzoKABm6REAV/QgcmPBBmVVEN1dntRQHh35fCr+OXQFa5aT8j1LgBVcADwC3J1e8AnhtEms53oHmCf7qqjJ86GlQNqthafYimOvh+8Gxabtf3Ad7+JKRPKaSRclqSG9YzBYUhzdv42E7p90h7hjDvs7ouiCCoFRFsxcIJzih7JR7PJNONZmp1T8
+  rbs-discord-alerts:discordWebhookAlertCommunity:
+    secure: AAABAEk3JtlX/j0zJPtrxM5rhwji16uCgrXUtiZ4cgzoglD5WUzmheMBxypKjCm0iD9sgmxcco9BCzlqlxoEI3dn5IsNbxqxS2AUsK+0cSxRN5M+ARgbcbSQtY6ldtDKCFtuPLnJN4YiuXXQlKT9aYED37eTEXBIuYkXlHtMihJNvKmRhMDDsQ+nQlngNSFlfGOVxuyFFc/l
   rbs-discord-alerts:discordWebhookEmergency:
     secure: AAABAMZhqhAo29/Ji13kJFRgG7aX4oz98EgQkYLFHbaBSXgqi9Xxqt4pXiZayIUJjjQLr1wJVrHCJNnJ7acqW/H1RdAA8jD3Y6MCtS07ofymW5CTC2W3jSpN979F25/wgwNvkUpCvW3kncckQEaMaA7/lsJfwN45ruoi2dcdYzplZlacheGOID1eEd+YpQrapaQWWv4XufMU
   rbs-discord-alerts:notificationEmail:
