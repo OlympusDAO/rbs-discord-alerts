@@ -3,7 +3,7 @@ import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
 import { RBS_SUBGRAPH_URL } from "./constants";
-import { sendAlert } from "./discord";
+import { EmbedField, sendAlert } from "./discord";
 import { PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castFloat, castFloatNullable, castInt, formatCurrency } from "./helpers/numberHelper";
@@ -34,16 +34,14 @@ const getPriceEventExplanation = (priceEvent: PriceEvent): string => {
  *
  * @param firestoreDocumentPath
  * @param firestoreCollectionName
- * @param alertWebhookUrl
+ * @param alertWebhookUrls
  * @param emergencyWebhookUrl
  * @returns
  */
 export const performEventChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
-  alertWebhookUrl: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  emergencyWebhookUrl: string,
+  alertWebhookUrls: string[],
 ): Promise<void> => {
   // Get last processed block
   const firestoreClient = new Firestore();
@@ -79,7 +77,7 @@ export const performEventChecks = async (
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
-    await sendAlert(alertWebhookUrl, "", `🚨 RBS Price Event`, ``, [
+    const fields: EmbedField[] = [
       // Row 1
       {
         name: "Date",
@@ -137,7 +135,11 @@ export const performEventChecks = async (
         value: getPriceEventExplanation(priceEvent),
         inline: false,
       },
-    ]);
+    ];
+
+    for (let j = 0; j < alertWebhookUrls.length; j++) {
+      await sendAlert(alertWebhookUrls[j], "", `🚨 RBS Price Event`, ``, fields);
+    }
   }
 
   // Update last processed block
@@ -153,5 +155,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performEventChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL, process.env.WEBHOOK_URL);
+  performEventChecks("rbs-discord-alerts-dev", "default", [process.env.WEBHOOK_URL]);
 }
