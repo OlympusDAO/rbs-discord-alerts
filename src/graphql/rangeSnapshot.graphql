@@ -40,6 +40,18 @@ query RBSPriceEvents($latestBlock: BigInt!) {
   }
 }
 
+query MinimumTargetPriceChangedEvents($latestBlock: BigInt!) {
+  minimumTargetPriceChangeds(orderBy: block, orderDirection: asc, first: 1000, where: { block_gt: $latestBlock }) {
+    block
+    blockchain
+    date
+    id
+    minimumTargetPrice
+    timestamp
+    transaction
+  }
+}
+
 # Something with the pulumi build process causes GraphQL fragments to generate an error, so the fields are repeated here
 query LatestRangeSnapshot {
   rangeSnapshots(orderBy: block, orderDirection: desc, first: 1) {

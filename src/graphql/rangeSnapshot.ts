@@ -108,7 +108,11 @@ export type BeatRewardIssued_Filter = {
   rewardAmount_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   rewardToken?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_contains?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_gt?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_gte?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  rewardToken_lt?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_lte?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_not?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -122,13 +126,21 @@ export type BeatRewardIssued_Filter = {
   timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   to?: InputMaybe<Scalars["Bytes"]>;
   to_contains?: InputMaybe<Scalars["Bytes"]>;
+  to_gt?: InputMaybe<Scalars["Bytes"]>;
+  to_gte?: InputMaybe<Scalars["Bytes"]>;
   to_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  to_lt?: InputMaybe<Scalars["Bytes"]>;
+  to_lte?: InputMaybe<Scalars["Bytes"]>;
   to_not?: InputMaybe<Scalars["Bytes"]>;
   to_not_contains?: InputMaybe<Scalars["Bytes"]>;
   to_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -228,7 +240,11 @@ export type BeatRewardUpdated_Filter = {
   rewardAmount_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   rewardToken?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_contains?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_gt?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_gte?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  rewardToken_lt?: InputMaybe<Scalars["Bytes"]>;
+  rewardToken_lte?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_not?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_not_contains?: InputMaybe<Scalars["Bytes"]>;
   rewardToken_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -242,13 +258,21 @@ export type BeatRewardUpdated_Filter = {
   timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   token?: InputMaybe<Scalars["Bytes"]>;
   token_contains?: InputMaybe<Scalars["Bytes"]>;
+  token_gt?: InputMaybe<Scalars["Bytes"]>;
+  token_gte?: InputMaybe<Scalars["Bytes"]>;
   token_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  token_lt?: InputMaybe<Scalars["Bytes"]>;
+  token_lte?: InputMaybe<Scalars["Bytes"]>;
   token_not?: InputMaybe<Scalars["Bytes"]>;
   token_not_contains?: InputMaybe<Scalars["Bytes"]>;
   token_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -335,7 +359,11 @@ export type Beat_Filter = {
   timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -360,6 +388,114 @@ export type Block_Height = {
   number_gte?: InputMaybe<Scalars["Int"]>;
 };
 
+export type MinimumTargetPriceChanged = {
+  __typename?: "MinimumTargetPriceChanged";
+  block: Scalars["BigInt"];
+  blockchain: Scalars["String"];
+  date: Scalars["String"];
+  id: Scalars["ID"];
+  minimumTargetPrice: Scalars["BigDecimal"];
+  timestamp: Scalars["BigInt"];
+  transaction: Scalars["Bytes"];
+};
+
+export type MinimumTargetPriceChanged_Filter = {
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  block?: InputMaybe<Scalars["BigInt"]>;
+  block_gt?: InputMaybe<Scalars["BigInt"]>;
+  block_gte?: InputMaybe<Scalars["BigInt"]>;
+  block_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  block_lt?: InputMaybe<Scalars["BigInt"]>;
+  block_lte?: InputMaybe<Scalars["BigInt"]>;
+  block_not?: InputMaybe<Scalars["BigInt"]>;
+  block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  blockchain?: InputMaybe<Scalars["String"]>;
+  blockchain_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_gt?: InputMaybe<Scalars["String"]>;
+  blockchain_gte?: InputMaybe<Scalars["String"]>;
+  blockchain_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_lt?: InputMaybe<Scalars["String"]>;
+  blockchain_lte?: InputMaybe<Scalars["String"]>;
+  blockchain_not?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains?: InputMaybe<Scalars["String"]>;
+  blockchain_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  blockchain_not_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with?: InputMaybe<Scalars["String"]>;
+  blockchain_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date?: InputMaybe<Scalars["String"]>;
+  date_contains?: InputMaybe<Scalars["String"]>;
+  date_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_ends_with?: InputMaybe<Scalars["String"]>;
+  date_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_gt?: InputMaybe<Scalars["String"]>;
+  date_gte?: InputMaybe<Scalars["String"]>;
+  date_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_lt?: InputMaybe<Scalars["String"]>;
+  date_lte?: InputMaybe<Scalars["String"]>;
+  date_not?: InputMaybe<Scalars["String"]>;
+  date_not_contains?: InputMaybe<Scalars["String"]>;
+  date_not_contains_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with?: InputMaybe<Scalars["String"]>;
+  date_not_ends_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_not_in?: InputMaybe<Array<Scalars["String"]>>;
+  date_not_starts_with?: InputMaybe<Scalars["String"]>;
+  date_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  date_starts_with?: InputMaybe<Scalars["String"]>;
+  date_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  id?: InputMaybe<Scalars["ID"]>;
+  id_gt?: InputMaybe<Scalars["ID"]>;
+  id_gte?: InputMaybe<Scalars["ID"]>;
+  id_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id_lt?: InputMaybe<Scalars["ID"]>;
+  id_lte?: InputMaybe<Scalars["ID"]>;
+  id_not?: InputMaybe<Scalars["ID"]>;
+  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  minimumTargetPrice?: InputMaybe<Scalars["BigDecimal"]>;
+  minimumTargetPrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  minimumTargetPrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  minimumTargetPrice_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  minimumTargetPrice_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  minimumTargetPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  minimumTargetPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
+  minimumTargetPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  timestamp?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  transaction?: InputMaybe<Scalars["Bytes"]>;
+  transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
+  transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+};
+
+export enum MinimumTargetPriceChanged_OrderBy {
+  Block = "block",
+  Blockchain = "blockchain",
+  Date = "date",
+  Id = "id",
+  MinimumTargetPrice = "minimumTargetPrice",
+  Timestamp = "timestamp",
+  Transaction = "transaction",
+}
+
 export type MovingAverageDurationChanged = {
   __typename?: "MovingAverageDurationChanged";
   block: Scalars["BigInt"];
@@ -367,6 +503,7 @@ export type MovingAverageDurationChanged = {
   date: Scalars["String"];
   id: Scalars["ID"];
   movingAverageDuration: Scalars["BigInt"];
+  timestamp: Scalars["BigInt"];
   transaction: Scalars["Bytes"];
 };
 
@@ -437,9 +574,21 @@ export type MovingAverageDurationChanged_Filter = {
   movingAverageDuration_lte?: InputMaybe<Scalars["BigInt"]>;
   movingAverageDuration_not?: InputMaybe<Scalars["BigInt"]>;
   movingAverageDuration_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -451,6 +600,7 @@ export enum MovingAverageDurationChanged_OrderBy {
   Date = "date",
   Id = "id",
   MovingAverageDuration = "movingAverageDuration",
+  Timestamp = "timestamp",
   Transaction = "transaction",
 }
 
@@ -555,7 +705,11 @@ export type NewObservation_Filter = {
   timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -578,6 +732,7 @@ export type ObservationFrequencyChanged = {
   date: Scalars["String"];
   id: Scalars["ID"];
   observationFrequencySeconds: Scalars["BigInt"];
+  timestamp: Scalars["BigInt"];
   transaction: Scalars["Bytes"];
 };
 
@@ -648,9 +803,21 @@ export type ObservationFrequencyChanged_Filter = {
   observationFrequencySeconds_lte?: InputMaybe<Scalars["BigInt"]>;
   observationFrequencySeconds_not?: InputMaybe<Scalars["BigInt"]>;
   observationFrequencySeconds_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -662,6 +829,7 @@ export enum ObservationFrequencyChanged_OrderBy {
   Date = "date",
   Id = "id",
   ObservationFrequencySeconds = "observationFrequencySeconds",
+  Timestamp = "timestamp",
   Transaction = "transaction",
 }
 
@@ -785,7 +953,11 @@ export type PriceEvent_Filter = {
   timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -899,7 +1071,11 @@ export type PricesChangedEvent_Filter = {
   snapshot_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -924,6 +1100,8 @@ export type Query = {
   beatRewardUpdated?: Maybe<BeatRewardUpdated>;
   beatRewardUpdateds: Array<BeatRewardUpdated>;
   beats: Array<Beat>;
+  minimumTargetPriceChanged?: Maybe<MinimumTargetPriceChanged>;
+  minimumTargetPriceChangeds: Array<MinimumTargetPriceChanged>;
   movingAverageDurationChanged?: Maybe<MovingAverageDurationChanged>;
   movingAverageDurationChangeds: Array<MovingAverageDurationChanged>;
   newObservation?: Maybe<NewObservation>;
@@ -994,6 +1172,22 @@ export type QueryBeatsArgs = {
   skip?: InputMaybe<Scalars["Int"]>;
   subgraphError?: _SubgraphErrorPolicy_;
   where?: InputMaybe<Beat_Filter>;
+};
+
+export type QueryMinimumTargetPriceChangedArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type QueryMinimumTargetPriceChangedsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<MinimumTargetPriceChanged_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<MinimumTargetPriceChanged_Filter>;
 };
 
 export type QueryMovingAverageDurationChangedArgs = {
@@ -1384,7 +1578,11 @@ export type RangeSnapshot_Filter = {
   treasuryDebtBalance_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   treasuryReserveAddress?: InputMaybe<Scalars["Bytes"]>;
   treasuryReserveAddress_contains?: InputMaybe<Scalars["Bytes"]>;
+  treasuryReserveAddress_gt?: InputMaybe<Scalars["Bytes"]>;
+  treasuryReserveAddress_gte?: InputMaybe<Scalars["Bytes"]>;
   treasuryReserveAddress_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  treasuryReserveAddress_lt?: InputMaybe<Scalars["Bytes"]>;
+  treasuryReserveAddress_lte?: InputMaybe<Scalars["Bytes"]>;
   treasuryReserveAddress_not?: InputMaybe<Scalars["Bytes"]>;
   treasuryReserveAddress_not_contains?: InputMaybe<Scalars["Bytes"]>;
   treasuryReserveAddress_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -1516,7 +1714,11 @@ export type SpreadsChangedEvent_Filter = {
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -1550,6 +1752,8 @@ export type Subscription = {
   beatRewardUpdated?: Maybe<BeatRewardUpdated>;
   beatRewardUpdateds: Array<BeatRewardUpdated>;
   beats: Array<Beat>;
+  minimumTargetPriceChanged?: Maybe<MinimumTargetPriceChanged>;
+  minimumTargetPriceChangeds: Array<MinimumTargetPriceChanged>;
   movingAverageDurationChanged?: Maybe<MovingAverageDurationChanged>;
   movingAverageDurationChangeds: Array<MovingAverageDurationChanged>;
   newObservation?: Maybe<NewObservation>;
@@ -1620,6 +1824,22 @@ export type SubscriptionBeatsArgs = {
   skip?: InputMaybe<Scalars["Int"]>;
   subgraphError?: _SubgraphErrorPolicy_;
   where?: InputMaybe<Beat_Filter>;
+};
+
+export type SubscriptionMinimumTargetPriceChangedArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionMinimumTargetPriceChangedsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<MinimumTargetPriceChanged_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<MinimumTargetPriceChanged_Filter>;
 };
 
 export type SubscriptionMovingAverageDurationChangedArgs = {
@@ -1845,7 +2065,11 @@ export type ThresholdFactorChangedEvent_Filter = {
   thresholdFactor_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -1868,6 +2092,7 @@ export type UpdateThresholdsChanged = {
   id: Scalars["ID"];
   ohmEthUpdateThresholdSeconds: Scalars["BigInt"];
   reserveEthUpdateThresholdSeconds: Scalars["BigInt"];
+  timestamp: Scalars["BigInt"];
   transaction: Scalars["Bytes"];
 };
 
@@ -1946,9 +2171,21 @@ export type UpdateThresholdsChanged_Filter = {
   reserveEthUpdateThresholdSeconds_lte?: InputMaybe<Scalars["BigInt"]>;
   reserveEthUpdateThresholdSeconds_not?: InputMaybe<Scalars["BigInt"]>;
   reserveEthUpdateThresholdSeconds_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  timestamp_lt?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_lte?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not?: InputMaybe<Scalars["BigInt"]>;
+  timestamp_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_gte?: InputMaybe<Scalars["Bytes"]>;
   transaction_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  transaction_lt?: InputMaybe<Scalars["Bytes"]>;
+  transaction_lte?: InputMaybe<Scalars["Bytes"]>;
   transaction_not?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
@@ -1961,6 +2198,7 @@ export enum UpdateThresholdsChanged_OrderBy {
   Id = "id",
   OhmEthUpdateThresholdSeconds = "ohmEthUpdateThresholdSeconds",
   ReserveEthUpdateThresholdSeconds = "reserveEthUpdateThresholdSeconds",
+  Timestamp = "timestamp",
   Transaction = "transaction",
 }
 
@@ -2044,6 +2282,24 @@ export type RbsPriceEventsQuery = {
       treasuryReserveBalance?: string | null;
       wallSpread: string;
     };
+  }>;
+};
+
+export type MinimumTargetPriceChangedEventsQueryVariables = Exact<{
+  latestBlock: Scalars["BigInt"];
+}>;
+
+export type MinimumTargetPriceChangedEventsQuery = {
+  __typename?: "Query";
+  minimumTargetPriceChangeds: Array<{
+    __typename?: "MinimumTargetPriceChanged";
+    block: string;
+    blockchain: string;
+    date: string;
+    id: string;
+    minimumTargetPrice: string;
+    timestamp: string;
+    transaction: Uint8Array;
   }>;
 };
 
@@ -2356,6 +2612,71 @@ export const RbsPriceEventsDocument = {
     },
   ],
 } as unknown as DocumentNode<RbsPriceEventsQuery, RbsPriceEventsQueryVariables>;
+export const MinimumTargetPriceChangedEventsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "MinimumTargetPriceChangedEvents" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "minimumTargetPriceChangeds" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "EnumValue", value: "block" },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "EnumValue", value: "asc" },
+              },
+              { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "block_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "block" } },
+                { kind: "Field", name: { kind: "Name", value: "blockchain" } },
+                { kind: "Field", name: { kind: "Name", value: "date" } },
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                { kind: "Field", name: { kind: "Name", value: "minimumTargetPrice" } },
+                { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "transaction" } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<MinimumTargetPriceChangedEventsQuery, MinimumTargetPriceChangedEventsQueryVariables>;
 export const LatestRangeSnapshotDocument = {
   kind: "Document",
   definitions: [
