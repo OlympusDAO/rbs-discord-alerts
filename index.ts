@@ -6,6 +6,7 @@ import { createFunction } from "./pulumi/httpCallbackFunction";
 import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
 import { performSnapshotChecks } from "./src/handleSnapshotCheck";
+import { performTargetPriceChangedCheck } from "./src/handleTargetPriceChangedEvents";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -49,6 +50,30 @@ const FUNCTION_EXPIRATION_SECONDS = 30;
 const webhookAlertDAO = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
 const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY);
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
+
+/**
+ * Target Price Changed Events
+ */
+const FUNCTION_TARGET_PRICE = "rbs-target-price-changed-events";
+const FUNCTION_TARGET_PRICE_STACK = `${FUNCTION_TARGET_PRICE}-${pulumi.getStack()}`;
+
+const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunction(
+  FUNCTION_TARGET_PRICE_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performTargetPriceChangedCheck(datastore.documentId.get(), datastore.collection.get(), [
+      webhookAlertDAO,
+      webhookAlertCommunity,
+    ]);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  "* * * * *", // Every minute
+);
 
 /**
  * Price Events
@@ -147,6 +172,16 @@ const notificationDiscord = new gcp.monitoring.NotificationChannel("discord", {
   },
 });
 export const notificationDiscordId = notificationDiscord.id;
+
+createAlertFunctionError(FUNCTION_TARGET_PRICE_STACK, functionTargetPriceChangedName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_TARGET_PRICE_STACK, functionTargetPriceChangedName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
 
 createAlertFunctionError(FUNCTION_PRICE_EVENTS_STACK, functionPriceEventsName, 60, [
   notificationEmailId,
@@ -379,6 +414,47 @@ new gcp.monitoring.Dashboard(
             {
               "height": 4,
               "widget": {
+                "title": "${FUNCTION_TARGET_PRICE} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionTargetPriceChangedName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 6,
+              "yPos": 4
+            },
+            {
+              "height": 4,
+              "widget": {
                 "title": "Document Reads per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
                 "xyChart": {
                   "chartOptions": {
@@ -466,6 +542,6 @@ new gcp.monitoring.Dashboard(
         }
       }`,
   },
-  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck] },
+  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck, functionTargetPriceChanged] },
 );
 export const dashboardName = DASHBOARD_NAME;
