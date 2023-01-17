@@ -5,6 +5,7 @@
         "execute:events": "export $(cat .env | xargs) && ts-node src/handlePriceEvents.ts",
         "execute:heartbeats": "export $(cat .env | xargs) && ts-node src/handleHeartbeat.ts",
         "execute:snapshots": "export $(cat .env | xargs) && ts-node src/handleSnapshotCheck.ts",
+        "execute:targetPrice": "export $(cat .env | xargs) && ts-node src/handleTargetPriceChangedEvents.ts",
         "codegen": "graphql-codegen",
         "build": "tsc"
     },

@@ -70,18 +70,18 @@ export const performTargetPriceChangedCheck = async (
         inline: true,
       },
       {
+        name: "Target Price",
+        value: formatCurrency(castFloat(targetPriceChangedEvent.minimumTargetPrice)),
+        inline: true,
+      },
+      // Row 2
+      {
         name: "Transaction",
         value: `[${shorten(targetPriceChangedEvent.transaction.toString())}](${getEtherscanTransactionUrl(
           targetPriceChangedEvent.transaction.toString(),
           targetPriceChangedEvent.blockchain,
         )})`,
-        inline: true,
-      },
-      // Row 2
-      {
-        name: "Target Price",
-        value: formatCurrency(castFloat(targetPriceChangedEvent.minimumTargetPrice)),
-        inline: true,
+        inline: false,
       },
     ];
 
