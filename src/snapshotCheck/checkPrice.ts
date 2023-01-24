@@ -2,7 +2,7 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { PROTOCOL_METRICS_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "../constants";
+import { PRICE_SNAPSHOT_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
@@ -89,7 +89,7 @@ export const checkPrice = async (
 
   // Grab latest price from the protocol-metrics PriceSnapshot
   const priceSnapshotClient = new Client({
-    url: PROTOCOL_METRICS_SUBGRAPH_URL,
+    url: PRICE_SNAPSHOT_SUBGRAPH_URL,
     fetch,
   });
   const priceSnapshotResults = await priceSnapshotClient.query(LatestPriceSnapshotDocument, {}).toPromise();
@@ -101,7 +101,7 @@ export const checkPrice = async (
 
   // Grab the OHM price from the PriceSnapshot, which is derived from the liquidity pools.
   const latestPriceSnapshot = priceSnapshotResults.data.priceSnapshots[0];
-  const lpPrice = castFloat(latestPriceSnapshot.priceOhm);
+  const lpPrice = castFloat(latestPriceSnapshot.ohmUsdPrice);
 
   const result = isPriceDeviating(chainlinkPrice, lpPrice);
   if (!result[0]) {

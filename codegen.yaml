@@ -36,7 +36,7 @@ generates:
       afterOneFileWrite:
         - yarn eslint --config ./.eslintrc.js --fix
   src/graphql/priceSnapshot.ts:
-    schema: https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics
+    schema: https://api.studio.thegraph.com/query/28103/olympus-price-snapshot-test/1.0.9
     documents: "src/graphql/priceSnapshot.graphql"
     plugins:
       - typescript
