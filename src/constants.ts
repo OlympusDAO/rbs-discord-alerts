@@ -3,6 +3,8 @@ export const RBS_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympus
 export const PROTOCOL_METRICS_SUBGRAPH_URL =
   "https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics";
 
+export const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/0xjem/price-snapshot";
+
 export const BONDS_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/bonds";
 
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();

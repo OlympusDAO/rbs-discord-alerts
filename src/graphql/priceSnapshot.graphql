@@ -1,10 +1,12 @@
 query LatestPriceSnapshot {
   priceSnapshots(orderBy: block, orderDirection: desc, first: 1) {
-    id
     block
     date
+    gOhmUsdPrice
+    id
+    ohmUsdPrice
+    ohmUsdPrice1dDelta
+    ohmUsdPrice30dVolatility
     timestamp
-    priceGOhm
-    priceOhm
   }
 }
