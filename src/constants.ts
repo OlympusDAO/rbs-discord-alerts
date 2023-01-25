@@ -3,8 +3,7 @@ export const RBS_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympus
 export const PROTOCOL_METRICS_SUBGRAPH_URL =
   "https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics";
 
-export const PRICE_SNAPSHOT_SUBGRAPH_URL =
-  "https://api.studio.thegraph.com/query/28103/olympus-price-snapshot-test/1.0.9";
+export const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/0xjem/price-snapshot";
 
 export const BONDS_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/bonds";
 
