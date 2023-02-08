@@ -1,4 +1,4 @@
-export const RBS_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/rbs";
+export const RBS_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/37737/rbs/1.0.11"; // TODO change back to hosted service or decentralized network
 
 export const PROTOCOL_METRICS_SUBGRAPH_URL =
   "https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics";
