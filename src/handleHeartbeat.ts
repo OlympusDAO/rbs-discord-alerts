@@ -53,9 +53,8 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
     return;
   }
 
-  // Get the latest block from last item (since we order ascending)
-  const updatedLatestBlock = beatEvents[beatEvents.length - 1].block;
-  const latestHeartbeatDate = beatEvents[beatEvents.length - 1].date;
+  let updatedLatestBlock: string | undefined;
+  let latestHeartbeatDate: string | undefined;
 
   // Send Discord message
   for (let i = 0; i < beatEvents.length; i++) {
@@ -78,16 +77,26 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
     ];
 
     for (let j = 0; j < alertWebhookUrls.length; j++) {
-      await sendAlert(alertWebhookUrls[j], "", `⏰ Heartbeat`, ``, fields);
+      const currentAlertSuccess = await sendAlert(alertWebhookUrls[j], "", `⏰ Heartbeat`, ``, fields);
+
+      // If any of the Discord webhook requests succeed, we update the latest block
+      if (currentAlertSuccess) {
+        updatedLatestBlock = beatEvent.block;
+        latestHeartbeatDate = beatEvent.date;
+      }
     }
   }
 
-  // Update last processed block
-  await firestoreDocument.update({
-    [FIELD_LATEST_BLOCK]: updatedLatestBlock,
-    [FIELD_HEARTBEAT_DATE]: latestHeartbeatDate,
-  });
-  console.log(`Updated latest block to ${updatedLatestBlock}`);
+  if (updatedLatestBlock && latestHeartbeatDate) {
+    // Update last processed block
+    await firestoreDocument.update({
+      [FIELD_LATEST_BLOCK]: updatedLatestBlock,
+      [FIELD_HEARTBEAT_DATE]: latestHeartbeatDate,
+    });
+    console.log(`Updated latest block to ${updatedLatestBlock}`);
+  } else {
+    console.log(`Latest block not updated`);
+  }
 };
 
 /**
@@ -145,8 +154,10 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
     },
   ];
 
+  let alertSuccess = false;
+
   for (let i = 0; i < webhookUrls.length; i++) {
-    await sendAlert(
+    const currentAlertSuccess = await sendAlert(
       webhookUrls[i],
       "",
       `🚨 Late Heartbeat`,
@@ -155,10 +166,21 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
       } minutes.`,
       fields,
     );
+
+    // If any of the Discord webhook requests succeed, we update the latest block
+    if (currentAlertSuccess) {
+      alertSuccess = currentAlertSuccess;
+    }
   }
 
   // Update lastAlarmDate
-  await updateLastAlertDate(firestoreDocument, FUNCTION_KEY, new Date());
+  if (alertSuccess) {
+    const lastAlertDate = new Date();
+    await updateLastAlertDate(firestoreDocument, FUNCTION_KEY, lastAlertDate);
+    console.log(`Updated latest alert date to ${lastAlertDate.toISOString()}`);
+  } else {
+    console.log(`Latest alert date not updated`);
+  }
 };
 
 /**
