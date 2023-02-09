@@ -24,7 +24,7 @@ type DiscordMessage = {
   embeds: Embed[];
 };
 
-const executeWebhook = async (webhook: string, content: DiscordMessage): Promise<void> => {
+const executeWebhook = async (webhook: string, content: DiscordMessage): Promise<boolean> => {
   console.log(`Sending request to Discord webhook: ${JSON.stringify(content, null, 2)}`);
   const response = await fetch(webhook, {
     method: "POST",
@@ -37,12 +37,18 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
   console.debug(`Discord response status: ${response.status}`);
   // Ignore rate-limiting
   if (response.status == 429) {
-    return;
+    console.error(`Rate-limited by Discord`);
+    const body = await response.json();
+    console.error(`Discord response: ${JSON.stringify(body)}`);
+
+    return false;
   }
 
   if (!response.ok) {
     throw new Error(`Encountered error with Discord webhook: ${await response.text()}`);
   }
+
+  return true;
 };
 
 export const BLANK_EMBED_FIELD = {
@@ -72,8 +78,8 @@ export const sendAlert = async (
   fields: EmbedField[],
   footer?: string,
   timestamp?: string,
-): Promise<void> => {
-  await executeWebhook(webhook, {
+): Promise<boolean> => {
+  return await executeWebhook(webhook, {
     content: content,
     embeds: [
       {

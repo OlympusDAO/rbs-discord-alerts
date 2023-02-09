@@ -71,8 +71,7 @@ export const performEventChecks = async (
     return;
   }
 
-  // Get the latest block from last item (since we order ascending)
-  const updatedLatestBlock = priceEvents[priceEvents.length - 1].block;
+  let updatedLatestBlock: string | undefined;
 
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
@@ -138,15 +137,24 @@ export const performEventChecks = async (
     ];
 
     for (let j = 0; j < alertWebhookUrls.length; j++) {
-      await sendAlert(alertWebhookUrls[j], "", `🚨 RBS Price Event`, ``, fields);
+      const currentAlertSuccess = await sendAlert(alertWebhookUrls[j], "", `🚨 RBS Price Event`, ``, fields);
+
+      // If any of the Discord webhook requests succeed, we update the latest block
+      if (currentAlertSuccess) {
+        updatedLatestBlock = priceEvent.block;
+      }
     }
   }
 
-  // Update last processed block
-  await firestoreDocument.update({
-    [FIELD_LATEST_BLOCK]: updatedLatestBlock,
-  });
-  console.log(`Updated latest block to ${updatedLatestBlock}`);
+  if (updatedLatestBlock) {
+    // Update last processed block
+    await firestoreDocument.update({
+      [FIELD_LATEST_BLOCK]: updatedLatestBlock,
+    });
+    console.log(`Updated latest block to ${updatedLatestBlock}`);
+  } else {
+    console.log(`Latest block not updated`);
+  }
 };
 
 // Running via CLI
