@@ -1,4 +1,4 @@
-export const RBS_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/37737/rbs/1.0.11"; // Subgraph Studio
+export const RBS_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/37737/olympus-rbs/1.0.15"; // Subgraph Studio
 
 export const PROTOCOL_METRICS_SUBGRAPH_URL =
   "https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics";
