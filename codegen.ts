@@ -17,7 +17,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint:fix", "patch -p0 < src/graphql/bondMarket.patch"],
       },
     },
     "src/graphql/rangeSnapshot.ts": {
