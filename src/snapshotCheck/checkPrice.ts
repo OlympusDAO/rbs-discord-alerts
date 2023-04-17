@@ -2,7 +2,7 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { PRICE_SNAPSHOT_SUBGRAPH_URL, RBS_SUBGRAPH_URL } from "../constants";
+import { getRbsSubgraphUrl, PRICE_SNAPSHOT_SUBGRAPH_URL } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
@@ -67,7 +67,7 @@ export const checkPrice = async (
 
   // Grab latest RangeSnapshot
   const rangeSnapshotClient = new Client({
-    url: RBS_SUBGRAPH_URL,
+    url: getRbsSubgraphUrl(),
     fetch,
   });
   const rangeSnapshotResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();

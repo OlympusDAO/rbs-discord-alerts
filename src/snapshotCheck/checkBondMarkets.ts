@@ -6,10 +6,10 @@ import {
   BONDS_SUBGRAPH_URL,
   ERC20_DAI,
   ERC20_OHM_V2,
+  getRbsSubgraphUrl,
   OPERATOR_CONTRACT_V1,
   OPERATOR_CONTRACT_V1_1,
   OPERATOR_CONTRACT_V1_1_BLOCK,
-  RBS_SUBGRAPH_URL,
 } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
@@ -608,7 +608,7 @@ export const checkBondMarkets = async (
 
   // Fetch range snapshots
   const rangeSnapshotClient = new Client({
-    url: RBS_SUBGRAPH_URL,
+    url: getRbsSubgraphUrl(),
     fetch,
   });
   // Snapshots are in ascending order

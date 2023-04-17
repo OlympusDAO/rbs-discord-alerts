@@ -2,7 +2,7 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { RBS_SUBGRAPH_URL } from "../constants";
+import { getRbsSubgraphUrl } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "../graphql/rangeSnapshot";
 import { addDate } from "../helpers/dateHelper";
@@ -49,7 +49,7 @@ export const checkCapacityDepletion = async (
   const sinceDateString = sinceDate.toISOString();
 
   const client = new Client({
-    url: RBS_SUBGRAPH_URL,
+    url: getRbsSubgraphUrl(),
     fetch,
   });
 

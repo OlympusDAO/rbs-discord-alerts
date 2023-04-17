@@ -1,7 +1,13 @@
-export const RBS_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/37737/olympus-rbs/1.0.15"; // Subgraph Studio
+const RBS_SUBGRAPH_URL =
+  "https://gateway.thegraph.com/api/[api-key]/subgraphs/id/Cy4Y1UCyitfBZATr3PjC3s2eUwj1XxqZMN2tTGgZCNGe";
 
-export const PROTOCOL_METRICS_SUBGRAPH_URL =
-  "https://api.thegraph.com/subgraphs/name/olympusdao/olympus-protocol-metrics";
+export const getRbsSubgraphUrl = (): string => {
+  const apiKey = process.env.SUBGRAPH_API_KEY;
+  if (!apiKey) {
+    throw new Error("SUBGRAPH_API_KEY is not set");
+  }
+  return RBS_SUBGRAPH_URL.replace("[api-key]", apiKey);
+};
 
 export const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.thegraph.com/subgraphs/name/olympusdao/price-snapshot";
 
