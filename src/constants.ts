@@ -2,9 +2,9 @@ const RBS_SUBGRAPH_URL =
   "https://gateway.thegraph.com/api/[api-key]/subgraphs/id/Cy4Y1UCyitfBZATr3PjC3s2eUwj1XxqZMN2tTGgZCNGe";
 
 export const getRbsSubgraphUrl = (): string => {
-  const apiKey = process.env.SUBGRAPH_API_KEY;
+  const apiKey = process.env.GRAPHQL_API_KEY;
   if (!apiKey) {
-    throw new Error("SUBGRAPH_API_KEY is not set");
+    throw new Error("GRAPHQL_API_KEY is not set");
   }
   return RBS_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
