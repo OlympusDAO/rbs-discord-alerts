@@ -1,9 +1,11 @@
 import { CodegenConfig } from "@graphql-codegen/cli";
 
+import { BONDS_SUBGRAPH_URL, getRbsSubgraphUrl, PRICE_SNAPSHOT_SUBGRAPH_URL } from "./src/constants";
+
 const config: CodegenConfig = {
   generates: {
     "src/graphql/bondMarket.ts": {
-      schema: "https://api.thegraph.com/subgraphs/name/olympusdao/bonds",
+      schema: BONDS_SUBGRAPH_URL,
       documents: "src/graphql/bondMarket.graphql",
       plugins: ["typescript", "typescript-operations", "typed-document-node"],
       config: {
@@ -19,7 +21,7 @@ const config: CodegenConfig = {
       },
     },
     "src/graphql/rangeSnapshot.ts": {
-      schema: "https://api.thegraph.com/subgraphs/name/olympusdao/rbs",
+      schema: getRbsSubgraphUrl(),
       documents: "src/graphql/rangeSnapshot.graphql",
       plugins: ["typescript", "typescript-operations", "typed-document-node"],
       config: {
@@ -35,7 +37,7 @@ const config: CodegenConfig = {
       },
     },
     "src/graphql/priceSnapshot.ts": {
-      schema: "https://api.thegraph.com/subgraphs/name/olympusdao/price-snapshot",
+      schema: PRICE_SNAPSHOT_SUBGRAPH_URL,
       documents: "src/graphql/priceSnapshot.graphql",
       plugins: ["typescript", "typescript-operations", "typed-document-node"],
       config: {
