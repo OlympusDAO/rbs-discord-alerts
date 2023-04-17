@@ -53,6 +53,7 @@ export type PriceSnapshotDaily = {
 export type PriceSnapshotDaily_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<PriceSnapshotDaily_Filter>>>;
   id?: InputMaybe<Scalars["ID"]>;
   id_gt?: InputMaybe<Scalars["ID"]>;
   id_gte?: InputMaybe<Scalars["ID"]>;
@@ -61,6 +62,7 @@ export type PriceSnapshotDaily_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<PriceSnapshotDaily_Filter>>>;
   record?: InputMaybe<Scalars["String"]>;
   record_contains?: InputMaybe<Scalars["String"]>;
   record_contains_nocase?: InputMaybe<Scalars["String"]>;
@@ -91,6 +93,7 @@ export enum PriceSnapshotDaily_OrderBy {
 export type PriceSnapshot_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<PriceSnapshot_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -159,6 +162,7 @@ export type PriceSnapshot_Filter = {
   ohmUsdPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   ohmUsdPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   ohmUsdPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  or?: InputMaybe<Array<InputMaybe<PriceSnapshot_Filter>>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;

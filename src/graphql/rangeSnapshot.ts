@@ -42,6 +42,7 @@ export type BeatRewardIssued = {
 export type BeatRewardIssued_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<BeatRewardIssued_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -98,6 +99,7 @@ export type BeatRewardIssued_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<BeatRewardIssued_Filter>>>;
   rewardAmount?: InputMaybe<Scalars["BigDecimal"]>;
   rewardAmount_gt?: InputMaybe<Scalars["BigDecimal"]>;
   rewardAmount_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -174,6 +176,7 @@ export type BeatRewardUpdated = {
 export type BeatRewardUpdated_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<BeatRewardUpdated_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -230,6 +233,7 @@ export type BeatRewardUpdated_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<BeatRewardUpdated_Filter>>>;
   rewardAmount?: InputMaybe<Scalars["BigDecimal"]>;
   rewardAmount_gt?: InputMaybe<Scalars["BigDecimal"]>;
   rewardAmount_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -293,6 +297,7 @@ export enum BeatRewardUpdated_OrderBy {
 export type Beat_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<Beat_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -349,6 +354,7 @@ export type Beat_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<Beat_Filter>>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -402,6 +408,7 @@ export type MinimumTargetPriceChanged = {
 export type MinimumTargetPriceChanged_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<MinimumTargetPriceChanged_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -466,6 +473,7 @@ export type MinimumTargetPriceChanged_Filter = {
   minimumTargetPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   minimumTargetPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   minimumTargetPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  or?: InputMaybe<Array<InputMaybe<MinimumTargetPriceChanged_Filter>>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -510,6 +518,7 @@ export type MovingAverageDurationChanged = {
 export type MovingAverageDurationChanged_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<MovingAverageDurationChanged_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -574,6 +583,7 @@ export type MovingAverageDurationChanged_Filter = {
   movingAverageDuration_lte?: InputMaybe<Scalars["BigInt"]>;
   movingAverageDuration_not?: InputMaybe<Scalars["BigInt"]>;
   movingAverageDuration_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  or?: InputMaybe<Array<InputMaybe<MovingAverageDurationChanged_Filter>>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -618,6 +628,7 @@ export type NewObservation = {
 export type NewObservation_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<NewObservation_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -674,6 +685,7 @@ export type NewObservation_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<NewObservation_Filter>>>;
   snapshot?: InputMaybe<Scalars["String"]>;
   snapshot_?: InputMaybe<RangeSnapshot_Filter>;
   snapshot_contains?: InputMaybe<Scalars["String"]>;
@@ -721,6 +733,33 @@ export enum NewObservation_OrderBy {
   Date = "date",
   Id = "id",
   Snapshot = "snapshot",
+  SnapshotBlock = "snapshot__block",
+  SnapshotBlockchain = "snapshot__blockchain",
+  SnapshotCushionSpread = "snapshot__cushionSpread",
+  SnapshotDate = "snapshot__date",
+  SnapshotHighActive = "snapshot__highActive",
+  SnapshotHighCapacityOhm = "snapshot__highCapacityOhm",
+  SnapshotHighCushionPrice = "snapshot__highCushionPrice",
+  SnapshotHighLastActiveTimestamp = "snapshot__highLastActiveTimestamp",
+  SnapshotHighMarketId = "snapshot__highMarketId",
+  SnapshotHighWallPrice = "snapshot__highWallPrice",
+  SnapshotId = "snapshot__id",
+  SnapshotLowActive = "snapshot__lowActive",
+  SnapshotLowCapacityReserve = "snapshot__lowCapacityReserve",
+  SnapshotLowCushionPrice = "snapshot__lowCushionPrice",
+  SnapshotLowLastActiveTimestamp = "snapshot__lowLastActiveTimestamp",
+  SnapshotLowMarketId = "snapshot__lowMarketId",
+  SnapshotLowWallPrice = "snapshot__lowWallPrice",
+  SnapshotOhmMovingAveragePrice = "snapshot__ohmMovingAveragePrice",
+  SnapshotOhmPrice = "snapshot__ohmPrice",
+  SnapshotOperatorCushionFactor = "snapshot__operatorCushionFactor",
+  SnapshotOperatorReserveFactor = "snapshot__operatorReserveFactor",
+  SnapshotThresholdFactor = "snapshot__thresholdFactor",
+  SnapshotTimestamp = "snapshot__timestamp",
+  SnapshotTreasuryDebtBalance = "snapshot__treasuryDebtBalance",
+  SnapshotTreasuryReserveAddress = "snapshot__treasuryReserveAddress",
+  SnapshotTreasuryReserveBalance = "snapshot__treasuryReserveBalance",
+  SnapshotWallSpread = "snapshot__wallSpread",
   Timestamp = "timestamp",
   Transaction = "transaction",
 }
@@ -739,6 +778,7 @@ export type ObservationFrequencyChanged = {
 export type ObservationFrequencyChanged_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<ObservationFrequencyChanged_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -803,6 +843,7 @@ export type ObservationFrequencyChanged_Filter = {
   observationFrequencySeconds_lte?: InputMaybe<Scalars["BigInt"]>;
   observationFrequencySeconds_not?: InputMaybe<Scalars["BigInt"]>;
   observationFrequencySeconds_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  or?: InputMaybe<Array<InputMaybe<ObservationFrequencyChanged_Filter>>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -862,6 +903,7 @@ export enum PriceEventType {
 export type PriceEvent_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<PriceEvent_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -922,6 +964,7 @@ export type PriceEvent_Filter = {
   isHigh_in?: InputMaybe<Array<Scalars["Boolean"]>>;
   isHigh_not?: InputMaybe<Scalars["Boolean"]>;
   isHigh_not_in?: InputMaybe<Array<Scalars["Boolean"]>>;
+  or?: InputMaybe<Array<InputMaybe<PriceEvent_Filter>>>;
   snapshot?: InputMaybe<Scalars["String"]>;
   snapshot_?: InputMaybe<RangeSnapshot_Filter>;
   snapshot_contains?: InputMaybe<Scalars["String"]>;
@@ -974,6 +1017,33 @@ export enum PriceEvent_OrderBy {
   Id = "id",
   IsHigh = "isHigh",
   Snapshot = "snapshot",
+  SnapshotBlock = "snapshot__block",
+  SnapshotBlockchain = "snapshot__blockchain",
+  SnapshotCushionSpread = "snapshot__cushionSpread",
+  SnapshotDate = "snapshot__date",
+  SnapshotHighActive = "snapshot__highActive",
+  SnapshotHighCapacityOhm = "snapshot__highCapacityOhm",
+  SnapshotHighCushionPrice = "snapshot__highCushionPrice",
+  SnapshotHighLastActiveTimestamp = "snapshot__highLastActiveTimestamp",
+  SnapshotHighMarketId = "snapshot__highMarketId",
+  SnapshotHighWallPrice = "snapshot__highWallPrice",
+  SnapshotId = "snapshot__id",
+  SnapshotLowActive = "snapshot__lowActive",
+  SnapshotLowCapacityReserve = "snapshot__lowCapacityReserve",
+  SnapshotLowCushionPrice = "snapshot__lowCushionPrice",
+  SnapshotLowLastActiveTimestamp = "snapshot__lowLastActiveTimestamp",
+  SnapshotLowMarketId = "snapshot__lowMarketId",
+  SnapshotLowWallPrice = "snapshot__lowWallPrice",
+  SnapshotOhmMovingAveragePrice = "snapshot__ohmMovingAveragePrice",
+  SnapshotOhmPrice = "snapshot__ohmPrice",
+  SnapshotOperatorCushionFactor = "snapshot__operatorCushionFactor",
+  SnapshotOperatorReserveFactor = "snapshot__operatorReserveFactor",
+  SnapshotThresholdFactor = "snapshot__thresholdFactor",
+  SnapshotTimestamp = "snapshot__timestamp",
+  SnapshotTreasuryDebtBalance = "snapshot__treasuryDebtBalance",
+  SnapshotTreasuryReserveAddress = "snapshot__treasuryReserveAddress",
+  SnapshotTreasuryReserveBalance = "snapshot__treasuryReserveBalance",
+  SnapshotWallSpread = "snapshot__wallSpread",
   Timestamp = "timestamp",
   Transaction = "transaction",
   Type = "type",
@@ -992,6 +1062,7 @@ export type PricesChangedEvent = {
 export type PricesChangedEvent_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<PricesChangedEvent_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -1048,6 +1119,7 @@ export type PricesChangedEvent_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<PricesChangedEvent_Filter>>>;
   snapshot?: InputMaybe<Scalars["String"]>;
   snapshot_?: InputMaybe<RangeSnapshot_Filter>;
   snapshot_contains?: InputMaybe<Scalars["String"]>;
@@ -1087,6 +1159,33 @@ export enum PricesChangedEvent_OrderBy {
   Date = "date",
   Id = "id",
   Snapshot = "snapshot",
+  SnapshotBlock = "snapshot__block",
+  SnapshotBlockchain = "snapshot__blockchain",
+  SnapshotCushionSpread = "snapshot__cushionSpread",
+  SnapshotDate = "snapshot__date",
+  SnapshotHighActive = "snapshot__highActive",
+  SnapshotHighCapacityOhm = "snapshot__highCapacityOhm",
+  SnapshotHighCushionPrice = "snapshot__highCushionPrice",
+  SnapshotHighLastActiveTimestamp = "snapshot__highLastActiveTimestamp",
+  SnapshotHighMarketId = "snapshot__highMarketId",
+  SnapshotHighWallPrice = "snapshot__highWallPrice",
+  SnapshotId = "snapshot__id",
+  SnapshotLowActive = "snapshot__lowActive",
+  SnapshotLowCapacityReserve = "snapshot__lowCapacityReserve",
+  SnapshotLowCushionPrice = "snapshot__lowCushionPrice",
+  SnapshotLowLastActiveTimestamp = "snapshot__lowLastActiveTimestamp",
+  SnapshotLowMarketId = "snapshot__lowMarketId",
+  SnapshotLowWallPrice = "snapshot__lowWallPrice",
+  SnapshotOhmMovingAveragePrice = "snapshot__ohmMovingAveragePrice",
+  SnapshotOhmPrice = "snapshot__ohmPrice",
+  SnapshotOperatorCushionFactor = "snapshot__operatorCushionFactor",
+  SnapshotOperatorReserveFactor = "snapshot__operatorReserveFactor",
+  SnapshotThresholdFactor = "snapshot__thresholdFactor",
+  SnapshotTimestamp = "snapshot__timestamp",
+  SnapshotTreasuryDebtBalance = "snapshot__treasuryDebtBalance",
+  SnapshotTreasuryReserveAddress = "snapshot__treasuryReserveAddress",
+  SnapshotTreasuryReserveBalance = "snapshot__treasuryReserveBalance",
+  SnapshotWallSpread = "snapshot__wallSpread",
   Transaction = "transaction",
 }
 
@@ -1368,6 +1467,7 @@ export type RangeSnapshot = {
 export type RangeSnapshot_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<RangeSnapshot_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -1552,6 +1652,7 @@ export type RangeSnapshot_Filter = {
   operatorReserveFactor_lte?: InputMaybe<Scalars["BigDecimal"]>;
   operatorReserveFactor_not?: InputMaybe<Scalars["BigDecimal"]>;
   operatorReserveFactor_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  or?: InputMaybe<Array<InputMaybe<RangeSnapshot_Filter>>>;
   thresholdFactor?: InputMaybe<Scalars["BigDecimal"]>;
   thresholdFactor_gt?: InputMaybe<Scalars["BigDecimal"]>;
   thresholdFactor_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -1648,6 +1749,7 @@ export type SpreadsChangedEvent = {
 export type SpreadsChangedEvent_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<SpreadsChangedEvent_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -1712,6 +1814,7 @@ export type SpreadsChangedEvent_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<SpreadsChangedEvent_Filter>>>;
   transaction?: InputMaybe<Scalars["Bytes"]>;
   transaction_contains?: InputMaybe<Scalars["Bytes"]>;
   transaction_gt?: InputMaybe<Scalars["Bytes"]>;
@@ -1999,6 +2102,7 @@ export type ThresholdFactorChangedEvent = {
 export type ThresholdFactorChangedEvent_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<ThresholdFactorChangedEvent_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -2055,6 +2159,7 @@ export type ThresholdFactorChangedEvent_Filter = {
   id_lte?: InputMaybe<Scalars["ID"]>;
   id_not?: InputMaybe<Scalars["ID"]>;
   id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<ThresholdFactorChangedEvent_Filter>>>;
   thresholdFactor?: InputMaybe<Scalars["BigDecimal"]>;
   thresholdFactor_gt?: InputMaybe<Scalars["BigDecimal"]>;
   thresholdFactor_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -2099,6 +2204,7 @@ export type UpdateThresholdsChanged = {
 export type UpdateThresholdsChanged_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<UpdateThresholdsChanged_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -2163,6 +2269,7 @@ export type UpdateThresholdsChanged_Filter = {
   ohmEthUpdateThresholdSeconds_lte?: InputMaybe<Scalars["BigInt"]>;
   ohmEthUpdateThresholdSeconds_not?: InputMaybe<Scalars["BigInt"]>;
   ohmEthUpdateThresholdSeconds_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  or?: InputMaybe<Array<InputMaybe<UpdateThresholdsChanged_Filter>>>;
   reserveEthUpdateThresholdSeconds?: InputMaybe<Scalars["BigInt"]>;
   reserveEthUpdateThresholdSeconds_gt?: InputMaybe<Scalars["BigInt"]>;
   reserveEthUpdateThresholdSeconds_gte?: InputMaybe<Scalars["BigInt"]>;
