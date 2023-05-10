@@ -1,0 +1,28 @@
+diff --git forkSrcPrefix/src/graphql/bondMarket.ts forkDstPrefix/src/graphql/bondMarket.ts
+index 8ad8e48a828f9d2ba7b9b2ed03771dd19145d283..9b29728c8cdf8bd4b761daf7cc1d98405f90f966 100644
+--- forkSrcPrefix/src/graphql/bondMarket.ts
++++ forkDstPrefix/src/graphql/bondMarket.ts
+@@ -377,9 +377,9 @@ export enum MarketClosedEvent_OrderBy {
+   MarketCreatedTimestamp = "market__createdTimestamp",
+   MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
+   MarketDurationMilliseconds = "market__durationMilliseconds",
+-  MarketId = "market__id",
++  Market_Id = "market__id",
+   MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
+-  MarketMarketId = "market__marketId",
++  Market_MarketId = "market__marketId",
+   MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
+   MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
+   MarketOwner = "market__owner",
+@@ -517,9 +517,9 @@ export enum MarketCreatedEvent_OrderBy {
+   MarketCreatedTimestamp = "market__createdTimestamp",
+   MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
+   MarketDurationMilliseconds = "market__durationMilliseconds",
+-  MarketId = "market__id",
++  Market_Id = "market__id",
+   MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
+-  MarketMarketId = "market__marketId",
++  Market_MarketId = "market__marketId",
+   MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
+   MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
+   MarketOwner = "market__owner",

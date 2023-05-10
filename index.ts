@@ -26,6 +26,7 @@ const SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY = "discordWebhookAlertCommunity";
 const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
+const SECRET_GRAPHQL_API_KEY = "GRAPHQL_API_KEY";
 
 const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
@@ -51,6 +52,8 @@ const webhookAlertDAO = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
 const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY);
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 
+const graphQlApiKey = pulumiConfig.requireSecret(SECRET_GRAPHQL_API_KEY);
+
 /**
  * Target Price Changed Events
  */
@@ -72,6 +75,7 @@ const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunct
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
+  graphQlApiKey,
   "* * * * *", // Every minute
 );
 
@@ -96,6 +100,7 @@ const [functionPriceEvents, functionPriceEventsName] = createFunction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
+  graphQlApiKey,
   "* * * * *", // Every minute
 );
 
@@ -123,6 +128,7 @@ const [functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
+  graphQlApiKey,
   "* * * * *", // Every minute
 );
 
@@ -147,6 +153,7 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
+  graphQlApiKey,
   "* * * * *", // Every minute
 );
 

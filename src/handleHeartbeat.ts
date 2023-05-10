@@ -2,7 +2,7 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { HEART_CONTRACT_V1_1, RBS_SUBGRAPH_URL } from "./constants";
+import { getRbsSubgraphUrl, HEART_CONTRACT_V1_1 } from "./constants";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
@@ -34,7 +34,7 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
 
   // Fetch events since the last processed block
   const client = new Client({
-    url: RBS_SUBGRAPH_URL,
+    url: getRbsSubgraphUrl(),
     fetch,
   });
   const queryResults = await client

@@ -56,6 +56,7 @@ export type BondPurchase_Filter = {
   amountInQuoteToken_lte?: InputMaybe<Scalars["BigDecimal"]>;
   amountInQuoteToken_not?: InputMaybe<Scalars["BigDecimal"]>;
   amountInQuoteToken_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  and?: InputMaybe<Array<InputMaybe<BondPurchase_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -138,6 +139,7 @@ export type BondPurchase_Filter = {
   marketId_lte?: InputMaybe<Scalars["BigInt"]>;
   marketId_not?: InputMaybe<Scalars["BigInt"]>;
   marketId_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
+  or?: InputMaybe<Array<InputMaybe<BondPurchase_Filter>>>;
   payoutInPayoutToken?: InputMaybe<Scalars["BigDecimal"]>;
   payoutInPayoutToken_gt?: InputMaybe<Scalars["BigDecimal"]>;
   payoutInPayoutToken_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -265,6 +267,7 @@ export type MarketClosedEvent = {
 export type MarketClosedEvent_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<MarketClosedEvent_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -344,6 +347,7 @@ export type MarketClosedEvent_Filter = {
   market_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   market_starts_with?: InputMaybe<Scalars["String"]>;
   market_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  or?: InputMaybe<Array<InputMaybe<MarketClosedEvent_Filter>>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -362,6 +366,29 @@ export enum MarketClosedEvent_OrderBy {
   Id = "id",
   Market = "market",
   MarketId = "marketId",
+  MarketBondContract = "market__bondContract",
+  MarketBondType = "market__bondType",
+  MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
+  MarketClosedBlock = "market__closedBlock",
+  MarketClosedDate = "market__closedDate",
+  MarketClosedTimestamp = "market__closedTimestamp",
+  MarketCreatedBlock = "market__createdBlock",
+  MarketCreatedDate = "market__createdDate",
+  MarketCreatedTimestamp = "market__createdTimestamp",
+  MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
+  MarketDurationMilliseconds = "market__durationMilliseconds",
+  Market_Id = "market__id",
+  MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
+  Market_MarketId = "market__marketId",
+  MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
+  MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
+  MarketOwner = "market__owner",
+  MarketPayoutToken = "market__payoutToken",
+  MarketPurchasedInQuoteToken = "market__purchasedInQuoteToken",
+  MarketQuoteToken = "market__quoteToken",
+  MarketSoldInPayoutToken = "market__soldInPayoutToken",
+  MarketTotalDebtInPayoutToken = "market__totalDebtInPayoutToken",
+  MarketVesting = "market__vesting",
   Timestamp = "timestamp",
 }
 
@@ -380,6 +407,7 @@ export type MarketCreatedEvent = {
 export type MarketCreatedEvent_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<MarketCreatedEvent_Filter>>>;
   block?: InputMaybe<Scalars["BigInt"]>;
   block_gt?: InputMaybe<Scalars["BigInt"]>;
   block_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -459,6 +487,7 @@ export type MarketCreatedEvent_Filter = {
   market_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   market_starts_with?: InputMaybe<Scalars["String"]>;
   market_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  or?: InputMaybe<Array<InputMaybe<MarketCreatedEvent_Filter>>>;
   timestamp?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   timestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -477,12 +506,36 @@ export enum MarketCreatedEvent_OrderBy {
   Id = "id",
   Market = "market",
   MarketId = "marketId",
+  MarketBondContract = "market__bondContract",
+  MarketBondType = "market__bondType",
+  MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
+  MarketClosedBlock = "market__closedBlock",
+  MarketClosedDate = "market__closedDate",
+  MarketClosedTimestamp = "market__closedTimestamp",
+  MarketCreatedBlock = "market__createdBlock",
+  MarketCreatedDate = "market__createdDate",
+  MarketCreatedTimestamp = "market__createdTimestamp",
+  MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
+  MarketDurationMilliseconds = "market__durationMilliseconds",
+  Market_Id = "market__id",
+  MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
+  Market_MarketId = "market__marketId",
+  MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
+  MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
+  MarketOwner = "market__owner",
+  MarketPayoutToken = "market__payoutToken",
+  MarketPurchasedInQuoteToken = "market__purchasedInQuoteToken",
+  MarketQuoteToken = "market__quoteToken",
+  MarketSoldInPayoutToken = "market__soldInPayoutToken",
+  MarketTotalDebtInPayoutToken = "market__totalDebtInPayoutToken",
+  MarketVesting = "market__vesting",
   Timestamp = "timestamp",
 }
 
 export type Market_Filter = {
   /** Filter for the block changed event. */
   _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<Market_Filter>>>;
   bondContract?: InputMaybe<Scalars["Bytes"]>;
   bondContract_contains?: InputMaybe<Scalars["Bytes"]>;
   bondContract_gt?: InputMaybe<Scalars["Bytes"]>;
@@ -633,6 +686,7 @@ export type Market_Filter = {
   minPriceInQuoteToken_lte?: InputMaybe<Scalars["BigDecimal"]>;
   minPriceInQuoteToken_not?: InputMaybe<Scalars["BigDecimal"]>;
   minPriceInQuoteToken_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  or?: InputMaybe<Array<InputMaybe<Market_Filter>>>;
   owner?: InputMaybe<Scalars["Bytes"]>;
   owner_contains?: InputMaybe<Scalars["Bytes"]>;
   owner_gt?: InputMaybe<Scalars["Bytes"]>;

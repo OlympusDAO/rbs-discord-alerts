@@ -2,7 +2,7 @@ import { Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { RBS_SUBGRAPH_URL } from "./constants";
+import { getRbsSubgraphUrl } from "./constants";
 import { EmbedField, sendAlert } from "./discord";
 import { MinimumTargetPriceChanged, MinimumTargetPriceChangedEventsDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
@@ -36,7 +36,7 @@ export const performTargetPriceChangedCheck = async (
 
   // Fetch events since the last processed block
   const client = new Client({
-    url: RBS_SUBGRAPH_URL,
+    url: getRbsSubgraphUrl(),
     fetch,
   });
   const queryResults = await client

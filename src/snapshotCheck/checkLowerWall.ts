@@ -2,7 +2,7 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { RBS_SUBGRAPH_URL } from "../constants";
+import { getRbsSubgraphUrl } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotAtBlockDocument } from "../graphql/rangeSnapshot";
 import { castFloat, castFloatNullable, castInt } from "../helpers/numberHelper";
@@ -41,7 +41,7 @@ export const checkLowerWall = async (
 
   // Get the current block
   const rangeSnapshotClient = new Client({
-    url: RBS_SUBGRAPH_URL,
+    url: getRbsSubgraphUrl(),
     fetch,
   });
   const latestBlockResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();

@@ -30,6 +30,7 @@ export const createFunction = (
   memoryMb: number,
   runtime: string,
   callback: HttpCallback,
+  graphlApiKey: pulumi.Output<string>,
   cronSchedule?: string,
 ): [gcp.cloudfunctions.HttpCallbackFunction, pulumi.Output<string>, pulumi.Output<string>] => {
   const newFunction = new gcp.cloudfunctions.HttpCallbackFunction(name, {
@@ -37,6 +38,9 @@ export const createFunction = (
     timeout: timeout,
     availableMemoryMb: memoryMb,
     callback: callback,
+    environmentVariables: {
+      GRAPHQL_API_KEY: graphlApiKey,
+    },
   });
 
   if (cronSchedule) {
