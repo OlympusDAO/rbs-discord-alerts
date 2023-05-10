@@ -59,7 +59,7 @@ const filterCreatedEvents = (events: MarketCreatedEvent[], block: number, market
     return filteredByBlock;
   }
 
-  return filteredByBlock.filter(createdEvent => castInt(createdEvent.marketId) == marketId);
+  return filteredByBlock.filter(createdEvent => castInt(createdEvent.market.marketId) == marketId);
 };
 
 const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId?: number): MarketClosedEvent[] => {
@@ -69,7 +69,7 @@ const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId
     return filteredByBlock;
   }
 
-  return filteredByBlock.filter(createdEvent => castInt(createdEvent.marketId) == marketId);
+  return filteredByBlock.filter(createdEvent => castInt(createdEvent.market.marketId) == marketId);
 };
 
 const pushError = (error: string, errors: string[]): void => {
@@ -373,7 +373,7 @@ const checkCushionDown = (
   // If none of the above conditions are true, then the bond market was closed for an unknown reason, and we want to alert about that
   if (!durationExceeded && !priceInRange && !priceOutsideWall && !capacityExhausted && !hasWallUpRegenerationEvent) {
     pushError(
-      `Expected market (${closedMarket.marketId}) to be closed due to one of the following (but it was not): duration exceeded, price outside wall, price in range, capacity exhausted, wall regeneration`,
+      `Expected market (${closedMarket.market.marketId}) to be closed due to one of the following (but it was not): duration exceeded, price outside wall, price in range, capacity exhausted, wall regeneration`,
       errors,
     );
   } else {
@@ -405,7 +405,7 @@ const checkMarketCreated = (
 
   const matchingCushionUpEvents = cushionUpEvents.filter(
     priceEvent =>
-      castInt(event.marketId) ==
+      castInt(event.market.marketId) ==
       castIntNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
   );
 
@@ -742,7 +742,7 @@ export const checkBondMarkets = async (
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CreatedMarket Discrepancies`, toUnorderedList(errors), [
         {
           name: "Market ID",
-          value: `${marketEvent.marketId}`,
+          value: `${marketEvent.market.marketId}`,
         },
         { name: "Block", value: `${marketEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
@@ -757,7 +757,7 @@ export const checkBondMarkets = async (
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 ClosedMarket Discrepancies`, toUnorderedList(errors), [
         {
           name: "Market ID",
-          value: `${marketEvent.marketId}`,
+          value: `${marketEvent.market.marketId}`,
         },
         { name: "Block", value: `${marketEvent.block}` },
         ...getShutdownEmbedField(contractUrl),

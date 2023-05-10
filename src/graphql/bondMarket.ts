@@ -260,7 +260,6 @@ export type MarketClosedEvent = {
   date: Scalars["String"];
   id: Scalars["ID"];
   market: Market;
-  marketId: Scalars["BigInt"];
   timestamp: Scalars["BigInt"];
 };
 
@@ -365,7 +364,6 @@ export enum MarketClosedEvent_OrderBy {
   Date = "date",
   Id = "id",
   Market = "market",
-  MarketId = "marketId",
   MarketBondContract = "market__bondContract",
   MarketBondType = "market__bondType",
   MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
@@ -377,9 +375,9 @@ export enum MarketClosedEvent_OrderBy {
   MarketCreatedTimestamp = "market__createdTimestamp",
   MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
   MarketDurationMilliseconds = "market__durationMilliseconds",
-  Market_Id = "market__id",
+  MarketId = "market__id",
   MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
-  Market_MarketId = "market__marketId",
+  MarketMarketId = "market__marketId",
   MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
   MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
   MarketOwner = "market__owner",
@@ -400,7 +398,6 @@ export type MarketCreatedEvent = {
   date: Scalars["String"];
   id: Scalars["ID"];
   market: Market;
-  marketId: Scalars["BigInt"];
   timestamp: Scalars["BigInt"];
 };
 
@@ -505,7 +502,6 @@ export enum MarketCreatedEvent_OrderBy {
   Date = "date",
   Id = "id",
   Market = "market",
-  MarketId = "marketId",
   MarketBondContract = "market__bondContract",
   MarketBondType = "market__bondType",
   MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
@@ -517,9 +513,9 @@ export enum MarketCreatedEvent_OrderBy {
   MarketCreatedTimestamp = "market__createdTimestamp",
   MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
   MarketDurationMilliseconds = "market__durationMilliseconds",
-  Market_Id = "market__id",
+  MarketId = "market__id",
   MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
-  Market_MarketId = "market__marketId",
+  MarketMarketId = "market__marketId",
   MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
   MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
   MarketOwner = "market__owner",
@@ -994,7 +990,6 @@ export type MarketCreatedEventsQuery = {
     bondType: BondType;
     date: string;
     id: string;
-    marketId: string;
     timestamp: string;
     market: {
       __typename?: "Market";
@@ -1038,7 +1033,6 @@ export type MarketClosedEventsQuery = {
     bondType: BondType;
     date: string;
     id: string;
-    marketId: string;
     timestamp: string;
     market: {
       __typename?: "Market";
@@ -1124,7 +1118,6 @@ export const MarketCreatedEventsDocument = {
                 { kind: "Field", name: { kind: "Name", value: "bondType" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
                 { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "marketId" } },
                 { kind: "Field", name: { kind: "Name", value: "timestamp" } },
                 {
                   kind: "Field",
@@ -1221,7 +1214,6 @@ export const MarketClosedEventsDocument = {
                 { kind: "Field", name: { kind: "Name", value: "bondType" } },
                 { kind: "Field", name: { kind: "Name", value: "date" } },
                 { kind: "Field", name: { kind: "Name", value: "id" } },
-                { kind: "Field", name: { kind: "Name", value: "marketId" } },
                 { kind: "Field", name: { kind: "Name", value: "timestamp" } },
                 {
                   kind: "Field",
