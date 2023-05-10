@@ -1,28 +1,36 @@
 diff --git forkSrcPrefix/src/graphql/bondMarket.ts forkDstPrefix/src/graphql/bondMarket.ts
-index 8ad8e48a828f9d2ba7b9b2ed03771dd19145d283..9b29728c8cdf8bd4b761daf7cc1d98405f90f966 100644
+index 9b29728c8cdf8bd4b761daf7cc1d98405f90f966..b60f8a9ea1d6a11f726841de4fc2d1888dae130f 100644
 --- forkSrcPrefix/src/graphql/bondMarket.ts
 +++ forkDstPrefix/src/graphql/bondMarket.ts
-@@ -377,9 +377,9 @@ export enum MarketClosedEvent_OrderBy {
-   MarketCreatedTimestamp = "market__createdTimestamp",
-   MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
-   MarketDurationMilliseconds = "market__durationMilliseconds",
--  MarketId = "market__id",
-+  Market_Id = "market__id",
-   MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
--  MarketMarketId = "market__marketId",
-+  Market_MarketId = "market__marketId",
-   MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
-   MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
-   MarketOwner = "market__owner",
-@@ -517,9 +517,9 @@ export enum MarketCreatedEvent_OrderBy {
-   MarketCreatedTimestamp = "market__createdTimestamp",
-   MarketDurationActualMilliseconds = "market__durationActualMilliseconds",
-   MarketDurationMilliseconds = "market__durationMilliseconds",
--  MarketId = "market__id",
-+  Market_Id = "market__id",
-   MarketInitialPriceInQuoteToken = "market__initialPriceInQuoteToken",
--  MarketMarketId = "market__marketId",
-+  Market_MarketId = "market__marketId",
-   MarketMaxPayoutInPayoutToken = "market__maxPayoutInPayoutToken",
-   MarketMinPriceInQuoteToken = "market__minPriceInQuoteToken",
-   MarketOwner = "market__owner",
+@@ -260,7 +260,6 @@ export type MarketClosedEvent = {
+   date: Scalars["String"];
+   id: Scalars["ID"];
+   market: Market;
+-  marketId: Scalars["BigInt"];
+   timestamp: Scalars["BigInt"];
+ };
+ 
+@@ -365,7 +364,6 @@ export enum MarketClosedEvent_OrderBy {
+   Date = "date",
+   Id = "id",
+   Market = "market",
+-  MarketId = "marketId",
+   MarketBondContract = "market__bondContract",
+   MarketBondType = "market__bondType",
+   MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
+@@ -400,7 +398,6 @@ export type MarketCreatedEvent = {
+   date: Scalars["String"];
+   id: Scalars["ID"];
+   market: Market;
+-  marketId: Scalars["BigInt"];
+   timestamp: Scalars["BigInt"];
+ };
+ 
+@@ -505,7 +502,6 @@ export enum MarketCreatedEvent_OrderBy {
+   Date = "date",
+   Id = "id",
+   Market = "market",
+-  MarketId = "marketId",
+   MarketBondContract = "market__bondContract",
+   MarketBondType = "market__bondType",
+   MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
