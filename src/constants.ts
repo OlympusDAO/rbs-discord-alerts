@@ -1,5 +1,4 @@
-const RBS_SUBGRAPH_URL =
-  "https://gateway.thegraph.com/api/[api-key]/subgraphs/id/Cy4Y1UCyitfBZATr3PjC3s2eUwj1XxqZMN2tTGgZCNGe";
+const RBS_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/37737/olympus-rbs/1.2.3";
 
 export const getRbsSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
