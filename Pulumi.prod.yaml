@@ -2,7 +2,7 @@ config:
   gcp:project: rbs-discord-alerts
   gcp:region: us-east1
   rbs-discord-alerts:GRAPHQL_API_KEY:
-    secure: AAABAA9WFp0ZXNS6Y2wnroxNLMMI8vCY7yv2+ra3i5zhBnJvz7U5/vdHGPqMnGPm5tHTAaadjmxvnza2rwlWMQ==
+    secure: AAABAGg781TXnMDuYFkO+GKjM2UUkoqdD3o2/Y3Cs48NjwBnKyLQEOz1C7vkj25NKK5J1INFrlQVxDqEm2XPCg==
   rbs-discord-alerts:contractUrl: "https://etherscan.io/address/0x1Ce568DbB34B2631aCDB5B453c3195EA0070EC65#writeContract"
   rbs-discord-alerts:discordRoleIdCore: "937799905840341044"
   rbs-discord-alerts:discordRoleIdCouncil: "950885560157880340"
