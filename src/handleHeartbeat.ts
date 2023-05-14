@@ -2,7 +2,7 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { getRbsSubgraphUrl, HEART_CONTRACT_V1_1 } from "./constants";
+import { getRbsSubgraphUrl, HEART_CONTRACT_V1_2 } from "./constants";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
@@ -150,7 +150,7 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
     },
     {
       name: "Contract",
-      value: getEtherscanAddressUrl(HEART_CONTRACT_V1_1, "mainnet"),
+      value: getEtherscanAddressUrl(HEART_CONTRACT_V1_2, "mainnet"),
     },
   ];
 
