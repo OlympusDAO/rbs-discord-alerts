@@ -12,8 +12,16 @@ export const getRbsSubgraphUrl = (): string => {
 // TODO replace with production URL
 export const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/price-snapshot/1.1.2";
 
-// TODO replace with production URL
-export const BONDS_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/37737/bonds/0.0.59"; // Subgraph Studio
+export const BONDS_SUBGRAPH_URL =
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/E4Mikyz3ec1MGGFYNuEDQ3F1qtcLashFKwyTvnbfa9Ss";
+
+export const getBondsSubgraphUrl = (): string => {
+  const apiKey = process.env.GRAPHQL_API_KEY;
+  if (!apiKey) {
+    throw new Error("GRAPHQL_API_KEY is not set");
+  }
+  return BONDS_SUBGRAPH_URL.replace("[api-key]", apiKey);
+};
 
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();
 export const ERC20_DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase();
