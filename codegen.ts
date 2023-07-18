@@ -1,11 +1,11 @@
 import { CodegenConfig } from "@graphql-codegen/cli";
 
-import { BONDS_SUBGRAPH_URL, getRbsSubgraphUrl, PRICE_SNAPSHOT_SUBGRAPH_URL } from "./src/constants";
+import { getBondsSubgraphUrl, getRbsSubgraphUrl, PRICE_SNAPSHOT_SUBGRAPH_URL } from "./src/constants";
 
 const config: CodegenConfig = {
   generates: {
     "src/graphql/bondMarket.ts": {
-      schema: BONDS_SUBGRAPH_URL,
+      schema: getBondsSubgraphUrl(),
       documents: "src/graphql/bondMarket.graphql",
       plugins: ["typescript", "typescript-operations", "typed-document-node"],
       config: {

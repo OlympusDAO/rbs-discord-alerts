@@ -12,7 +12,7 @@ export const getRbsSubgraphUrl = (): string => {
 // TODO replace with production URL
 export const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/price-snapshot/1.1.2";
 
-export const BONDS_SUBGRAPH_URL =
+const BONDS_SUBGRAPH_URL =
   "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/E4Mikyz3ec1MGGFYNuEDQ3F1qtcLashFKwyTvnbfa9Ss";
 
 export const getBondsSubgraphUrl = (): string => {

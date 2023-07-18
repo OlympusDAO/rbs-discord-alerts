@@ -3,9 +3,9 @@ import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
 import {
-  BONDS_SUBGRAPH_URL,
   ERC20_DAI,
   ERC20_OHM_V2,
+  getBondsSubgraphUrl,
   getRbsSubgraphUrl,
   OPERATOR_CONTRACT_V1,
   OPERATOR_CONTRACT_V1_1,
@@ -624,7 +624,7 @@ export const checkBondMarkets = async (
   }
 
   const bondsClient = new Client({
-    url: BONDS_SUBGRAPH_URL,
+    url: getBondsSubgraphUrl(),
     fetch,
   });
 
