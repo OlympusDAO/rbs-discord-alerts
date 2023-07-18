@@ -10,7 +10,15 @@ export const getRbsSubgraphUrl = (): string => {
 };
 
 // TODO replace with production URL
-export const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/price-snapshot/1.1.2";
+const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/price-snapshot/1.2.0";
+
+export const getPriceSnapshotSubgraphUrl = (): string => {
+  const apiKey = process.env.GRAPHQL_API_KEY;
+  if (!apiKey) {
+    throw new Error("GRAPHQL_API_KEY is not set");
+  }
+  return PRICE_SNAPSHOT_SUBGRAPH_URL.replace("[api-key]", apiKey);
+};
 
 const BONDS_SUBGRAPH_URL =
   "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/E4Mikyz3ec1MGGFYNuEDQ3F1qtcLashFKwyTvnbfa9Ss";

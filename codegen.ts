@@ -1,6 +1,6 @@
 import { CodegenConfig } from "@graphql-codegen/cli";
 
-import { getBondsSubgraphUrl, getRbsSubgraphUrl, PRICE_SNAPSHOT_SUBGRAPH_URL } from "./src/constants";
+import { getBondsSubgraphUrl, getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl } from "./src/constants";
 
 const config: CodegenConfig = {
   generates: {
@@ -37,7 +37,7 @@ const config: CodegenConfig = {
       },
     },
     "src/graphql/priceSnapshot.ts": {
-      schema: PRICE_SNAPSHOT_SUBGRAPH_URL,
+      schema: getPriceSnapshotSubgraphUrl(),
       documents: "src/graphql/priceSnapshot.graphql",
       plugins: ["typescript", "typescript-operations", "typed-document-node"],
       config: {
