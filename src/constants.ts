@@ -9,8 +9,8 @@ export const getRbsSubgraphUrl = (): string => {
   return RBS_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
-// TODO replace with production URL
-const PRICE_SNAPSHOT_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/price-snapshot/1.2.0";
+const PRICE_SNAPSHOT_SUBGRAPH_URL =
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/AaQjjnQ2esBZXe3trmXvGzMCYcDgTgWNoikaadr8Rep1";
 
 export const getPriceSnapshotSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
