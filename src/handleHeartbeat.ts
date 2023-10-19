@@ -2,13 +2,14 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { getRbsSubgraphUrl, HEART_CONTRACT_V1_2 } from "./constants";
+import { getRbsSubgraphUrl } from "./constants";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castInt } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
+import { getHeartAddress } from "./helpers/heart";
 
 const FIELD_LATEST_BLOCK = "heartbeat.latestBlock";
 const FIELD_HEARTBEAT_DATE = "heartbeat.latestBeatDate";
@@ -139,6 +140,7 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
 
   // Send alert
   console.error(`Heartbeat should have happened by now. Throwing alarm.`);
+  const heartAddress = getHeartAddress(new Date().getTime());
   const fields: EmbedField[] = [
     {
       name: "Last Heartbeat",
@@ -150,7 +152,7 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
     },
     {
       name: "Contract",
-      value: getEtherscanAddressUrl(HEART_CONTRACT_V1_2, "mainnet"),
+      value: getEtherscanAddressUrl(heartAddress, "mainnet"),
     },
   ];
 
