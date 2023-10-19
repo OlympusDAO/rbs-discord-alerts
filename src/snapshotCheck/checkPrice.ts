@@ -2,7 +2,7 @@ import { DocumentReference } from "@google-cloud/firestore";
 import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
-import { getRbsSubgraphUrl, PRICE_SNAPSHOT_SUBGRAPH_URL } from "../constants";
+import { getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
@@ -89,7 +89,7 @@ export const checkPrice = async (
 
   // Grab latest price from the protocol-metrics PriceSnapshot
   const priceSnapshotClient = new Client({
-    url: PRICE_SNAPSHOT_SUBGRAPH_URL,
+    url: getPriceSnapshotSubgraphUrl(),
     fetch,
   });
   const priceSnapshotResults = await priceSnapshotClient.query(LatestPriceSnapshotDocument, {}).toPromise();

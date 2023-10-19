@@ -39,3 +39,9 @@ To be implemented:
 ## Secrets Management
 
 Secrets are stored in Pulumi on a per-stack basis.
+
+## Deployment
+
+`yarn deploy:dev`
+
+`yarn deploy:prod`
