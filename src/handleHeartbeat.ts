@@ -28,10 +28,11 @@ const ALERT_THRESHOLD_SECONDS = 1 * 60 * 60; // 1 hour
  * @returns
  */
 const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWebhookUrls: string[]): Promise<void> => {
-  console.info(`\n\nSending heartbeat alerts`);
+  const FUNC = `sendHeartbeatAlert`;
+  console.info(`\n\n${FUNC}: Sending heartbeat alerts`);
   const firestoreDocumentObject = await firestoreDocument.get();
   const latestBlock: number | undefined = firestoreDocumentObject.get(FIELD_LATEST_BLOCK);
-  console.log(`Latest block is ${latestBlock}`);
+  console.log(`${FUNC}: Latest block is ${latestBlock}`);
 
   // Fetch events since the last processed block
   const client = new Client({
@@ -51,6 +52,7 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
 
   const beatEvents: Beat[] = queryResults.data.beats;
   if (beatEvents.length === 0) {
+    console.log(`${FUNC}: No heartbeat events to process`);
     return;
   }
 
@@ -94,9 +96,9 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
       [FIELD_LATEST_BLOCK]: updatedLatestBlock,
       [FIELD_HEARTBEAT_DATE]: latestHeartbeatDate,
     });
-    console.log(`Updated latest block to ${updatedLatestBlock}`);
+    console.log(`${FUNC}: Updated latest block to ${updatedLatestBlock}`);
   } else {
-    console.log(`Latest block not updated`);
+    console.log(`${FUNC}: Latest block not updated`);
   }
 };
 
@@ -108,39 +110,41 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
  * @returns
  */
 const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls: string[]): Promise<void> => {
-  console.info(`\n\nChecking heartbeat timing`);
+  const FUNC = "checkHeartbeat";
+  console.info(`\n\n${FUNC}: Checking heartbeat timing`);
   const firestoreDocumentObject = await firestoreDocument.get();
   const latestBeatDateString: string | undefined = firestoreDocumentObject.get(FIELD_HEARTBEAT_DATE);
   const latestBeatDate: Date | null = latestBeatDateString ? new Date(latestBeatDateString) : null;
-  console.log(`Latest heartbeat date is ${latestBeatDate ? latestBeatDate.toISOString() : "null"}`);
+  console.log(`${FUNC}: Latest heartbeat date is ${latestBeatDate ? latestBeatDate.toISOString() : "null"}`);
+  const latestBlock: number = castInt(firestoreDocumentObject.get(FIELD_LATEST_BLOCK) || 0);
 
   if (!latestBeatDate) {
-    console.info(`Latest heartbeat date is empty. Skipping.`);
+    console.info(`${FUNC}: Latest heartbeat date is empty. Skipping.`);
     return;
   }
 
   // Check that enough time has passed since the previous heartbeat
   const expectedHeartbeatDate = new Date(latestBeatDate.getTime() + HEARTBEAT_FREQUENCY_MS + HEARTBEAT_THRESHOLD_MS);
   console.log(
-    `Expected heartbeat (with threshold of ${
+    `${FUNC}: Expected heartbeat (with threshold of ${
       HEARTBEAT_THRESHOLD_MS / (60 * 1000)
     } minutes) is: ${expectedHeartbeatDate.toISOString()}`,
   );
   if (Date.now() <= expectedHeartbeatDate.getTime()) {
-    console.log(`Expected heartbeat date has not been reached. Nothing to report.`);
+    console.log(`${FUNC}: Expected heartbeat date has not been reached. Nothing to report.`);
     return;
   }
 
   // Check if the alert should be throttled
   const shouldThrottle = await getShouldThrottle(firestoreDocument, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
   if (shouldThrottle) {
-    console.info(`Alarm conditions are present, but throttling is active.`);
+    console.info(`${FUNC}: Alarm conditions are present, but throttling is active.`);
     return;
   }
 
   // Send alert
-  console.error(`Heartbeat should have happened by now. Throwing alarm.`);
-  const heartAddress = getHeartAddress(new Date().getTime());
+  console.error(`${FUNC}: Heartbeat should have happened by now. Throwing alarm.`);
+  const heartAddress = getHeartAddress(latestBlock);
   const fields: EmbedField[] = [
     {
       name: "Last Heartbeat",
@@ -179,9 +183,9 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
   if (alertSuccess) {
     const lastAlertDate = new Date();
     await updateLastAlertDate(firestoreDocument, FUNCTION_KEY, lastAlertDate);
-    console.log(`Updated latest alert date to ${lastAlertDate.toISOString()}`);
+    console.log(`${FUNC}: Updated latest alert date to ${lastAlertDate.toISOString()}`);
   } else {
-    console.log(`Latest alert date not updated`);
+    console.log(`${FUNC}: Latest alert date not updated`);
   }
 };
 
