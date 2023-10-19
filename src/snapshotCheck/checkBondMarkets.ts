@@ -7,9 +7,6 @@ import {
   ERC20_OHM_V2,
   getBondsSubgraphUrl,
   getRbsSubgraphUrl,
-  OPERATOR_CONTRACT_V1,
-  OPERATOR_CONTRACT_V1_1,
-  OPERATOR_CONTRACT_V1_1_BLOCK,
 } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
@@ -36,6 +33,7 @@ import {
 } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
+import { getCurrentOperatorContractAddress } from "../helpers/operator";
 
 const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
@@ -75,15 +73,6 @@ const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId
 const pushError = (error: string, errors: string[]): void => {
   console.error(error);
   errors.push(error);
-};
-
-const getCurrentOperatorContractAddress = (block: number): string => {
-  // Handle RBS 1.1 contracts
-  if (castInt(block) >= OPERATOR_CONTRACT_V1_1_BLOCK) {
-    return OPERATOR_CONTRACT_V1_1.toLowerCase();
-  }
-
-  return OPERATOR_CONTRACT_V1.toLowerCase();
 };
 
 /**
