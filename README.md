@@ -45,3 +45,12 @@ Secrets are stored in Pulumi on a per-stack basis.
 `yarn deploy:dev`
 
 `yarn deploy:prod`
+
+## How To Update Subgraph Versions
+
+- Deploy a new version of `rbs-subgraph`
+  - Ideally, test this tool against the version in Subgraph Studio before deploying to the Decentralized Network. In which case, replace `RBS_SUBGRAPH_URL` with the temporary GraphQL endpoint.
+- Update the addresses and starting blocks in `operator.ts` and `heart.ts` corresponding to new `Operator` and `Heart` policy versions, respectively.
+- Deploy to the dev environment: `pulumi up --stack dev`
+- Check that it operates as expected
+- Deploy to the prod environment: `pulumi up --stack prod`
