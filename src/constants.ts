@@ -1,5 +1,6 @@
+// NOTE: using the studio URL for now, as there's some issue with serving v1.4.0 of the subgraph on the decentralized network
 const RBS_SUBGRAPH_URL =
-  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/8L8ZJ5hqCZguKk2QyBRWWdsp2thmzHF2Egyj4TqC9NHc";
+  "https://api.studio.thegraph.com/query/46563/olympus-rbs/1.4.0";
 
 export const getRbsSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
