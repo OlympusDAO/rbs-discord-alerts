@@ -211,8 +211,8 @@ export const performHeartbeatChecks = async (
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  sendHeartbeatAlert(firestoreDocument, alertWebhookUrls);
-  checkHeartbeat(firestoreDocument, alertWebhookUrls);
+  await sendHeartbeatAlert(firestoreDocument, alertWebhookUrls);
+  await checkHeartbeat(firestoreDocument, alertWebhookUrls);
 };
 
 // Running via CLI
