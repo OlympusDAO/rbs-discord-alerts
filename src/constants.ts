@@ -1,5 +1,5 @@
 const RBS_SUBGRAPH_URL =
-  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmcXTHcqM7BWd9UpNJf3m4f43bqJFpDMb5x7V4kyKSwWpE"; // 1.4.0
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmTyKkEnrkPjXfyFKheuCfxYhD1Gq9DPPv81ebnJWXogrf"; // 1.5.3
 
 export const getRbsSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
