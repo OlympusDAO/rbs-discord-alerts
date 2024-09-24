@@ -33,3 +33,5 @@ export const getBondsSubgraphUrl = (): string => {
 
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();
 export const ERC20_DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase();
+
+export const YIELD_REPURCHASE_FACILITY = "0x30a967eb957e5b1ee053b75f1a57ea6bfb2e907e";

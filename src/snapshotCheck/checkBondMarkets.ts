@@ -7,6 +7,7 @@ import {
   ERC20_OHM_V2,
   getBondsSubgraphUrl,
   getRbsSubgraphUrl,
+  YIELD_REPURCHASE_FACILITY,
 } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
@@ -398,11 +399,12 @@ const checkMarketCreated = (
       castIntNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
   );
 
-  // The owner should be the operator contract
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(event.block));
-  if (!isBytesEqual(event.market.owner, currentOperatorAddress)) {
+
+  // The owner should be the operator contract or the yield repurchase facility
+  if (!isBytesEqual(event.market.owner, currentOperatorAddress) && !isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY)) {
     pushError(
-      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress}`,
+      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY}`,
       errors,
     );
   } else {
