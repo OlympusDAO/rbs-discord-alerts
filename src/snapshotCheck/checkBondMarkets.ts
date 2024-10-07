@@ -400,9 +400,10 @@ const checkMarketCreated = (
   );
 
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(event.block));
+  const isYRFOwner = isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY);
 
   // The owner should be the operator contract or the yield repurchase facility
-  if (!isBytesEqual(event.market.owner, currentOperatorAddress) && !isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY)) {
+  if (!isBytesEqual(event.market.owner, currentOperatorAddress) && !isYRFOwner) {
     pushError(
       `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY}`,
       errors,
@@ -411,11 +412,14 @@ const checkMarketCreated = (
     console.debug(`Market owner is correctly the Olympus operator contract`);
   }
 
-  // If a market is created, but there was no CushionUp, it may have been created outside of RBS
-  if (matchingCushionUpEvents.length == 0) {
-    pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
-  } else {
-    console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
+  // YRF doesn't emit a CushionUp event, so we don't need to check for that
+  if (!isYRFOwner) {
+    // If a market is created, but there was no CushionUp, it may have been created outside of RBS
+    if (matchingCushionUpEvents.length == 0) {
+      pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
+    } else {
+      console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
+    }
   }
 
   return errors;
