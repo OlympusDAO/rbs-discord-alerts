@@ -137,10 +137,10 @@ const checkCushionUp = (
   const createdMarket = createdMarkets[0];
 
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(createdMarket.block));
-  // The owner should be the operator contract
-  if (!isBytesEqual(createdMarket.market.owner, currentOperatorAddress)) {
+  // The owner should be the operator contract or the yield repurchase facility
+  if (!isBytesEqual(createdMarket.market.owner, currentOperatorAddress) && !isBytesEqual(createdMarket.market.owner, YIELD_REPURCHASE_FACILITY)) {
     pushError(
-      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress}`,
+      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY}`,
       errors,
     );
   } else {
