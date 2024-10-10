@@ -7,6 +7,7 @@ import {
   ERC20_OHM_V2,
   getBondsSubgraphUrl,
   getRbsSubgraphUrl,
+  YIELD_REPURCHASE_FACILITY,
 } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
@@ -136,10 +137,10 @@ const checkCushionUp = (
   const createdMarket = createdMarkets[0];
 
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(createdMarket.block));
-  // The owner should be the operator contract
-  if (!isBytesEqual(createdMarket.market.owner, currentOperatorAddress)) {
+  // The owner should be the operator contract or the yield repurchase facility
+  if (!isBytesEqual(createdMarket.market.owner, currentOperatorAddress) && !isBytesEqual(createdMarket.market.owner, YIELD_REPURCHASE_FACILITY)) {
     pushError(
-      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress}`,
+      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY}`,
       errors,
     );
   } else {
@@ -398,22 +399,27 @@ const checkMarketCreated = (
       castIntNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
   );
 
-  // The owner should be the operator contract
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(event.block));
-  if (!isBytesEqual(event.market.owner, currentOperatorAddress)) {
+  const isYRFOwner = isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY);
+
+  // The owner should be the operator contract or the yield repurchase facility
+  if (!isBytesEqual(event.market.owner, currentOperatorAddress) && !isYRFOwner) {
     pushError(
-      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress}`,
+      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY}`,
       errors,
     );
   } else {
     console.debug(`Market owner is correctly the Olympus operator contract`);
   }
 
-  // If a market is created, but there was no CushionUp, it may have been created outside of RBS
-  if (matchingCushionUpEvents.length == 0) {
-    pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
-  } else {
-    console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
+  // YRF doesn't emit a CushionUp event, so we don't need to check for that
+  if (!isYRFOwner) {
+    // If a market is created, but there was no CushionUp, it may have been created outside of RBS
+    if (matchingCushionUpEvents.length == 0) {
+      pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
+    } else {
+      console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
+    }
   }
 
   return errors;
