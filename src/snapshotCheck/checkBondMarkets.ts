@@ -7,7 +7,8 @@ import {
   ERC20_OHM_V2,
   getBondsSubgraphUrl,
   getRbsSubgraphUrl,
-  YIELD_REPURCHASE_FACILITY,
+  YIELD_REPURCHASE_FACILITY_V1_0,
+  YIELD_REPURCHASE_FACILITY_V1_1,
 } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
@@ -138,9 +139,13 @@ const checkCushionUp = (
 
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(createdMarket.block));
   // The owner should be the operator contract or the yield repurchase facility
-  if (!isBytesEqual(createdMarket.market.owner, currentOperatorAddress) && !isBytesEqual(createdMarket.market.owner, YIELD_REPURCHASE_FACILITY)) {
+  if (
+    !isBytesEqual(createdMarket.market.owner, currentOperatorAddress) &&
+    !isBytesEqual(createdMarket.market.owner, YIELD_REPURCHASE_FACILITY_V1_0) &&
+    !isBytesEqual(createdMarket.market.owner, YIELD_REPURCHASE_FACILITY_V1_1)
+  ) {
     pushError(
-      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY}`,
+      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY_V1_0} or ${YIELD_REPURCHASE_FACILITY_V1_1}`,
       errors,
     );
   } else {
@@ -400,12 +405,14 @@ const checkMarketCreated = (
   );
 
   const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(event.block));
-  const isYRFOwner = isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY);
+  const isYRFOwner =
+    isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY_V1_0) ||
+    isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY_V1_1);
 
   // The owner should be the operator contract or the yield repurchase facility
   if (!isBytesEqual(event.market.owner, currentOperatorAddress) && !isYRFOwner) {
     pushError(
-      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY}`,
+      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY_V1_0} or ${YIELD_REPURCHASE_FACILITY_V1_1}`,
       errors,
     );
   } else {

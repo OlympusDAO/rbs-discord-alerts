@@ -1,5 +1,5 @@
 const RBS_SUBGRAPH_URL =
-  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmeufKpW7QvDrjCN6qn916LNRFRUjxkjSz2Cf5iyv2sKYZ"; // 1.6.1
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/deployments/id/QmUFys1MZUhUfV9oKSynfpyfWHNrFw2b2Cg47deAo6tiHv"; // 1.7.1
 
 export const getRbsSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
@@ -34,4 +34,5 @@ export const getBondsSubgraphUrl = (): string => {
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();
 export const ERC20_DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase();
 
-export const YIELD_REPURCHASE_FACILITY = "0x30a967eb957e5b1ee053b75f1a57ea6bfb2e907e";
+export const YIELD_REPURCHASE_FACILITY_V1_0 = "0x30a967eb957e5b1ee053b75f1a57ea6bfb2e907e";
+export const YIELD_REPURCHASE_FACILITY_V1_1 = "0xcaA3d3E653A626e2656d2E799564fE952D39d855";
