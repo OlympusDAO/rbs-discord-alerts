@@ -22,7 +22,7 @@
         "@pulumi/gcp": "^6.0.0",
         "@pulumi/pulumi": "^3.0.0",
         "@types/jest": "^29.2.3",
-        "@types/node": "^18",
+        "@types/node": "^20",
         "@typescript-eslint/eslint-plugin": "^5.38.0",
         "@typescript-eslint/parser": "^5.38.0",
         "eslint": "^8.23.1",
@@ -38,11 +38,11 @@
         "typescript": "^4.8.4"
     },
     "dependencies": {
-        "@google-cloud/firestore": "^6.4.1",
+        "@google-cloud/firestore": "^7.0.0",
         "@urql/core": "^3.0.3",
         "cross-fetch": "^3.1.5",
         "dedent-js": "^1.0.1",
-        "graphql": "^16.6.0",
+        "graphql": "^16.8.0",
         "graphql-tag": "^2.12.6"
     }
 }

@@ -3,12 +3,14 @@ import { Client } from "@urql/core";
 import fetch from "cross-fetch";
 
 import {
+  EMISSION_MANAGER_V1_0,
   ERC20_DAI,
   ERC20_OHM_V2,
   getBondsSubgraphUrl,
   getRbsSubgraphUrl,
   YIELD_REPURCHASE_FACILITY_V1_0,
   YIELD_REPURCHASE_FACILITY_V1_1,
+  YIELD_REPURCHASE_FACILITY_V1_2,
 } from "../constants";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
@@ -77,6 +79,24 @@ const pushError = (error: string, errors: string[]): void => {
   errors.push(error);
 };
 
+const isYRFOwner = (owner: Uint8Array): boolean => {
+  return (
+    isBytesEqual(owner, YIELD_REPURCHASE_FACILITY_V1_0) ||
+    isBytesEqual(owner, YIELD_REPURCHASE_FACILITY_V1_1) ||
+    isBytesEqual(owner, YIELD_REPURCHASE_FACILITY_V1_2)
+  );
+}
+
+const isValidMarketOwner = (owner: Uint8Array, block: number): boolean => {
+  const currentOperatorAddress = getCurrentOperatorContractAddress(block);
+  // The owner should be the operator contract or the yield repurchase facility or the emission manager
+  return (
+    isBytesEqual(owner, currentOperatorAddress) ||
+    isYRFOwner(owner) ||
+    isBytesEqual(owner, EMISSION_MANAGER_V1_0)
+  );
+}
+
 /**
  * Performs check when a CushionUp event is received:
  * - A bond market id should be available
@@ -137,19 +157,8 @@ const checkCushionUp = (
   // The marketId is unique, so we are guaranteed that there is only one result
   const createdMarket = createdMarkets[0];
 
-  const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(createdMarket.block));
-  // The owner should be the operator contract or the yield repurchase facility
-  if (
-    !isBytesEqual(createdMarket.market.owner, currentOperatorAddress) &&
-    !isBytesEqual(createdMarket.market.owner, YIELD_REPURCHASE_FACILITY_V1_0) &&
-    !isBytesEqual(createdMarket.market.owner, YIELD_REPURCHASE_FACILITY_V1_1)
-  ) {
-    pushError(
-      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY_V1_0} or ${YIELD_REPURCHASE_FACILITY_V1_1}`,
-      errors,
-    );
-  } else {
-    console.debug(`Market owner is correctly the Olympus operator contract`);
+  if (!isValidMarketOwner(createdMarket.market.owner, castInt(createdMarket.block))) {
+    pushError(`Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract, yield repurchase facility or emission manager`, errors);
   }
 
   // In the low cushion, the initial price is in terms of the quote token, and the quote token is OHM and the payout token is DAI. To get it into DAI (USD), we need to flip it.
@@ -404,23 +413,18 @@ const checkMarketCreated = (
       castIntNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
   );
 
-  const currentOperatorAddress = getCurrentOperatorContractAddress(castInt(event.block));
-  const isYRFOwner =
-    isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY_V1_0) ||
-    isBytesEqual(event.market.owner, YIELD_REPURCHASE_FACILITY_V1_1);
-
   // The owner should be the operator contract or the yield repurchase facility
-  if (!isBytesEqual(event.market.owner, currentOperatorAddress) && !isYRFOwner) {
+  if (!isValidMarketOwner(event.market.owner, castInt(event.block)) && !isYRFOwner(event.market.owner)) {
     pushError(
-      `Market was created, but the owner (${event.market.owner}) is not the operator contract: ${currentOperatorAddress} or the yield repurchase facility: ${YIELD_REPURCHASE_FACILITY_V1_0} or ${YIELD_REPURCHASE_FACILITY_V1_1}`,
+      `Market was created, but the owner (${event.market.owner}) is not the operator contract, yield repurchase facility or emission manager`,
       errors,
     );
   } else {
-    console.debug(`Market owner is correctly the Olympus operator contract`);
+    console.debug(`Market owner is correctly the Olympus operator contract, yield repurchase facility or emission manager`);
   }
 
   // YRF doesn't emit a CushionUp event, so we don't need to check for that
-  if (!isYRFOwner) {
+  if (!isYRFOwner(event.market.owner)) {
     // If a market is created, but there was no CushionUp, it may have been created outside of RBS
     if (matchingCushionUpEvents.length == 0) {
       pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
