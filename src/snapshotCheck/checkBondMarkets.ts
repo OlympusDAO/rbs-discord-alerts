@@ -87,13 +87,17 @@ const isYRFOwner = (owner: Uint8Array): boolean => {
   );
 }
 
+const isEmissionManagerOwner = (owner: Uint8Array): boolean => {
+  return isBytesEqual(owner, EMISSION_MANAGER_V1_0);
+}
+
 const isValidMarketOwner = (owner: Uint8Array, block: number): boolean => {
   const currentOperatorAddress = getCurrentOperatorContractAddress(block);
   // The owner should be the operator contract or the yield repurchase facility or the emission manager
   return (
     isBytesEqual(owner, currentOperatorAddress) ||
     isYRFOwner(owner) ||
-    isBytesEqual(owner, EMISSION_MANAGER_V1_0)
+    isEmissionManagerOwner(owner)
   );
 }
 
@@ -423,14 +427,16 @@ const checkMarketCreated = (
     console.debug(`Market owner is correctly the Olympus operator contract, yield repurchase facility or emission manager`);
   }
 
-  // YRF doesn't emit a CushionUp event, so we don't need to check for that
-  if (!isYRFOwner(event.market.owner)) {
+  // YRF and EmissionManager don't emit a CushionUp event, so we don't need to check for that
+  if (!isYRFOwner(event.market.owner) && !isEmissionManagerOwner(event.market.owner)) {
     // If a market is created, but there was no CushionUp, it may have been created outside of RBS
     if (matchingCushionUpEvents.length == 0) {
       pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
     } else {
       console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
     }
+  } else {
+    console.debug(`Market owner is YRF or EmissionManager, so no CushionUp event is expected`);
   }
 
   return errors;
