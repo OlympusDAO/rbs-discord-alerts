@@ -17,28 +17,9 @@ const retryOptions: RetryExchangeOptions = {
 };
 
 export const createGraphQLClient = (url: string): Client => {
-  const customFetch = (input: RequestInfo | URL, init?: RequestInit) => {
-    const abortController = new AbortController();
-    const timeoutId = setTimeout(() => {
-      abortController.abort();
-    }, 5000);
-
-    const fetchPromise = fetch(input, {
-      ...init,
-      signal: abortController.signal,
-    });
-
-    // Clear timeout when request completes (success or failure)
-    fetchPromise.finally(() => {
-      clearTimeout(timeoutId);
-    });
-
-    return fetchPromise;
-  };
-
   return createClient({
     url,
-    fetch: customFetch,
+    fetch: fetch,
     exchanges: [
       retryExchange(retryOptions),
       fetchExchange,
