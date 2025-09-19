@@ -14,15 +14,21 @@ export type Scalars = {
   BigDecimal: string;
   BigInt: string;
   Bytes: Uint8Array;
-  Int8: any;
+  Int8: number;
+  Timestamp: number;
 };
+
+export enum Aggregation_Interval {
+  Day = "day",
+  Hour = "hour",
+}
 
 export type BalancerPoolSnapshot = {
   __typename?: "BalancerPoolSnapshot";
   balances: Array<Scalars["BigDecimal"]>;
   block: Scalars["BigInt"];
   decimals: Scalars["Int"];
-  id: Scalars["ID"];
+  id: Scalars["Bytes"];
   pool: Scalars["Bytes"];
   poolToken: Scalars["Bytes"];
   tokens: Array<Scalars["Bytes"]>;
@@ -56,14 +62,16 @@ export type BalancerPoolSnapshot_Filter = {
   decimals_lte?: InputMaybe<Scalars["Int"]>;
   decimals_not?: InputMaybe<Scalars["Int"]>;
   decimals_not_in?: InputMaybe<Array<Scalars["Int"]>>;
-  id?: InputMaybe<Scalars["ID"]>;
-  id_gt?: InputMaybe<Scalars["ID"]>;
-  id_gte?: InputMaybe<Scalars["ID"]>;
-  id_in?: InputMaybe<Array<Scalars["ID"]>>;
-  id_lt?: InputMaybe<Scalars["ID"]>;
-  id_lte?: InputMaybe<Scalars["ID"]>;
-  id_not?: InputMaybe<Scalars["ID"]>;
-  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id?: InputMaybe<Scalars["Bytes"]>;
+  id_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_gt?: InputMaybe<Scalars["Bytes"]>;
+  id_gte?: InputMaybe<Scalars["Bytes"]>;
+  id_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  id_lt?: InputMaybe<Scalars["Bytes"]>;
+  id_lte?: InputMaybe<Scalars["Bytes"]>;
+  id_not?: InputMaybe<Scalars["Bytes"]>;
+  id_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   or?: InputMaybe<Array<InputMaybe<BalancerPoolSnapshot_Filter>>>;
   pool?: InputMaybe<Scalars["Bytes"]>;
   poolToken?: InputMaybe<Scalars["Bytes"]>;
@@ -191,7 +199,7 @@ export type Erc20TokenSnapshot = {
   __typename?: "ERC20TokenSnapshot";
   address: Scalars["Bytes"];
   decimals: Scalars["Int"];
-  id: Scalars["ID"];
+  id: Scalars["Bytes"];
   totalSupply?: Maybe<Scalars["BigDecimal"]>;
 };
 
@@ -217,14 +225,16 @@ export type Erc20TokenSnapshot_Filter = {
   decimals_lte?: InputMaybe<Scalars["Int"]>;
   decimals_not?: InputMaybe<Scalars["Int"]>;
   decimals_not_in?: InputMaybe<Array<Scalars["Int"]>>;
-  id?: InputMaybe<Scalars["ID"]>;
-  id_gt?: InputMaybe<Scalars["ID"]>;
-  id_gte?: InputMaybe<Scalars["ID"]>;
-  id_in?: InputMaybe<Array<Scalars["ID"]>>;
-  id_lt?: InputMaybe<Scalars["ID"]>;
-  id_lte?: InputMaybe<Scalars["ID"]>;
-  id_not?: InputMaybe<Scalars["ID"]>;
-  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id?: InputMaybe<Scalars["Bytes"]>;
+  id_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_gt?: InputMaybe<Scalars["Bytes"]>;
+  id_gte?: InputMaybe<Scalars["Bytes"]>;
+  id_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  id_lt?: InputMaybe<Scalars["Bytes"]>;
+  id_lte?: InputMaybe<Scalars["Bytes"]>;
+  id_not?: InputMaybe<Scalars["Bytes"]>;
+  id_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   or?: InputMaybe<Array<InputMaybe<Erc20TokenSnapshot_Filter>>>;
   totalSupply?: InputMaybe<Scalars["BigDecimal"]>;
   totalSupply_gt?: InputMaybe<Scalars["BigDecimal"]>;
@@ -254,7 +264,7 @@ export type PoolSnapshot = {
   balances: Array<Scalars["BigDecimal"]>;
   block: Scalars["BigInt"];
   decimals: Scalars["Int"];
-  id: Scalars["ID"];
+  id: Scalars["Bytes"];
   pool: Scalars["Bytes"];
   poolToken?: Maybe<Scalars["Bytes"]>;
   tokens: Array<Scalars["Bytes"]>;
@@ -288,14 +298,16 @@ export type PoolSnapshot_Filter = {
   decimals_lte?: InputMaybe<Scalars["Int"]>;
   decimals_not?: InputMaybe<Scalars["Int"]>;
   decimals_not_in?: InputMaybe<Array<Scalars["Int"]>>;
-  id?: InputMaybe<Scalars["ID"]>;
-  id_gt?: InputMaybe<Scalars["ID"]>;
-  id_gte?: InputMaybe<Scalars["ID"]>;
-  id_in?: InputMaybe<Array<Scalars["ID"]>>;
-  id_lt?: InputMaybe<Scalars["ID"]>;
-  id_lte?: InputMaybe<Scalars["ID"]>;
-  id_not?: InputMaybe<Scalars["ID"]>;
-  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id?: InputMaybe<Scalars["Bytes"]>;
+  id_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_gt?: InputMaybe<Scalars["Bytes"]>;
+  id_gte?: InputMaybe<Scalars["Bytes"]>;
+  id_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  id_lt?: InputMaybe<Scalars["Bytes"]>;
+  id_lte?: InputMaybe<Scalars["Bytes"]>;
+  id_not?: InputMaybe<Scalars["Bytes"]>;
+  id_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   or?: InputMaybe<Array<InputMaybe<PoolSnapshot_Filter>>>;
   pool?: InputMaybe<Scalars["Bytes"]>;
   poolToken?: InputMaybe<Scalars["Bytes"]>;
@@ -661,7 +673,7 @@ export type StakingPoolSnapshot = {
   __typename?: "StakingPoolSnapshot";
   block: Scalars["BigInt"];
   contractAddress: Scalars["Bytes"];
-  id: Scalars["ID"];
+  id: Scalars["Bytes"];
   stakingToken?: Maybe<Scalars["Bytes"]>;
 };
 
@@ -687,14 +699,16 @@ export type StakingPoolSnapshot_Filter = {
   contractAddress_not?: InputMaybe<Scalars["Bytes"]>;
   contractAddress_not_contains?: InputMaybe<Scalars["Bytes"]>;
   contractAddress_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
-  id?: InputMaybe<Scalars["ID"]>;
-  id_gt?: InputMaybe<Scalars["ID"]>;
-  id_gte?: InputMaybe<Scalars["ID"]>;
-  id_in?: InputMaybe<Array<Scalars["ID"]>>;
-  id_lt?: InputMaybe<Scalars["ID"]>;
-  id_lte?: InputMaybe<Scalars["ID"]>;
-  id_not?: InputMaybe<Scalars["ID"]>;
-  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id?: InputMaybe<Scalars["Bytes"]>;
+  id_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_gt?: InputMaybe<Scalars["Bytes"]>;
+  id_gte?: InputMaybe<Scalars["Bytes"]>;
+  id_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  id_lt?: InputMaybe<Scalars["Bytes"]>;
+  id_lte?: InputMaybe<Scalars["Bytes"]>;
+  id_not?: InputMaybe<Scalars["Bytes"]>;
+  id_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   or?: InputMaybe<Array<InputMaybe<StakingPoolSnapshot_Filter>>>;
   stakingToken?: InputMaybe<Scalars["Bytes"]>;
   stakingToken_contains?: InputMaybe<Scalars["Bytes"]>;
@@ -715,164 +729,10 @@ export enum StakingPoolSnapshot_OrderBy {
   StakingToken = "stakingToken",
 }
 
-export type Subscription = {
-  __typename?: "Subscription";
-  /** Access to subgraph metadata */
-  _meta?: Maybe<_Meta_>;
-  balancerPoolSnapshot?: Maybe<BalancerPoolSnapshot>;
-  balancerPoolSnapshots: Array<BalancerPoolSnapshot>;
-  convexRewardPoolSnapshot?: Maybe<ConvexRewardPoolSnapshot>;
-  convexRewardPoolSnapshots: Array<ConvexRewardPoolSnapshot>;
-  erc20TokenSnapshot?: Maybe<Erc20TokenSnapshot>;
-  erc20TokenSnapshots: Array<Erc20TokenSnapshot>;
-  poolSnapshot?: Maybe<PoolSnapshot>;
-  poolSnapshots: Array<PoolSnapshot>;
-  priceSnapshot?: Maybe<PriceSnapshot>;
-  priceSnapshotDailies: Array<PriceSnapshotDaily>;
-  priceSnapshotDaily?: Maybe<PriceSnapshotDaily>;
-  priceSnapshots: Array<PriceSnapshot>;
-  stakingPoolSnapshot?: Maybe<StakingPoolSnapshot>;
-  stakingPoolSnapshots: Array<StakingPoolSnapshot>;
-  tokenPriceSnapshot?: Maybe<TokenPriceSnapshot>;
-  tokenPriceSnapshots: Array<TokenPriceSnapshot>;
-};
-
-export type Subscription_MetaArgs = {
-  block?: InputMaybe<Block_Height>;
-};
-
-export type SubscriptionBalancerPoolSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBalancerPoolSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<BalancerPoolSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BalancerPoolSnapshot_Filter>;
-};
-
-export type SubscriptionConvexRewardPoolSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionConvexRewardPoolSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<ConvexRewardPoolSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<ConvexRewardPoolSnapshot_Filter>;
-};
-
-export type SubscriptionErc20TokenSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionErc20TokenSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<Erc20TokenSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Erc20TokenSnapshot_Filter>;
-};
-
-export type SubscriptionPoolSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPoolSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<PoolSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PoolSnapshot_Filter>;
-};
-
-export type SubscriptionPriceSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPriceSnapshotDailiesArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<PriceSnapshotDaily_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PriceSnapshotDaily_Filter>;
-};
-
-export type SubscriptionPriceSnapshotDailyArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPriceSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<PriceSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PriceSnapshot_Filter>;
-};
-
-export type SubscriptionStakingPoolSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionStakingPoolSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<StakingPoolSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<StakingPoolSnapshot_Filter>;
-};
-
-export type SubscriptionTokenPriceSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionTokenPriceSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<TokenPriceSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<TokenPriceSnapshot_Filter>;
-};
-
 export type TokenPriceSnapshot = {
   __typename?: "TokenPriceSnapshot";
   block: Scalars["BigInt"];
-  id: Scalars["ID"];
+  id: Scalars["Bytes"];
   price: Scalars["BigDecimal"];
   token: Scalars["Bytes"];
 };
@@ -889,14 +749,16 @@ export type TokenPriceSnapshot_Filter = {
   block_lte?: InputMaybe<Scalars["BigInt"]>;
   block_not?: InputMaybe<Scalars["BigInt"]>;
   block_not_in?: InputMaybe<Array<Scalars["BigInt"]>>;
-  id?: InputMaybe<Scalars["ID"]>;
-  id_gt?: InputMaybe<Scalars["ID"]>;
-  id_gte?: InputMaybe<Scalars["ID"]>;
-  id_in?: InputMaybe<Array<Scalars["ID"]>>;
-  id_lt?: InputMaybe<Scalars["ID"]>;
-  id_lte?: InputMaybe<Scalars["ID"]>;
-  id_not?: InputMaybe<Scalars["ID"]>;
-  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id?: InputMaybe<Scalars["Bytes"]>;
+  id_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_gt?: InputMaybe<Scalars["Bytes"]>;
+  id_gte?: InputMaybe<Scalars["Bytes"]>;
+  id_in?: InputMaybe<Array<Scalars["Bytes"]>>;
+  id_lt?: InputMaybe<Scalars["Bytes"]>;
+  id_lte?: InputMaybe<Scalars["Bytes"]>;
+  id_not?: InputMaybe<Scalars["Bytes"]>;
+  id_not_contains?: InputMaybe<Scalars["Bytes"]>;
+  id_not_in?: InputMaybe<Array<Scalars["Bytes"]>>;
   or?: InputMaybe<Array<InputMaybe<TokenPriceSnapshot_Filter>>>;
   price?: InputMaybe<Scalars["BigDecimal"]>;
   price_gt?: InputMaybe<Scalars["BigDecimal"]>;
@@ -931,6 +793,8 @@ export type _Block_ = {
   hash?: Maybe<Scalars["Bytes"]>;
   /** The block number */
   number: Scalars["Int"];
+  /** The hash of the parent block */
+  parentHash?: Maybe<Scalars["Bytes"]>;
   /** Integer representation of the timestamp stored in blocks for the chain */
   timestamp?: Maybe<Scalars["Int"]>;
 };

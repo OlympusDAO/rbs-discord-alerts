@@ -14,7 +14,14 @@ export type Scalars = {
   BigDecimal: string;
   BigInt: string;
   Bytes: Uint8Array;
+  Int8: number;
+  Timestamp: number;
 };
+
+export enum Aggregation_Interval {
+  Day = "day",
+  Hour = "hour",
+}
 
 export type Beat = {
   __typename?: "Beat";
@@ -750,16 +757,20 @@ export enum NewObservation_OrderBy {
   SnapshotHighActive = "snapshot__highActive",
   SnapshotHighCapacityOhm = "snapshot__highCapacityOhm",
   SnapshotHighCushionPrice = "snapshot__highCushionPrice",
+  SnapshotHighCushionSpread = "snapshot__highCushionSpread",
   SnapshotHighLastActiveTimestamp = "snapshot__highLastActiveTimestamp",
   SnapshotHighMarketId = "snapshot__highMarketId",
   SnapshotHighWallPrice = "snapshot__highWallPrice",
+  SnapshotHighWallSpread = "snapshot__highWallSpread",
   SnapshotId = "snapshot__id",
   SnapshotLowActive = "snapshot__lowActive",
   SnapshotLowCapacityReserve = "snapshot__lowCapacityReserve",
   SnapshotLowCushionPrice = "snapshot__lowCushionPrice",
+  SnapshotLowCushionSpread = "snapshot__lowCushionSpread",
   SnapshotLowLastActiveTimestamp = "snapshot__lowLastActiveTimestamp",
   SnapshotLowMarketId = "snapshot__lowMarketId",
   SnapshotLowWallPrice = "snapshot__lowWallPrice",
+  SnapshotLowWallSpread = "snapshot__lowWallSpread",
   SnapshotOhmMovingAveragePrice = "snapshot__ohmMovingAveragePrice",
   SnapshotOhmPrice = "snapshot__ohmPrice",
   SnapshotOperatorCushionFactor = "snapshot__operatorCushionFactor",
@@ -882,6 +893,40 @@ export enum ObservationFrequencyChanged_OrderBy {
   ObservationFrequencySeconds = "observationFrequencySeconds",
   Timestamp = "timestamp",
   Transaction = "transaction",
+}
+
+export type OperatorVersion = {
+  __typename?: "OperatorVersion";
+  id: Scalars["ID"];
+  version: Scalars["BigDecimal"];
+};
+
+export type OperatorVersion_Filter = {
+  /** Filter for the block changed event. */
+  _change_block?: InputMaybe<BlockChangedFilter>;
+  and?: InputMaybe<Array<InputMaybe<OperatorVersion_Filter>>>;
+  id?: InputMaybe<Scalars["ID"]>;
+  id_gt?: InputMaybe<Scalars["ID"]>;
+  id_gte?: InputMaybe<Scalars["ID"]>;
+  id_in?: InputMaybe<Array<Scalars["ID"]>>;
+  id_lt?: InputMaybe<Scalars["ID"]>;
+  id_lte?: InputMaybe<Scalars["ID"]>;
+  id_not?: InputMaybe<Scalars["ID"]>;
+  id_not_in?: InputMaybe<Array<Scalars["ID"]>>;
+  or?: InputMaybe<Array<InputMaybe<OperatorVersion_Filter>>>;
+  version?: InputMaybe<Scalars["BigDecimal"]>;
+  version_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  version_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  version_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  version_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  version_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  version_not?: InputMaybe<Scalars["BigDecimal"]>;
+  version_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+};
+
+export enum OperatorVersion_OrderBy {
+  Id = "id",
+  Version = "version",
 }
 
 /** Defines the order direction, either ascending or descending */
@@ -1034,16 +1079,20 @@ export enum PriceEvent_OrderBy {
   SnapshotHighActive = "snapshot__highActive",
   SnapshotHighCapacityOhm = "snapshot__highCapacityOhm",
   SnapshotHighCushionPrice = "snapshot__highCushionPrice",
+  SnapshotHighCushionSpread = "snapshot__highCushionSpread",
   SnapshotHighLastActiveTimestamp = "snapshot__highLastActiveTimestamp",
   SnapshotHighMarketId = "snapshot__highMarketId",
   SnapshotHighWallPrice = "snapshot__highWallPrice",
+  SnapshotHighWallSpread = "snapshot__highWallSpread",
   SnapshotId = "snapshot__id",
   SnapshotLowActive = "snapshot__lowActive",
   SnapshotLowCapacityReserve = "snapshot__lowCapacityReserve",
   SnapshotLowCushionPrice = "snapshot__lowCushionPrice",
+  SnapshotLowCushionSpread = "snapshot__lowCushionSpread",
   SnapshotLowLastActiveTimestamp = "snapshot__lowLastActiveTimestamp",
   SnapshotLowMarketId = "snapshot__lowMarketId",
   SnapshotLowWallPrice = "snapshot__lowWallPrice",
+  SnapshotLowWallSpread = "snapshot__lowWallSpread",
   SnapshotOhmMovingAveragePrice = "snapshot__ohmMovingAveragePrice",
   SnapshotOhmPrice = "snapshot__ohmPrice",
   SnapshotOperatorCushionFactor = "snapshot__operatorCushionFactor",
@@ -1176,16 +1225,20 @@ export enum PricesChangedEvent_OrderBy {
   SnapshotHighActive = "snapshot__highActive",
   SnapshotHighCapacityOhm = "snapshot__highCapacityOhm",
   SnapshotHighCushionPrice = "snapshot__highCushionPrice",
+  SnapshotHighCushionSpread = "snapshot__highCushionSpread",
   SnapshotHighLastActiveTimestamp = "snapshot__highLastActiveTimestamp",
   SnapshotHighMarketId = "snapshot__highMarketId",
   SnapshotHighWallPrice = "snapshot__highWallPrice",
+  SnapshotHighWallSpread = "snapshot__highWallSpread",
   SnapshotId = "snapshot__id",
   SnapshotLowActive = "snapshot__lowActive",
   SnapshotLowCapacityReserve = "snapshot__lowCapacityReserve",
   SnapshotLowCushionPrice = "snapshot__lowCushionPrice",
+  SnapshotLowCushionSpread = "snapshot__lowCushionSpread",
   SnapshotLowLastActiveTimestamp = "snapshot__lowLastActiveTimestamp",
   SnapshotLowMarketId = "snapshot__lowMarketId",
   SnapshotLowWallPrice = "snapshot__lowWallPrice",
+  SnapshotLowWallSpread = "snapshot__lowWallSpread",
   SnapshotOhmMovingAveragePrice = "snapshot__ohmMovingAveragePrice",
   SnapshotOhmPrice = "snapshot__ohmPrice",
   SnapshotOperatorCushionFactor = "snapshot__operatorCushionFactor",
@@ -1217,6 +1270,8 @@ export type Query = {
   newObservations: Array<NewObservation>;
   observationFrequencyChanged?: Maybe<ObservationFrequencyChanged>;
   observationFrequencyChangeds: Array<ObservationFrequencyChanged>;
+  operatorVersion?: Maybe<OperatorVersion>;
+  operatorVersions: Array<OperatorVersion>;
   priceEvent?: Maybe<PriceEvent>;
   priceEvents: Array<PriceEvent>;
   pricesChangedEvent?: Maybe<PricesChangedEvent>;
@@ -1347,6 +1402,22 @@ export type QueryObservationFrequencyChangedsArgs = {
   where?: InputMaybe<ObservationFrequencyChanged_Filter>;
 };
 
+export type QueryOperatorVersionArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type QueryOperatorVersionsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<OperatorVersion_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<OperatorVersion_Filter>;
+};
+
 export type QueryPriceEventArgs = {
   block?: InputMaybe<Block_Height>;
   id: Scalars["ID"];
@@ -1452,16 +1523,20 @@ export type RangeSnapshot = {
   highActive: Scalars["Boolean"];
   highCapacityOhm: Scalars["BigDecimal"];
   highCushionPrice: Scalars["BigDecimal"];
+  highCushionSpread?: Maybe<Scalars["BigDecimal"]>;
   highLastActiveTimestamp: Scalars["BigInt"];
   highMarketId?: Maybe<Scalars["BigInt"]>;
   highWallPrice: Scalars["BigDecimal"];
+  highWallSpread?: Maybe<Scalars["BigDecimal"]>;
   id: Scalars["ID"];
   lowActive: Scalars["Boolean"];
   lowCapacityReserve: Scalars["BigDecimal"];
   lowCushionPrice: Scalars["BigDecimal"];
+  lowCushionSpread?: Maybe<Scalars["BigDecimal"]>;
   lowLastActiveTimestamp: Scalars["BigInt"];
   lowMarketId?: Maybe<Scalars["BigInt"]>;
   lowWallPrice: Scalars["BigDecimal"];
+  lowWallSpread?: Maybe<Scalars["BigDecimal"]>;
   ohmMovingAveragePrice?: Maybe<Scalars["BigDecimal"]>;
   ohmPrice?: Maybe<Scalars["BigDecimal"]>;
   operatorCushionFactor?: Maybe<Scalars["BigDecimal"]>;
@@ -1554,6 +1629,14 @@ export type RangeSnapshot_Filter = {
   highCushionPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   highCushionPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   highCushionPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highCushionSpread?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionSpread_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionSpread_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionSpread_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highCushionSpread_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionSpread_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionSpread_not?: InputMaybe<Scalars["BigDecimal"]>;
+  highCushionSpread_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   highLastActiveTimestamp?: InputMaybe<Scalars["BigInt"]>;
   highLastActiveTimestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   highLastActiveTimestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -1578,6 +1661,14 @@ export type RangeSnapshot_Filter = {
   highWallPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   highWallPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   highWallPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highWallSpread?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallSpread_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallSpread_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallSpread_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  highWallSpread_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallSpread_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallSpread_not?: InputMaybe<Scalars["BigDecimal"]>;
+  highWallSpread_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   id?: InputMaybe<Scalars["ID"]>;
   id_gt?: InputMaybe<Scalars["ID"]>;
   id_gte?: InputMaybe<Scalars["ID"]>;
@@ -1606,6 +1697,14 @@ export type RangeSnapshot_Filter = {
   lowCushionPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   lowCushionPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   lowCushionPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowCushionSpread?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionSpread_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionSpread_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionSpread_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowCushionSpread_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionSpread_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionSpread_not?: InputMaybe<Scalars["BigDecimal"]>;
+  lowCushionSpread_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   lowLastActiveTimestamp?: InputMaybe<Scalars["BigInt"]>;
   lowLastActiveTimestamp_gt?: InputMaybe<Scalars["BigInt"]>;
   lowLastActiveTimestamp_gte?: InputMaybe<Scalars["BigInt"]>;
@@ -1630,6 +1729,14 @@ export type RangeSnapshot_Filter = {
   lowWallPrice_lte?: InputMaybe<Scalars["BigDecimal"]>;
   lowWallPrice_not?: InputMaybe<Scalars["BigDecimal"]>;
   lowWallPrice_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowWallSpread?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallSpread_gt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallSpread_gte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallSpread_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
+  lowWallSpread_lt?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallSpread_lte?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallSpread_not?: InputMaybe<Scalars["BigDecimal"]>;
+  lowWallSpread_not_in?: InputMaybe<Array<Scalars["BigDecimal"]>>;
   ohmMovingAveragePrice?: InputMaybe<Scalars["BigDecimal"]>;
   ohmMovingAveragePrice_gt?: InputMaybe<Scalars["BigDecimal"]>;
   ohmMovingAveragePrice_gte?: InputMaybe<Scalars["BigDecimal"]>;
@@ -1723,16 +1830,20 @@ export enum RangeSnapshot_OrderBy {
   HighActive = "highActive",
   HighCapacityOhm = "highCapacityOhm",
   HighCushionPrice = "highCushionPrice",
+  HighCushionSpread = "highCushionSpread",
   HighLastActiveTimestamp = "highLastActiveTimestamp",
   HighMarketId = "highMarketId",
   HighWallPrice = "highWallPrice",
+  HighWallSpread = "highWallSpread",
   Id = "id",
   LowActive = "lowActive",
   LowCapacityReserve = "lowCapacityReserve",
   LowCushionPrice = "lowCushionPrice",
+  LowCushionSpread = "lowCushionSpread",
   LowLastActiveTimestamp = "lowLastActiveTimestamp",
   LowMarketId = "lowMarketId",
   LowWallPrice = "lowWallPrice",
+  LowWallSpread = "lowWallSpread",
   OhmMovingAveragePrice = "ohmMovingAveragePrice",
   OhmPrice = "ohmPrice",
   OperatorCushionFactor = "operatorCushionFactor",
@@ -1751,6 +1862,7 @@ export type SpreadsChangedEvent = {
   blockchain: Scalars["String"];
   cushionSpread: Scalars["BigDecimal"];
   date: Scalars["String"];
+  high?: Maybe<Scalars["Boolean"]>;
   id: Scalars["ID"];
   transaction: Scalars["Bytes"];
   wallSpread: Scalars["BigDecimal"];
@@ -1816,6 +1928,10 @@ export type SpreadsChangedEvent_Filter = {
   date_not_starts_with_nocase?: InputMaybe<Scalars["String"]>;
   date_starts_with?: InputMaybe<Scalars["String"]>;
   date_starts_with_nocase?: InputMaybe<Scalars["String"]>;
+  high?: InputMaybe<Scalars["Boolean"]>;
+  high_in?: InputMaybe<Array<Scalars["Boolean"]>>;
+  high_not?: InputMaybe<Scalars["Boolean"]>;
+  high_not_in?: InputMaybe<Array<Scalars["Boolean"]>>;
   id?: InputMaybe<Scalars["ID"]>;
   id_gt?: InputMaybe<Scalars["ID"]>;
   id_gte?: InputMaybe<Scalars["ID"]>;
@@ -1850,254 +1966,11 @@ export enum SpreadsChangedEvent_OrderBy {
   Blockchain = "blockchain",
   CushionSpread = "cushionSpread",
   Date = "date",
+  High = "high",
   Id = "id",
   Transaction = "transaction",
   WallSpread = "wallSpread",
 }
-
-export type Subscription = {
-  __typename?: "Subscription";
-  /** Access to subgraph metadata */
-  _meta?: Maybe<_Meta_>;
-  beat?: Maybe<Beat>;
-  beatRewardIssued?: Maybe<BeatRewardIssued>;
-  beatRewardIssueds: Array<BeatRewardIssued>;
-  beatRewardUpdated?: Maybe<BeatRewardUpdated>;
-  beatRewardUpdateds: Array<BeatRewardUpdated>;
-  beats: Array<Beat>;
-  minimumTargetPriceChanged?: Maybe<MinimumTargetPriceChanged>;
-  minimumTargetPriceChangeds: Array<MinimumTargetPriceChanged>;
-  movingAverageDurationChanged?: Maybe<MovingAverageDurationChanged>;
-  movingAverageDurationChangeds: Array<MovingAverageDurationChanged>;
-  newObservation?: Maybe<NewObservation>;
-  newObservations: Array<NewObservation>;
-  observationFrequencyChanged?: Maybe<ObservationFrequencyChanged>;
-  observationFrequencyChangeds: Array<ObservationFrequencyChanged>;
-  priceEvent?: Maybe<PriceEvent>;
-  priceEvents: Array<PriceEvent>;
-  pricesChangedEvent?: Maybe<PricesChangedEvent>;
-  pricesChangedEvents: Array<PricesChangedEvent>;
-  rangeSnapshot?: Maybe<RangeSnapshot>;
-  rangeSnapshots: Array<RangeSnapshot>;
-  spreadsChangedEvent?: Maybe<SpreadsChangedEvent>;
-  spreadsChangedEvents: Array<SpreadsChangedEvent>;
-  thresholdFactorChangedEvent?: Maybe<ThresholdFactorChangedEvent>;
-  thresholdFactorChangedEvents: Array<ThresholdFactorChangedEvent>;
-  updateThresholdsChanged?: Maybe<UpdateThresholdsChanged>;
-  updateThresholdsChangeds: Array<UpdateThresholdsChanged>;
-};
-
-export type Subscription_MetaArgs = {
-  block?: InputMaybe<Block_Height>;
-};
-
-export type SubscriptionBeatArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBeatRewardIssuedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBeatRewardIssuedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<BeatRewardIssued_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BeatRewardIssued_Filter>;
-};
-
-export type SubscriptionBeatRewardUpdatedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionBeatRewardUpdatedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<BeatRewardUpdated_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<BeatRewardUpdated_Filter>;
-};
-
-export type SubscriptionBeatsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<Beat_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<Beat_Filter>;
-};
-
-export type SubscriptionMinimumTargetPriceChangedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionMinimumTargetPriceChangedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<MinimumTargetPriceChanged_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<MinimumTargetPriceChanged_Filter>;
-};
-
-export type SubscriptionMovingAverageDurationChangedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionMovingAverageDurationChangedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<MovingAverageDurationChanged_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<MovingAverageDurationChanged_Filter>;
-};
-
-export type SubscriptionNewObservationArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionNewObservationsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<NewObservation_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<NewObservation_Filter>;
-};
-
-export type SubscriptionObservationFrequencyChangedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionObservationFrequencyChangedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<ObservationFrequencyChanged_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<ObservationFrequencyChanged_Filter>;
-};
-
-export type SubscriptionPriceEventArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPriceEventsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<PriceEvent_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PriceEvent_Filter>;
-};
-
-export type SubscriptionPricesChangedEventArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionPricesChangedEventsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<PricesChangedEvent_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<PricesChangedEvent_Filter>;
-};
-
-export type SubscriptionRangeSnapshotArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionRangeSnapshotsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<RangeSnapshot_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<RangeSnapshot_Filter>;
-};
-
-export type SubscriptionSpreadsChangedEventArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionSpreadsChangedEventsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<SpreadsChangedEvent_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<SpreadsChangedEvent_Filter>;
-};
-
-export type SubscriptionThresholdFactorChangedEventArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionThresholdFactorChangedEventsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<ThresholdFactorChangedEvent_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<ThresholdFactorChangedEvent_Filter>;
-};
-
-export type SubscriptionUpdateThresholdsChangedArgs = {
-  block?: InputMaybe<Block_Height>;
-  id: Scalars["ID"];
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-export type SubscriptionUpdateThresholdsChangedsArgs = {
-  block?: InputMaybe<Block_Height>;
-  first?: InputMaybe<Scalars["Int"]>;
-  orderBy?: InputMaybe<UpdateThresholdsChanged_OrderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  skip?: InputMaybe<Scalars["Int"]>;
-  subgraphError?: _SubgraphErrorPolicy_;
-  where?: InputMaybe<UpdateThresholdsChanged_Filter>;
-};
 
 export type ThresholdFactorChangedEvent = {
   __typename?: "ThresholdFactorChangedEvent";
@@ -2325,6 +2198,8 @@ export type _Block_ = {
   hash?: Maybe<Scalars["Bytes"]>;
   /** The block number */
   number: Scalars["Int"];
+  /** The hash of the parent block */
+  parentHash?: Maybe<Scalars["Bytes"]>;
   /** Integer representation of the timestamp stored in blocks for the chain */
   timestamp?: Maybe<Scalars["Int"]>;
 };

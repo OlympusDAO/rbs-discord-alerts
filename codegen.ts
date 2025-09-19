@@ -14,6 +14,8 @@ const config: CodegenConfig = {
           BigDecimal: "string",
           BigInt: "string",
           Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
+          Int8: "number",
+          Timestamp: "number",
         },
       },
       hooks: {
@@ -30,6 +32,8 @@ const config: CodegenConfig = {
           BigDecimal: "string",
           BigInt: "string",
           Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
+          Int8: "number",
+          Timestamp: "number",
         },
       },
       hooks: {
@@ -46,6 +50,8 @@ const config: CodegenConfig = {
           BigDecimal: "string",
           BigInt: "string",
           Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
+          Int8: "number",
+          Timestamp: "number",
         },
       },
       hooks: {
