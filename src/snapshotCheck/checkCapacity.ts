@@ -1,8 +1,7 @@
 import { DocumentReference } from "@google-cloud/firestore";
-import { Client } from "@urql/core";
-import fetch from "cross-fetch";
 
 import { getRbsSubgraphUrl } from "../constants";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "../graphql/rangeSnapshot";
 import { addDate } from "../helpers/dateHelper";
@@ -48,10 +47,7 @@ export const checkCapacityDepletion = async (
   const sinceDate = addDate(now, -1 * SINCE_DAYS, 0, false);
   const sinceDateString = sinceDate.toISOString();
 
-  const client = new Client({
-    url: getRbsSubgraphUrl(),
-    fetch,
-  });
+  const client = createGraphQLClient(getRbsSubgraphUrl());
 
   // Note: these queries check for ohmPrice being > 0 (being null would indicate that it is not initialised yet)
 
