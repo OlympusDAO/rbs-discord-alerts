@@ -1,6 +1,4 @@
 import { DocumentReference } from "@google-cloud/firestore";
-import { Client } from "@urql/core";
-import fetch from "cross-fetch";
 
 import {
   EMISSION_MANAGER_V1_0,
@@ -12,6 +10,7 @@ import {
   YIELD_REPURCHASE_FACILITY_V1_1,
   YIELD_REPURCHASE_FACILITY_V1_2,
 } from "../constants";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
   MarketClosedEvent,
@@ -619,10 +618,7 @@ export const checkBondMarkets = async (
   console.info(`Latest block is ${latestBlock}`);
 
   // Fetch range snapshots
-  const rangeSnapshotClient = new Client({
-    url: getRbsSubgraphUrl(),
-    fetch,
-  });
+  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
   // Snapshots are in ascending order
   console.debug(`Fetching RangeSnapshot records since block ${latestBlock}`);
   const rangeSnapshotResults = await rangeSnapshotClient
@@ -635,10 +631,7 @@ export const checkBondMarkets = async (
     throw new Error(`Did not receive results from RangeSnapshot GraphQL query. Error: ${rangeSnapshotResults.error}`);
   }
 
-  const bondsClient = new Client({
-    url: getBondsSubgraphUrl(),
-    fetch,
-  });
+  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
 
   // Fetch PriceEvents
   console.debug(`Fetching PriceEvent records since block ${latestBlock}`);

@@ -1,8 +1,7 @@
 import { Firestore } from "@google-cloud/firestore";
-import { Client } from "@urql/core";
-import fetch from "cross-fetch";
 
 import { getRbsSubgraphUrl } from "./constants";
+import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, sendAlert } from "./discord";
 import { PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
@@ -51,10 +50,7 @@ export const performEventChecks = async (
   console.log(`latest block is ${latestBlock}`);
 
   // Fetch events since the last processed block
-  const client = new Client({
-    url: getRbsSubgraphUrl(),
-    fetch,
-  });
+  const client = createGraphQLClient(getRbsSubgraphUrl());
   const queryResults = await client
     .query(RbsPriceEventsDocument, {
       latestBlock: (latestBlock || 0).toString(),

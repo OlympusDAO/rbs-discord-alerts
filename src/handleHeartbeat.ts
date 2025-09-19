@@ -1,8 +1,7 @@
 import { DocumentReference, Firestore } from "@google-cloud/firestore";
-import { Client } from "@urql/core";
-import fetch from "cross-fetch";
 
 import { getRbsSubgraphUrl } from "./constants";
+import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
@@ -35,10 +34,7 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
   console.log(`${FUNC}: Latest block is ${latestBlock}`);
 
   // Fetch events since the last processed block
-  const client = new Client({
-    url: getRbsSubgraphUrl(),
-    fetch,
-  });
+  const client = createGraphQLClient(getRbsSubgraphUrl());
   const queryResults = await client
     .query(BeatsSinceBlockDocument, {
       sinceBlock: (latestBlock || 0).toString(),

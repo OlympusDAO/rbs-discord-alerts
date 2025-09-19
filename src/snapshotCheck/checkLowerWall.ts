@@ -1,8 +1,7 @@
 import { DocumentReference } from "@google-cloud/firestore";
-import { Client } from "@urql/core";
-import fetch from "cross-fetch";
 
 import { getRbsSubgraphUrl } from "../constants";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotAtBlockDocument } from "../graphql/rangeSnapshot";
 import { castFloat, castFloatNullable, castInt } from "../helpers/numberHelper";
@@ -40,10 +39,8 @@ export const checkLowerWall = async (
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
   // Get the current block
-  const rangeSnapshotClient = new Client({
-    url: getRbsSubgraphUrl(),
-    fetch,
-  });
+  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
+  console.debug(`Fetching latest block for RangeSnapshot`);
   const latestBlockResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();
   if (!latestBlockResults.data || latestBlockResults.data.rangeSnapshots.length == 0) {
     throw new Error(
@@ -59,6 +56,8 @@ export const checkLowerWall = async (
     console.warn(`RangeSnapshot at block ${latestBlock} had an empty OHM price. Skipping.`);
     return;
   }
+
+  console.debug(`Latest RangeSnapshot block is ${latestBlock}`);
 
   // Calculate the block for 6 hours ago
   const historicalBlock = latestBlock - ALERT_THRESHOLD_SECONDS / 12;
@@ -81,6 +80,7 @@ export const checkLowerWall = async (
   }
 
   const historicalLowerWallPrice = castFloat(previousBlockResults.data.rangeSnapshots[0].lowWallPrice);
+  console.debug(`Historical lower wall price: ${historicalLowerWallPrice}`);
 
   const result = isLowerWallBroken(historicalLowerWallPrice, latestPrice);
   if (!result[0]) {
@@ -104,6 +104,7 @@ export const checkLowerWall = async (
 
   if (alertSuccess) {
     // Update lastAlarmDate
+    console.debug(`Updating last alert date`);
     await updateLastAlertDate(firestore, FUNCTION_KEY, new Date());
   }
 };

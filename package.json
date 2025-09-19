@@ -39,7 +39,8 @@
     },
     "dependencies": {
         "@google-cloud/firestore": "^7.0.0",
-        "@urql/core": "^3.0.3",
+        "@urql/core": "^6.0.1",
+        "@urql/exchange-retry": "^2.0.0",
         "cross-fetch": "^3.1.5",
         "dedent-js": "^1.0.1",
         "graphql": "^16.8.0",

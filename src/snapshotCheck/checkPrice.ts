@@ -1,8 +1,7 @@
 import { DocumentReference } from "@google-cloud/firestore";
-import { Client } from "@urql/core";
-import fetch from "cross-fetch";
 
 import { getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl } from "../constants";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
@@ -66,10 +65,7 @@ export const checkPrice = async (
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
   // Grab latest RangeSnapshot
-  const rangeSnapshotClient = new Client({
-    url: getRbsSubgraphUrl(),
-    fetch,
-  });
+  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
   const rangeSnapshotResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();
   if (!rangeSnapshotResults.data || rangeSnapshotResults.data.rangeSnapshots.length == 0) {
     throw new Error(
@@ -88,10 +84,7 @@ export const checkPrice = async (
   }
 
   // Grab latest price from the protocol-metrics PriceSnapshot
-  const priceSnapshotClient = new Client({
-    url: getPriceSnapshotSubgraphUrl(),
-    fetch,
-  });
+  const priceSnapshotClient = createGraphQLClient(getPriceSnapshotSubgraphUrl());
   const priceSnapshotResults = await priceSnapshotClient.query(LatestPriceSnapshotDocument, {}).toPromise();
   if (!priceSnapshotResults.data || priceSnapshotResults.data.priceSnapshots.length == 0) {
     throw new Error(
