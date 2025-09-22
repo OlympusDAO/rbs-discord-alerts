@@ -8,11 +8,8 @@ const retryOptions: RetryExchangeOptions = {
   randomDelay: true,
   maxNumberAttempts: 3,
   retryIf: (error, _operation) => {
-    if (error && error.networkError) {
-      console.log('GraphQL network error:', error.networkError);
-      return true;
-    }
-    return false;
+    console.warn(`Retrying GraphQL operation due to error:`, JSON.stringify(error));
+    return true;
   },
 };
 
