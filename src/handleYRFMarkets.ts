@@ -282,9 +282,6 @@ if (require.main === module) {
   if (!process.env.WEBHOOK_URL) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
-  if (!process.env.MENTION_ROLES) {
-    throw new Error("Set the MENTION_ROLES environment variable");
-  }
 
   performYRFMarketChecks(
     "rbs-discord-alerts-dev",
