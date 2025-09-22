@@ -31,6 +31,13 @@ export const getBondsSubgraphUrl = (): string => {
   return BONDS_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
+// TODO switch to production URL
+const YRF_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/olympus-yrf/version/latest";
+
+export const getYRFSubgraphUrl = (): string => {
+  return YRF_SUBGRAPH_URL;
+};
+
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();
 export const ERC20_DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase();
 

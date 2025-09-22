@@ -7,6 +7,7 @@ import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
 import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 import { performTargetPriceChangedCheck } from "./src/handleTargetPriceChangedEvents";
+import { performYRFMarketChecks } from "./src/handleYRFMarkets";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -158,6 +159,28 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
 );
 
 /**
+ * YRF Market Checks
+ */
+const FUNCTION_YRF_CHECK = "yrf-market-check";
+const FUNCTION_YRF_CHECK_STACK = `${FUNCTION_YRF_CHECK}-${pulumi.getStack()}`;
+
+const [, functionYRFCheckName] = createFunction(
+  FUNCTION_YRF_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performYRFMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  graphQlApiKey,
+  "* * * * *", // Every minute
+);
+
+/**
  * Create Alert Policies
  */
 // Email notification channel
@@ -216,6 +239,11 @@ createAlertFunctionError(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckN
 ]);
 
 createAlertFunctionExecutions(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_YRF_CHECK_STACK, functionYRFCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);

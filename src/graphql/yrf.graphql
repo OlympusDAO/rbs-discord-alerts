@@ -1,0 +1,58 @@
+query RepoMarketsCreatedSince($latestBlock: BigInt!) {
+  repoMarkets(
+    orderBy: blockNumber,
+    orderDirection: desc,
+    first: 1000,
+    where: { blockTimestamp_gt: $latestBlock }
+  ) {
+    id
+    contract {
+      id
+      address
+      version
+      majorVersion
+      minorVersion
+      reserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+    }
+    marketId
+    bidAmount
+    bidAmountDecimal
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}
+
+query RepoMarket($marketId: BigInt!) {
+  repoMarkets(
+    where: { marketId: $marketId }
+  ) {
+    id
+    contract {
+      id
+      address
+      version
+      majorVersion
+      minorVersion
+      reserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+    }
+    marketId
+    bidAmount
+    bidAmountDecimal
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}
