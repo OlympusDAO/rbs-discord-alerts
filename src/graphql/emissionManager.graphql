@@ -1,0 +1,59 @@
+fragment TokenFields on Token {
+  id
+  address
+  name
+  symbol
+  decimals
+}
+
+fragment ContractFields on Contract {
+  id
+  address
+  version
+  majorVersion
+  minorVersion
+  gohmToken {
+    ...TokenFields
+  }
+  ohmToken {
+    ...TokenFields
+  }
+  reserveToken {
+    ...TokenFields
+  }
+  sReserveToken {
+    ...TokenFields
+  }
+}
+
+fragment SaleCreatedFields on SaleCreated {
+  id
+  contract {
+    ...ContractFields
+  }
+  marketId
+  saleAmount
+  saleAmountDecimal
+  blockNumber
+  blockTimestamp
+  transactionHash
+}
+
+query EmissionManagerMarketsCreatedSince($latestBlock: BigInt!) {
+  saleCreateds(
+    orderBy: blockNumber,
+    orderDirection: desc,
+    first: 1000,
+    where: { blockNumber_gt: $latestBlock }
+  ) {
+    ...SaleCreatedFields
+  }
+}
+
+query EmissionManagerMarket($marketId: BigInt!) {
+  saleCreateds(
+    where: { marketId: $marketId }
+  ) {
+    ...SaleCreatedFields
+  }
+}

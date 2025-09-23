@@ -38,6 +38,12 @@ export const getYRFSubgraphUrl = (): string => {
   return YRF_SUBGRAPH_URL;
 };
 
+const EMISSION_MANAGER_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/olympus-emission-manager/version/latest";
+
+export const getEmissionManagerSubgraphUrl = (): string => {
+  return EMISSION_MANAGER_SUBGRAPH_URL;
+};
+
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();
 export const ERC20_DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase();
 
@@ -48,3 +54,4 @@ export const YIELD_REPURCHASE_FACILITY_V1_2 = "0x271e35a8555a62F6bA76508E85dfD76
 export const EMISSION_MANAGER_V1_0 = "0x50f441a3387625bDA8B8081cE3fd6C04CC48C0A2";
 
 export const YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK = 23415000; // 2025-09-22
+export const EMISSION_MANAGER_ALERT_STARTING_BLOCK = 23354000; // 2025-09-13
