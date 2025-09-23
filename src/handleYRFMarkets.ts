@@ -1,6 +1,6 @@
 import { DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getYRFSubgraphUrl } from "./constants";
+import { getYRFSubgraphUrl, YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK } from "./constants";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
 import {
@@ -51,16 +51,20 @@ const sendYRFMarketCreatedAlert = (
       value: `${marketId}`,
     },
     {
+      name: "Date",
+      value: getRelativeTimestamp(timestamp),
+    },
+    {
       name: "Capacity",
       value: `${formatNumber(capacity, 0)} ${tokenSymbol}`,
     },
     {
-      name: "Transaction",
-      value: `${getEtherscanTransactionUrl(transaction, "Mainnet")}`,
+      name: "Market",
+      value: `https://app.bondprotocol.finance/#/market/1/${marketId}`,
     },
     {
-      name: "Date",
-      value: getRelativeTimestamp(timestamp),
+      name: "Transaction",
+      value: `${getEtherscanTransactionUrl(transaction, "Mainnet")}`,
     },
   ];
 
@@ -100,12 +104,12 @@ const sendYRFMarketClosedAlert = (
       value: `${marketId}`,
     },
     {
-      name: "Token",
-      value: tokenSymbol,
-    },
-    {
       name: "Date",
       value: getRelativeTimestamp(timestamp),
+    },
+    {
+      name: "Token",
+      value: tokenSymbol,
     },
   ];
 
@@ -117,6 +121,19 @@ const sendYRFMarketClosedAlert = (
     fields
   );
 };
+
+const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
+  const firestoreSnapshot = await firestoreDocument.get();
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
+
+  if (latestBlock == 0) {
+    console.info(`No latest block found, defaulting to starting block ${YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK}`);
+    return YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK;
+  }
+
+  console.info(`Latest block is ${latestBlock}`);
+  return latestBlock;
+}
 
 /**
  * Processes YRF market creation events and sends alerts
@@ -133,10 +150,8 @@ const processYRFMarketCreated = async (
   console.info(`\n\n⏰ Processing YRF Market Created Events`);
 
   // Get the latest block
-  const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
+  const latestBlock = await getLatestBlock(firestoreDocument);
   let updatedLatestBlock = latestBlock;
-  console.info(`Latest block is ${latestBlock}`);
 
   // Fetch YRF markets
   const yrfClient = createGraphQLClient(getYRFSubgraphUrl());
@@ -196,9 +211,7 @@ const processYRFMarketsClosed = async (
   console.info(`\n\n⏰ Processing YRF Market Closed Events`);
 
   // Get the latest block
-  const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
-  console.info(`Latest block is ${latestBlock}`);
+  const latestBlock = await getLatestBlock(firestoreDocument);
 
   // Fetch bond market closed events
   const bondsClient = createGraphQLClient(getBondsSubgraphUrl());

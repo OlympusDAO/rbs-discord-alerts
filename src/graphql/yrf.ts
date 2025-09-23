@@ -786,7 +786,7 @@ export const RepoMarketsCreatedSinceDocument = {
                   fields: [
                     {
                       kind: "ObjectField",
-                      name: { kind: "Name", value: "blockTimestamp_gt" },
+                      name: { kind: "Name", value: "blockNumber_gt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
                     },
                   ],

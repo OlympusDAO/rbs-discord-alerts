@@ -3,7 +3,7 @@ query RepoMarketsCreatedSince($latestBlock: BigInt!) {
     orderBy: blockNumber,
     orderDirection: desc,
     first: 1000,
-    where: { blockTimestamp_gt: $latestBlock }
+    where: { blockNumber_gt: $latestBlock }
   ) {
     id
     contract {
