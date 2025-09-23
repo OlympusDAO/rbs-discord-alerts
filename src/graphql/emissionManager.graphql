@@ -1,44 +1,3 @@
-fragment TokenFields on Token {
-  id
-  address
-  name
-  symbol
-  decimals
-}
-
-fragment ContractFields on Contract {
-  id
-  address
-  version
-  majorVersion
-  minorVersion
-  gohmToken {
-    ...TokenFields
-  }
-  ohmToken {
-    ...TokenFields
-  }
-  reserveToken {
-    ...TokenFields
-  }
-  sReserveToken {
-    ...TokenFields
-  }
-}
-
-fragment SaleCreatedFields on SaleCreated {
-  id
-  contract {
-    ...ContractFields
-  }
-  marketId
-  saleAmount
-  saleAmountDecimal
-  blockNumber
-  blockTimestamp
-  transactionHash
-}
-
 query EmissionManagerMarketsCreatedSince($latestBlock: BigInt!) {
   saleCreateds(
     orderBy: blockNumber,
@@ -46,7 +5,48 @@ query EmissionManagerMarketsCreatedSince($latestBlock: BigInt!) {
     first: 1000,
     where: { blockNumber_gt: $latestBlock }
   ) {
-    ...SaleCreatedFields
+    id
+    contract {
+      id
+      address
+      version
+      majorVersion
+      minorVersion
+      gohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      ohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      reserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      sReserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+    }
+    marketId
+    saleAmount
+    saleAmountDecimal
+    blockNumber
+    blockTimestamp
+    transactionHash
   }
 }
 
@@ -54,6 +54,47 @@ query EmissionManagerMarket($marketId: BigInt!) {
   saleCreateds(
     where: { marketId: $marketId }
   ) {
-    ...SaleCreatedFields
+    id
+    contract {
+      id
+      address
+      version
+      majorVersion
+      minorVersion
+      gohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      ohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      reserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      sReserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+    }
+    marketId
+    saleAmount
+    saleAmountDecimal
+    blockNumber
+    blockTimestamp
+    transactionHash
   }
 }

@@ -2429,86 +2429,6 @@ export enum _SubgraphErrorPolicy_ {
   Deny = "deny",
 }
 
-export type TokenFieldsFragment = {
-  __typename?: "Token";
-  id: string;
-  address: Uint8Array;
-  name: string;
-  symbol: string;
-  decimals: number;
-};
-
-export type ContractFieldsFragment = {
-  __typename?: "Contract";
-  id: string;
-  address: Uint8Array;
-  version: string;
-  majorVersion: number;
-  minorVersion: number;
-  gohmToken: { __typename?: "Token"; id: string; address: Uint8Array; name: string; symbol: string; decimals: number };
-  ohmToken: { __typename?: "Token"; id: string; address: Uint8Array; name: string; symbol: string; decimals: number };
-  reserveToken: {
-    __typename?: "Token";
-    id: string;
-    address: Uint8Array;
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
-  sReserveToken: {
-    __typename?: "Token";
-    id: string;
-    address: Uint8Array;
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
-};
-
-export type SaleCreatedFieldsFragment = {
-  __typename?: "SaleCreated";
-  id: Uint8Array;
-  marketId: string;
-  saleAmount: string;
-  saleAmountDecimal: string;
-  blockNumber: string;
-  blockTimestamp: string;
-  transactionHash: Uint8Array;
-  contract: {
-    __typename?: "Contract";
-    id: string;
-    address: Uint8Array;
-    version: string;
-    majorVersion: number;
-    minorVersion: number;
-    gohmToken: {
-      __typename?: "Token";
-      id: string;
-      address: Uint8Array;
-      name: string;
-      symbol: string;
-      decimals: number;
-    };
-    ohmToken: { __typename?: "Token"; id: string; address: Uint8Array; name: string; symbol: string; decimals: number };
-    reserveToken: {
-      __typename?: "Token";
-      id: string;
-      address: Uint8Array;
-      name: string;
-      symbol: string;
-      decimals: number;
-    };
-    sReserveToken: {
-      __typename?: "Token";
-      id: string;
-      address: Uint8Array;
-      name: string;
-      symbol: string;
-      decimals: number;
-    };
-  };
-};
-
 export type EmissionManagerMarketsCreatedSinceQueryVariables = Exact<{
   latestBlock: Scalars["BigInt"];
 }>;
@@ -2625,110 +2545,6 @@ export type EmissionManagerMarketQuery = {
   }>;
 };
 
-export const TokenFieldsFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "TokenFields" },
-      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "Token" } },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "address" } },
-          { kind: "Field", name: { kind: "Name", value: "name" } },
-          { kind: "Field", name: { kind: "Name", value: "symbol" } },
-          { kind: "Field", name: { kind: "Name", value: "decimals" } },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<TokenFieldsFragment, unknown>;
-export const ContractFieldsFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "ContractFields" },
-      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "Contract" } },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          { kind: "Field", name: { kind: "Name", value: "address" } },
-          { kind: "Field", name: { kind: "Name", value: "version" } },
-          { kind: "Field", name: { kind: "Name", value: "majorVersion" } },
-          { kind: "Field", name: { kind: "Name", value: "minorVersion" } },
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "gohmToken" },
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "TokenFields" } }],
-            },
-          },
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "ohmToken" },
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "TokenFields" } }],
-            },
-          },
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "reserveToken" },
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "TokenFields" } }],
-            },
-          },
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "sReserveToken" },
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "TokenFields" } }],
-            },
-          },
-        ],
-      },
-    },
-    ...TokenFieldsFragmentDoc.definitions,
-  ],
-} as unknown as DocumentNode<ContractFieldsFragment, unknown>;
-export const SaleCreatedFieldsFragmentDoc = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "FragmentDefinition",
-      name: { kind: "Name", value: "SaleCreatedFields" },
-      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "SaleCreated" } },
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          { kind: "Field", name: { kind: "Name", value: "id" } },
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "contract" },
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "ContractFields" } }],
-            },
-          },
-          { kind: "Field", name: { kind: "Name", value: "marketId" } },
-          { kind: "Field", name: { kind: "Name", value: "saleAmount" } },
-          { kind: "Field", name: { kind: "Name", value: "saleAmountDecimal" } },
-          { kind: "Field", name: { kind: "Name", value: "blockNumber" } },
-          { kind: "Field", name: { kind: "Name", value: "blockTimestamp" } },
-          { kind: "Field", name: { kind: "Name", value: "transactionHash" } },
-        ],
-      },
-    },
-    ...ContractFieldsFragmentDoc.definitions,
-  ],
-} as unknown as DocumentNode<SaleCreatedFieldsFragment, unknown>;
 export const EmissionManagerMarketsCreatedSinceDocument = {
   kind: "Document",
   definitions: [
@@ -2778,13 +2594,90 @@ export const EmissionManagerMarketsCreatedSinceDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "SaleCreatedFields" } }],
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "contract" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "address" } },
+                      { kind: "Field", name: { kind: "Name", value: "version" } },
+                      { kind: "Field", name: { kind: "Name", value: "majorVersion" } },
+                      { kind: "Field", name: { kind: "Name", value: "minorVersion" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gohmToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ohmToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "reserveToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sReserveToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                { kind: "Field", name: { kind: "Name", value: "marketId" } },
+                { kind: "Field", name: { kind: "Name", value: "saleAmount" } },
+                { kind: "Field", name: { kind: "Name", value: "saleAmountDecimal" } },
+                { kind: "Field", name: { kind: "Name", value: "blockNumber" } },
+                { kind: "Field", name: { kind: "Name", value: "blockTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "transactionHash" } },
+              ],
             },
           },
         ],
       },
     },
-    ...SaleCreatedFieldsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<EmissionManagerMarketsCreatedSinceQuery, EmissionManagerMarketsCreatedSinceQueryVariables>;
 export const EmissionManagerMarketDocument = {
@@ -2825,12 +2718,89 @@ export const EmissionManagerMarketDocument = {
             ],
             selectionSet: {
               kind: "SelectionSet",
-              selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "SaleCreatedFields" } }],
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "id" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "contract" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      { kind: "Field", name: { kind: "Name", value: "address" } },
+                      { kind: "Field", name: { kind: "Name", value: "version" } },
+                      { kind: "Field", name: { kind: "Name", value: "majorVersion" } },
+                      { kind: "Field", name: { kind: "Name", value: "minorVersion" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "gohmToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "ohmToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "reserveToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sReserveToken" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            { kind: "Field", name: { kind: "Name", value: "id" } },
+                            { kind: "Field", name: { kind: "Name", value: "address" } },
+                            { kind: "Field", name: { kind: "Name", value: "name" } },
+                            { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                            { kind: "Field", name: { kind: "Name", value: "decimals" } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                { kind: "Field", name: { kind: "Name", value: "marketId" } },
+                { kind: "Field", name: { kind: "Name", value: "saleAmount" } },
+                { kind: "Field", name: { kind: "Name", value: "saleAmountDecimal" } },
+                { kind: "Field", name: { kind: "Name", value: "blockNumber" } },
+                { kind: "Field", name: { kind: "Name", value: "blockTimestamp" } },
+                { kind: "Field", name: { kind: "Name", value: "transactionHash" } },
+              ],
             },
           },
         ],
       },
     },
-    ...SaleCreatedFieldsFragmentDoc.definitions,
   ],
 } as unknown as DocumentNode<EmissionManagerMarketQuery, EmissionManagerMarketQueryVariables>;
