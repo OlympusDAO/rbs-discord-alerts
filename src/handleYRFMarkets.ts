@@ -21,7 +21,8 @@ import {
 } from "./helpers/numberHelper";
 
 const FUNCTION_KEY = "yrfMarkets";
-const LATEST_BLOCK = "latestBlock";
+const LATEST_BLOCK_CREATED = "latestBlockCreated";
+const LATEST_BLOCK_CLOSED = "latestBlockClosed";
 
 /**
  * Sends a Discord alert when a YRF market is created
@@ -122,16 +123,16 @@ const sendYRFMarketClosedAlert = (
   );
 };
 
-const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
+const getLatestBlock = async (firestoreDocument: DocumentReference, key: string): Promise<number> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${key}`) || 0);
 
   if (latestBlock == 0) {
-    console.info(`No latest block found, defaulting to starting block ${YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK}`);
+    console.info(`No latest block found for ${key}, defaulting to starting block ${YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK}`);
     return YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK;
   }
 
-  console.info(`Latest block is ${latestBlock}`);
+  console.info(`Latest block for ${key} is ${latestBlock}`);
   return latestBlock;
 }
 
@@ -150,7 +151,7 @@ const processYRFMarketCreated = async (
   console.info(`\n\n⏰ Processing YRF Market Created Events`);
 
   // Get the latest block
-  const latestBlock = await getLatestBlock(firestoreDocument);
+  const latestBlock = await getLatestBlock(firestoreDocument, LATEST_BLOCK_CREATED);
   let updatedLatestBlock = latestBlock;
 
   // Fetch YRF markets
@@ -190,7 +191,7 @@ const processYRFMarketCreated = async (
   // Update latest block
   if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK_CREATED}`]: updatedLatestBlock,
     });
     console.info(`Updated latest block to ${updatedLatestBlock}`);
   }
@@ -211,7 +212,7 @@ const processYRFMarketsClosed = async (
   console.info(`\n\n⏰ Processing YRF Market Closed Events`);
 
   // Get the latest block
-  const latestBlock = await getLatestBlock(firestoreDocument);
+  const latestBlock = await getLatestBlock(firestoreDocument, LATEST_BLOCK_CLOSED);
 
   // Fetch bond market closed events
   const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
