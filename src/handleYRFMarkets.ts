@@ -222,8 +222,7 @@ const processYRFMarketsClosed = async (
     .toPromise();
 
   if (!marketsClosedResults.data) {
-    console.error(`Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`);
-    return;
+    throw new Error(`Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`);
   }
 
   const marketClosedEvents: MarketClosedEvent[] = marketsClosedResults.data.marketClosedEvents;
@@ -248,8 +247,7 @@ const processYRFMarketsClosed = async (
       .toPromise();
 
     if (!yrfResults.data) {
-      console.error(`Did not receive results from YRF GraphQL query for market ${marketId}. Error: ${yrfResults.error}`);
-      continue;
+      throw new Error(`Did not receive results from YRF GraphQL query for market ${marketId}. Error: ${yrfResults.error}`);
     }
 
     const repoMarkets: RepoMarket[] = yrfResults.data.repoMarkets;
