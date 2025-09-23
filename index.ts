@@ -164,7 +164,7 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
 const FUNCTION_YRF_CHECK = "yrf-market-check";
 const FUNCTION_YRF_CHECK_STACK = `${FUNCTION_YRF_CHECK}-${pulumi.getStack()}`;
 
-const [, functionYRFCheckName] = createFunction(
+const [functionYRFCheck, functionYRFCheckName] = createFunction(
   FUNCTION_YRF_CHECK_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
@@ -239,6 +239,11 @@ createAlertFunctionError(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckN
 ]);
 
 createAlertFunctionExecutions(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_YRF_CHECK_STACK, functionYRFCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
@@ -572,11 +577,52 @@ new gcp.monitoring.Dashboard(
               "width": 6,
               "xPos": 6,
               "yPos": 8
+            },
+            {
+              "height": 4,
+              "widget": {
+                "title": "${FUNCTION_YRF_CHECK} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionYRFCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 0,
+              "yPos": 12
             }
           ]
         }
       }`,
   },
-  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck, functionTargetPriceChanged] },
+  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck, functionTargetPriceChanged, functionYRFCheck] },
 );
 export const dashboardName = DASHBOARD_NAME;
