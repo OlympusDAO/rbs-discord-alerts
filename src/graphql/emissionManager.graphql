@@ -1,0 +1,100 @@
+query EmissionManagerMarketsCreatedSince($latestBlock: BigInt!) {
+  saleCreateds(
+    orderBy: blockNumber,
+    orderDirection: desc,
+    first: 1000,
+    where: { blockNumber_gt: $latestBlock }
+  ) {
+    id
+    contract {
+      id
+      address
+      version
+      majorVersion
+      minorVersion
+      gohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      ohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      reserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      sReserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+    }
+    marketId
+    saleAmount
+    saleAmountDecimal
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}
+
+query EmissionManagerMarket($marketId: BigInt!) {
+  saleCreateds(
+    where: { marketId: $marketId }
+  ) {
+    id
+    contract {
+      id
+      address
+      version
+      majorVersion
+      minorVersion
+      gohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      ohmToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      reserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+      sReserveToken {
+        id
+        address
+        name
+        symbol
+        decimals
+      }
+    }
+    marketId
+    saleAmount
+    saleAmountDecimal
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}

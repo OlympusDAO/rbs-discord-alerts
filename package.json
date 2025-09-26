@@ -6,6 +6,8 @@
         "execute:heartbeats": "export $(cat .env | xargs) && ts-node src/handleHeartbeat.ts",
         "execute:snapshots": "export $(cat .env | xargs) && ts-node src/handleSnapshotCheck.ts",
         "execute:targetPrice": "export $(cat .env | xargs) && ts-node src/handleTargetPriceChangedEvents.ts",
+        "execute:yrfmarkets": "export $(cat .env | xargs) && ts-node src/handleYRFMarkets.ts",
+        "execute:emissionmanagermarkets": "export $(cat .env | xargs) && ts-node src/handleEmissionManagerMarkets.ts",
         "codegen": "export $(cat .env | xargs) && graphql-codegen",
         "build": "tsc",
         "lint:fix": "eslint --config ./.eslintrc.js --fix",
