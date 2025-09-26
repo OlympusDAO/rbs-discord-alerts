@@ -31,17 +31,24 @@ export const getBondsSubgraphUrl = (): string => {
   return BONDS_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
-// TODO switch to production URL
-const YRF_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/olympus-yrf/version/latest";
+const YRF_SUBGRAPH_URL = "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/BVcdoUHemeVF5qmbvgLvHqLKH2oNouwJBuZXBVwdyNLe";
 
 export const getYRFSubgraphUrl = (): string => {
-  return YRF_SUBGRAPH_URL;
+  const apiKey = process.env.GRAPHQL_API_KEY;
+  if (!apiKey) {
+    throw new Error("GRAPHQL_API_KEY is not set");
+  }
+  return YRF_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
-const EMISSION_MANAGER_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/46563/olympus-emission-manager/version/latest";
+const EMISSION_MANAGER_SUBGRAPH_URL = "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7KwoppR1FTbHpz7VieAEFmyyPh9z2ZWUvYjSs5w3cTV8";
 
 export const getEmissionManagerSubgraphUrl = (): string => {
-  return EMISSION_MANAGER_SUBGRAPH_URL;
+  const apiKey = process.env.GRAPHQL_API_KEY;
+  if (!apiKey) {
+    throw new Error("GRAPHQL_API_KEY is not set");
+  }
+  return EMISSION_MANAGER_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();
