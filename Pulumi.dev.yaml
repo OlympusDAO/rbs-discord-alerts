@@ -5,7 +5,6 @@ config:
     secure: AAABABd9VQt3GkIBflIvE4VFHiM5p+Q4JVr/Dzq2freGR1QBUnaabgXib/NGGi5N7W5AQbPLxtOMKQce/Wbgqw==
   rbs-discord-alerts:contractUrl: "https://etherscan.io/address/0x1Ce568DbB34B2631aCDB5B453c3195EA0070EC65#writeContract"
   rbs-discord-alerts:discordRoleIdCore: "1042353289477500950"
-  rbs-discord-alerts:discordRoleIdCouncil: "1042351048569921547"
   rbs-discord-alerts:discordWebhookAlert:
     secure: AAABAFgTLEBnv7xezNMjZXzoKABm6REAV/QgcmPBBmVVEN1dntRQHh35fCr+OXQFa5aT8j1LgBVcADwC3J1e8AnhtEms53oHmCf7qqjJ86GlQNqthafYimOvh+8Gxabtf3Ad7+JKRPKaSRclqSG9YzBYUhzdv42E7p90h7hjDvs7ouiCCoFRFsxcIJzih7JR7PJNONZmp1T8
   rbs-discord-alerts:discordWebhookAlertCommunity:
