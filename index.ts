@@ -69,7 +69,6 @@ const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunct
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performTargetPriceChangedCheck(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertDAO,
       webhookAlertCommunity,
     ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
@@ -94,7 +93,6 @@ const [functionPriceEvents, functionPriceEventsName] = createFunction(
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performEventChecks(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertDAO,
       webhookAlertCommunity,
     ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
@@ -147,7 +145,6 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performHeartbeatChecks(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertDAO,
       webhookAlertCommunity,
     ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
