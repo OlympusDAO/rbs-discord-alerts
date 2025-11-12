@@ -20,7 +20,6 @@ if (!gcp.config.region) {
   throw new Error("Set the region for the pulumi gcp provider");
 }
 
-const CONFIG_DISCORD_ROLE_COUNCIL = "discordRoleIdCouncil";
 const CONFIG_DISCORD_ROLE_CORE = "discordRoleIdCore";
 const CONFIG_CONTRACT = "contractUrl";
 const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
@@ -70,7 +69,6 @@ const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunct
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performTargetPriceChangedCheck(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertDAO,
       webhookAlertCommunity,
     ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
@@ -95,7 +93,6 @@ const [functionPriceEvents, functionPriceEventsName] = createFunction(
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
     await performEventChecks(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertDAO,
       webhookAlertCommunity,
     ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
@@ -122,7 +119,7 @@ const [functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
     await performSnapshotChecks(
       datastore.documentId.get(),
       datastore.collection.get(),
-      [pulumiConfig.require(CONFIG_DISCORD_ROLE_COUNCIL), pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
+      [pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
       webhookEmergency,
       pulumiConfig.get(CONFIG_CONTRACT),
     );
@@ -147,10 +144,12 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
   DEFAULT_RUNTIME,
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performHeartbeatChecks(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertDAO,
-      webhookAlertCommunity,
-    ]);
+    await performHeartbeatChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      [pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
+      [webhookAlertCommunity]
+    );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
