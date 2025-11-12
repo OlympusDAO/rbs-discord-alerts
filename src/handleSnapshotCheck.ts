@@ -30,7 +30,8 @@ export const performSnapshotChecks = async (
   await checkCapacityDepletion(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   // TODO re-enable price check
   // await checkPrice(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
-  await checkLowerWall(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
+  // Not needed for now
+  // await checkLowerWall(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   await checkBondMarkets(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
 };
 
