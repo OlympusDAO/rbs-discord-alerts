@@ -144,9 +144,12 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
   DEFAULT_RUNTIME,
   async (req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performHeartbeatChecks(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertCommunity,
-    ]);
+    await performHeartbeatChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      [pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
+      [webhookAlertCommunity]
+    );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();

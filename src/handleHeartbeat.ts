@@ -2,7 +2,7 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "./constants";
 import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
 import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castInt } from "./helpers/numberHelper";
@@ -23,10 +23,11 @@ const ALERT_THRESHOLD_SECONDS = 1 * 60 * 60; // 1 hour
  * Sends a Discord alert when a heartbeat event is recorded
  *
  * @param firestoreDocument
+ * @param mentionRoles
  * @param alertWebhookUrls
  * @returns
  */
-const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWebhookUrls: string[]): Promise<void> => {
+const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, _mentionRoles: string[], alertWebhookUrls: string[]): Promise<void> => {
   const FUNC = `sendHeartbeatAlert`;
   console.info(`\n\n${FUNC}: Sending heartbeat alerts`);
   const firestoreDocumentObject = await firestoreDocument.get();
@@ -105,7 +106,7 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, alertWeb
  * @param webhookUrls
  * @returns
  */
-const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls: string[]): Promise<void> => {
+const checkHeartbeat = async (firestoreDocument: DocumentReference, mentionRoles: string[], webhookUrls: string[]): Promise<void> => {
   const FUNC = "checkHeartbeat";
   console.info(`\n\n${FUNC}: Checking heartbeat timing`);
   const firestoreDocumentObject = await firestoreDocument.get();
@@ -161,7 +162,7 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
   for (let i = 0; i < webhookUrls.length; i++) {
     const currentAlertSuccess = await sendAlert(
       webhookUrls[i],
-      "",
+      getRoleMentions(mentionRoles),
       `🚨 Late Heartbeat`,
       `Heartbeat did not happen on time.\n\nSubsequent alerts are throttled for ${
         ALERT_THRESHOLD_SECONDS / 60
@@ -201,14 +202,15 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, webhookUrls:
 export const performHeartbeatChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
+  mentionRoles: string[],
   alertWebhookUrls: string[],
 ): Promise<void> => {
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  await sendHeartbeatAlert(firestoreDocument, alertWebhookUrls);
-  await checkHeartbeat(firestoreDocument, alertWebhookUrls);
+  await sendHeartbeatAlert(firestoreDocument, mentionRoles, alertWebhookUrls);
+  await checkHeartbeat(firestoreDocument, mentionRoles, alertWebhookUrls);
 };
 
 // Running via CLI
@@ -217,5 +219,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performHeartbeatChecks("rbs-discord-alerts-dev", "default", [process.env.WEBHOOK_URL]);
+  performHeartbeatChecks("rbs-discord-alerts-dev", "default", ["1042353289477500950"], [process.env.WEBHOOK_URL]);
 }
