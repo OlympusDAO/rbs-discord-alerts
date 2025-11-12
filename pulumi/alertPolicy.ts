@@ -8,6 +8,8 @@ export const createAlertFunctionError = (
   notificationChannels: pulumi.Input<pulumi.Input<string>[]>,
 ): void => {
   const alertWindowSeconds = 5 * executionFrequencySeconds;
+  const autoCloseSeconds = 1 * 24 * 60 * 60; // 1 day
+  const notificationRateLimitSeconds = 1 * 60 * 60; // Once per 1 hour
 
   // Alert when functions crash
   const policyNameFunctionCrash = `${policyPrefix}-function-crash`;
@@ -27,9 +29,9 @@ export const createAlertFunctionError = (
     ],
     alertStrategy: {
       notificationRateLimit: {
-        period: "3600s",
+        period: `${notificationRateLimitSeconds}s`,
       },
-      autoClose: "604800s",
+      autoClose: `${autoCloseSeconds}s`,
     },
     combiner: "OR",
     enabled: true,
@@ -54,9 +56,9 @@ export const createAlertFunctionError = (
     ],
     alertStrategy: {
       notificationRateLimit: {
-        period: "3600s",
+        period: `${notificationRateLimitSeconds}s`,
       },
-      autoClose: "604800s",
+      autoClose: `${autoCloseSeconds}s`,
     },
     combiner: "OR",
     enabled: true,

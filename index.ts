@@ -7,6 +7,8 @@ import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
 import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 import { performTargetPriceChangedCheck } from "./src/handleTargetPriceChangedEvents";
+import { performYRFMarketChecks } from "./src/handleYRFMarkets";
+import { performEmissionManagerMarketChecks } from "./src/handleEmissionManagerMarkets";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -158,6 +160,50 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
 );
 
 /**
+ * YRF Market Checks
+ */
+const FUNCTION_YRF_CHECK = "yrf-market-check";
+const FUNCTION_YRF_CHECK_STACK = `${FUNCTION_YRF_CHECK}-${pulumi.getStack()}`;
+
+const [functionYRFCheck, functionYRFCheckName] = createFunction(
+  FUNCTION_YRF_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performYRFMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  graphQlApiKey,
+  "* * * * *", // Every minute
+);
+
+/**
+ * EmissionManager Market Checks
+ */
+const FUNCTION_EMISSION_MANAGER_CHECK = "emission-manager-market-check";
+const FUNCTION_EMISSION_MANAGER_CHECK_STACK = `${FUNCTION_EMISSION_MANAGER_CHECK}-${pulumi.getStack()}`;
+
+const [functionEmissionManagerCheck, functionEmissionManagerCheckName] = createFunction(
+  FUNCTION_EMISSION_MANAGER_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performEmissionManagerMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  graphQlApiKey,
+  "* * * * *", // Every minute
+);
+
+/**
  * Create Alert Policies
  */
 // Email notification channel
@@ -216,6 +262,26 @@ createAlertFunctionError(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckN
 ]);
 
 createAlertFunctionExecutions(FUNCTION_HEARTBEAT_CHECK_STACK, functionHeartbeatCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_YRF_CHECK_STACK, functionYRFCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_YRF_CHECK_STACK, functionYRFCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmissionManagerCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmissionManagerCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
@@ -544,11 +610,92 @@ new gcp.monitoring.Dashboard(
               "width": 6,
               "xPos": 6,
               "yPos": 8
+            },
+            {
+              "height": 4,
+              "widget": {
+                "title": "${FUNCTION_YRF_CHECK} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionYRFCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "thresholds": [],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 0,
+              "yPos": 12
+            },
+            {
+              "height": 4,
+              "widget": {
+                "title": "${FUNCTION_EMISSION_MANAGER_CHECK} Function Executions per ${DASHBOARD_WINDOW_SECONDS / 60} minutes",
+                "xyChart": {
+                  "chartOptions": {
+                    "mode": "COLOR"
+                  },
+                  "dataSets": [
+                    {
+                      "minAlignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                      "plotType": "STACKED_AREA",
+                      "targetAxis": "Y1",
+                      "timeSeriesQuery": {
+                        "apiSource": "DEFAULT_CLOUD",
+                        "timeSeriesFilter": {
+                          "aggregation": {
+                            "alignmentPeriod": "${DASHBOARD_WINDOW_SECONDS}s",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "groupByFields": [
+                              "metric.label.status"
+                            ],
+                            "perSeriesAligner": "ALIGN_SUM"
+                          },
+                          "filter": "resource.type = \\"cloud_function\\" resource.labels.function_name = \\"${functionEmissionManagerCheckName}\\" metric.type = \\"cloudfunctions.googleapis.com/function/execution_count\\""
+                        }
+                      }
+                    }
+                  ],
+                  "timeshiftDuration": "0s",
+                  "yAxis": {
+                    "label": "y1Axis",
+                    "scale": "LINEAR"
+                  }
+                }
+              },
+              "width": 6,
+              "xPos": 6,
+              "yPos": 12
             }
           ]
         }
       }`,
   },
-  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck, functionTargetPriceChanged] },
+  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck, functionTargetPriceChanged, functionYRFCheck, functionEmissionManagerCheck] },
 );
 export const dashboardName = DASHBOARD_NAME;
