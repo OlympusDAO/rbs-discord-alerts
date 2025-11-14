@@ -10,7 +10,7 @@
         "execute:emissionmanagermarkets": "export $(cat .env | xargs) && ts-node src/handleEmissionManagerMarkets.ts",
         "codegen": "export $(cat .env | xargs) && graphql-codegen",
         "build": "tsc",
-        "lint:fix": "eslint --config ./.eslintrc.js --fix",
+        "lint": "eslint --config ./.eslintrc.js --fix",
         "deploy:dev": "pulumi up --stack dev",
         "deploy:prod": "pulumi up --stack prod"
     },
