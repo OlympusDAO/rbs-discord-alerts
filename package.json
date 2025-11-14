@@ -9,7 +9,7 @@
         "execute:yrfmarkets": "export $(cat .env | xargs) && ts-node src/handleYRFMarkets.ts",
         "execute:emissionmanagermarkets": "export $(cat .env | xargs) && ts-node src/handleEmissionManagerMarkets.ts",
         "execute:failedperiodictasks": "export $(cat .env | xargs) && ts-node src/handleFailedPeriodicTasks.ts",
-        "codegen": "export $(cat .env | xargs) && ts-node scripts/download-ponder-schema.ts && graphql-codegen",
+        "codegen": "export $(cat .env | xargs) && ts-node --esm scripts/download-ponder-schema.ts && graphql-codegen",
         "build": "tsc",
         "lint": "eslint --config ./.eslintrc.js --fix",
         "deploy:dev": "pulumi up --stack dev",
