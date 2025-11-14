@@ -19,7 +19,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix", "patch -p0 < src/graphql/bondMarket.patch"],
+        afterOneFileWrite: ["yarn lint", "patch -p0 < src/graphql/bondMarket.patch"],
       },
     },
     "src/graphql/rangeSnapshot.ts": {
@@ -37,7 +37,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
       },
     },
     "src/graphql/priceSnapshot.ts": {
@@ -55,7 +55,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
       },
     },
     "src/graphql/yrf.ts": {
@@ -73,7 +73,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
       },
     },
     "src/graphql/emissionManager.ts": {
@@ -91,7 +91,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
       },
     },
   },
