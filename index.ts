@@ -9,6 +9,7 @@ import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 import { performTargetPriceChangedCheck } from "./src/handleTargetPriceChangedEvents";
 import { performYRFMarketChecks } from "./src/handleYRFMarkets";
 import { performEmissionManagerMarketChecks } from "./src/handleEmissionManagerMarkets";
+import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -28,6 +29,7 @@ const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 const SECRET_GRAPHQL_API_KEY = "GRAPHQL_API_KEY";
+const SECRET_CONVERTIBLE_DEPOSITS_ENDPOINT = "CONVERTIBLE_DEPOSITS_ENDPOINT";
 
 const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
@@ -54,6 +56,7 @@ const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 
 const graphQlApiKey = pulumiConfig.requireSecret(SECRET_GRAPHQL_API_KEY);
+const convertibleDepositsEndpoint = pulumiConfig.requireSecret(SECRET_CONVERTIBLE_DEPOSITS_ENDPOINT);
 
 /**
  * Target Price Changed Events
@@ -75,7 +78,9 @@ const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunct
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-  graphQlApiKey,
+  {
+    GRAPHQL_API_KEY: graphQlApiKey,
+  },
   "* * * * *", // Every minute
 );
 
@@ -99,7 +104,9 @@ const [functionPriceEvents, functionPriceEventsName] = createFunction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-  graphQlApiKey,
+  {
+    GRAPHQL_API_KEY: graphQlApiKey,
+  },
   "* * * * *", // Every minute
 );
 
@@ -127,7 +134,9 @@ const [functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-  graphQlApiKey,
+  {
+    GRAPHQL_API_KEY: graphQlApiKey,
+  },
   "* * * * *", // Every minute
 );
 
@@ -154,7 +163,9 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-  graphQlApiKey,
+  {
+    GRAPHQL_API_KEY: graphQlApiKey,
+  },
   "* * * * *", // Every minute
 );
 
@@ -176,7 +187,9 @@ const [functionYRFCheck, functionYRFCheckName] = createFunction(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-  graphQlApiKey,
+  {
+    GRAPHQL_API_KEY: graphQlApiKey,
+  },
   "* * * * *", // Every minute
 );
 
@@ -198,8 +211,34 @@ const [functionEmissionManagerCheck, functionEmissionManagerCheckName] = createF
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
   },
-  graphQlApiKey,
+  {
+    GRAPHQL_API_KEY: graphQlApiKey,
+  },
   "* * * * *", // Every minute
+);
+
+/**
+ * Failed Periodic Tasks Checks
+ */
+const FUNCTION_FAILED_PERIODIC_TASKS_CHECK = "failed-periodic-tasks-check";
+const FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK = `${FUNCTION_FAILED_PERIODIC_TASKS_CHECK}-${pulumi.getStack()}`;
+
+const [functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] = createFunction(
+  FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performFailedPeriodicTasksChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertDAO);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  {
+    CONVERTIBLE_DEPOSITS_ENDPOINT: convertibleDepositsEndpoint,
+  },
+  "*/5 * * * *", // Every 5 minutes
 );
 
 /**
@@ -281,6 +320,16 @@ createAlertFunctionError(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmission
 ]);
 
 createAlertFunctionExecutions(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmissionManagerCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK, functionFailedPeriodicTasksCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK, functionFailedPeriodicTasksCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);

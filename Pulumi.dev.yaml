@@ -15,3 +15,5 @@ config:
     secure: AAABAO3uCMYPWTlhKAmJB2FbG+XVRx4hR+tV0qy8adbGZCwfON1vxjIb6s/c7hd43A==
   rbs-discord-alerts:notificationEmailDiscord:
     secure: AAABAP/mqrnMcj5oirqrLQoRpWt+e187ZQ0kmccxZnZjFcgDoumRZMUqOH4Du7qta1E6kXRC1C3mMfMCrQEXuwvddRQ20GrSf8r3sxOY8qrZNw==
+  rbs-discord-alerts:CONVERTIBLE_DEPOSITS_ENDPOINT:
+    secure: AAABAAtQ8aRuor7g0Krl4c8ySUhIX4JP6LfNUpA/tQEen1Yy+vDQqc7YD/C5s5pC57lAGw5Ge4sAJUpMZ0lW1qwKxLwkbWxa2MNwtAuYpjEjf+KEXfvmaIMqCg==
