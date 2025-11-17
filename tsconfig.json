@@ -17,16 +17,8 @@
     "files": [
         "index.ts",
     ],
-    "ts-node": {
-        "esm": true,
-        "compilerOptions": {
-            "module": "ESNext",
-            "moduleResolution": "node"
-        }
-    },
     "include": [
         "src/**/*.ts",
-        "pulumi/*.ts",
-        "scripts/**/*.ts"
+        "pulumi/*.ts"
     ]
 }
