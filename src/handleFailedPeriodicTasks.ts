@@ -1,16 +1,20 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
+import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import {
+  ClaimAllYieldFailedEventsSinceDocument,
+  type ClaimAllYieldFailedEventsSinceQuery,
+} from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { createGraphQLClient } from "./helpers/graphqlClient";
 import { shorten } from "./helpers/stringHelper";
-import { ClaimAllYieldFailedEventsSinceDocument, ClaimAllYieldFailedEventsSinceQuery } from "./graphql/convertibleDeposits";
 
 const FUNCTION_KEY = "failedPeriodicTasks";
 const LATEST_BLOCK = "latestBlock";
 
-type ClaimAllYieldFailedEvent = ClaimAllYieldFailedEventsSinceQuery["convertibleDepositFacilityClaimAllYieldFaileds"]["items"][number];
+type ClaimAllYieldFailedEvent =
+  ClaimAllYieldFailedEventsSinceQuery["convertibleDepositFacilityClaimAllYieldFaileds"]["items"][number];
 
 /**
  * Sends a Discord alert when a claim all yield failed event is detected
@@ -48,7 +52,7 @@ const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFa
       name: "Manual Resolution",
       value: `Call \`claimAllYield()\` on the facility contract to manually claim the yield.`,
       inline: false,
-    }
+    },
   ];
 
   sendAlert(webhookUrl, "", `⚠️ Claim All Yield Failed`, description, fields);
@@ -56,7 +60,7 @@ const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFa
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0");
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0", 10);
 
   if (latestBlock === 0) {
     console.info(`No latest block found, defaulting to 0 (process all events)`);

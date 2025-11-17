@@ -4,7 +4,7 @@ export function shorten(str: string) {
 }
 
 export const isBytesEqual = (a: Uint8Array, b: string): boolean => {
-  return a.toString().toLowerCase() == b.toLowerCase();
+  return a.toString().toLowerCase() === b.toLowerCase();
 };
 
 /**

@@ -1,14 +1,14 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
+import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "./constants";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
-import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
+import { type EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
+import { type Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { createGraphQLClient } from "./helpers/graphqlClient";
+import { getHeartAddress } from "./helpers/heart";
 import { castInt } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
-import { getHeartAddress } from "./helpers/heart";
 
 const FIELD_LATEST_BLOCK = "heartbeat.latestBlock";
 const FIELD_HEARTBEAT_DATE = "heartbeat.latestBeatDate";
@@ -27,7 +27,11 @@ const ALERT_THRESHOLD_SECONDS = 1 * 60 * 60; // 1 hour
  * @param alertWebhookUrls
  * @returns
  */
-const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, _mentionRoles: string[], alertWebhookUrls: string[]): Promise<void> => {
+const sendHeartbeatAlert = async (
+  firestoreDocument: DocumentReference,
+  _mentionRoles: string[],
+  alertWebhookUrls: string[],
+): Promise<void> => {
   const FUNC = `sendHeartbeatAlert`;
   console.info(`\n\n${FUNC}: Sending heartbeat alerts`);
   const firestoreDocumentObject = await firestoreDocument.get();
@@ -106,7 +110,11 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, _mention
  * @param webhookUrls
  * @returns
  */
-const checkHeartbeat = async (firestoreDocument: DocumentReference, mentionRoles: string[], webhookUrls: string[]): Promise<void> => {
+const checkHeartbeat = async (
+  firestoreDocument: DocumentReference,
+  mentionRoles: string[],
+  webhookUrls: string[],
+): Promise<void> => {
   const FUNC = "checkHeartbeat";
   console.info(`\n\n${FUNC}: Checking heartbeat timing`);
   const firestoreDocumentObject = await firestoreDocument.get();

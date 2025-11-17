@@ -1,50 +1,50 @@
 {
-    "name": "rbs-discord-alerts",
-    "main": "index.ts",
-    "scripts": {
-        "execute:events": "export $(cat .env | xargs) && ts-node src/handlePriceEvents.ts",
-        "execute:heartbeats": "export $(cat .env | xargs) && ts-node src/handleHeartbeat.ts",
-        "execute:snapshots": "export $(cat .env | xargs) && ts-node src/handleSnapshotCheck.ts",
-        "execute:targetPrice": "export $(cat .env | xargs) && ts-node src/handleTargetPriceChangedEvents.ts",
-        "execute:yrfmarkets": "export $(cat .env | xargs) && ts-node src/handleYRFMarkets.ts",
-        "execute:emissionmanagermarkets": "export $(cat .env | xargs) && ts-node src/handleEmissionManagerMarkets.ts",
-        "execute:failedperiodictasks": "export $(cat .env | xargs) && ts-node src/handleFailedPeriodicTasks.ts",
-        "execute:bondmarketcreationfailed": "export $(cat .env | xargs) && ts-node src/handleBondMarketCreationFailed.ts",
-        "execute:auctionparametersupdated": "export $(cat .env | xargs) && ts-node src/handleAuctionParametersUpdated.ts",
-        "codegen": "export $(cat .env | xargs) && graphql-codegen",
-        "build": "tsc",
-        "lint": "biome check --write .",
-        "lint:check": "biome check .",
-        "deploy:dev": "pulumi up --stack dev",
-        "deploy:prod": "pulumi up --stack prod"
-    },
-    "devDependencies": {
-        "@biomejs/biome": "^2.3.6",
-        "@graphql-codegen/cli": "^2.12.2",
-        "@graphql-codegen/typed-document-node": "^2.3.3",
-        "@graphql-codegen/typescript": "^2.7.3",
-        "@graphql-codegen/typescript-operations": "^2.5.3",
-        "@graphql-typed-document-node/core": "^3.1.1",
-        "@pulumi/gcp": "^6.67.0",
-        "@pulumi/pulumi": "^3.207.0",
-        "@types/jest": "^29.2.3",
-        "@types/node": "^20",
-        "jest": "^29.3.1",
-        "ts-jest": "^29.0.3",
-        "ts-node": "^10.9.1",
-        "typescript": "^5.3.3"
-    },
-    "dependencies": {
-        "@google-cloud/firestore": "^7.0.0",
-        "@urql/core": "^3.0.3",
-        "@urql/exchange-retry": "~1.0.0",
-        "cross-fetch": "^3.1.5",
-        "dedent-js": "^1.0.1",
-        "graphql": "^16.8.0",
-        "graphql-tag": "^2.12.6"
-    },
-    "resolutions": {
-        "@urql/core": "^3.0.3",
-        "google-protobuf": "3.21.4"
-    }
+  "name": "rbs-discord-alerts",
+  "main": "index.ts",
+  "scripts": {
+    "execute:events": "export $(cat .env | xargs) && ts-node src/handlePriceEvents.ts",
+    "execute:heartbeats": "export $(cat .env | xargs) && ts-node src/handleHeartbeat.ts",
+    "execute:snapshots": "export $(cat .env | xargs) && ts-node src/handleSnapshotCheck.ts",
+    "execute:targetPrice": "export $(cat .env | xargs) && ts-node src/handleTargetPriceChangedEvents.ts",
+    "execute:yrfmarkets": "export $(cat .env | xargs) && ts-node src/handleYRFMarkets.ts",
+    "execute:emissionmanagermarkets": "export $(cat .env | xargs) && ts-node src/handleEmissionManagerMarkets.ts",
+    "execute:failedperiodictasks": "export $(cat .env | xargs) && ts-node src/handleFailedPeriodicTasks.ts",
+    "execute:bondmarketcreationfailed": "export $(cat .env | xargs) && ts-node src/handleBondMarketCreationFailed.ts",
+    "execute:auctionparametersupdated": "export $(cat .env | xargs) && ts-node src/handleAuctionParametersUpdated.ts",
+    "codegen": "export $(cat .env | xargs) && graphql-codegen",
+    "build": "tsc",
+    "lint": "biome check --write .",
+    "lint:check": "biome check .",
+    "deploy:dev": "pulumi up --stack dev",
+    "deploy:prod": "pulumi up --stack prod"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.6",
+    "@graphql-codegen/cli": "^2.12.2",
+    "@graphql-codegen/typed-document-node": "^2.3.3",
+    "@graphql-codegen/typescript": "^2.7.3",
+    "@graphql-codegen/typescript-operations": "^2.5.3",
+    "@graphql-typed-document-node/core": "^3.1.1",
+    "@pulumi/gcp": "^6.67.0",
+    "@pulumi/pulumi": "^3.207.0",
+    "@types/jest": "^29.2.3",
+    "@types/node": "^20",
+    "jest": "^29.3.1",
+    "ts-jest": "^29.0.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^7.0.0",
+    "@urql/core": "^3.0.3",
+    "@urql/exchange-retry": "~1.0.0",
+    "cross-fetch": "^3.1.5",
+    "dedent-js": "^1.0.1",
+    "graphql": "^16.8.0",
+    "graphql-tag": "^2.12.6"
+  },
+  "resolutions": {
+    "@urql/core": "^3.0.3",
+    "google-protobuf": "3.21.4"
+  }
 }

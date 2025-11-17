@@ -1,17 +1,17 @@
 export const formatCurrency = (input: number | null | undefined, decimals = 2): string => {
-  if (input == null || typeof input == "undefined") return "N/A";
+  if (input == null || typeof input === "undefined") return "N/A";
 
   return `$${Number(input).toFixed(decimals)}`;
 };
 
 export const formatNumber = (input: number | null | undefined, decimals = 2): string => {
-  if (input == null || typeof input == "undefined") return "N/A";
+  if (input == null || typeof input === "undefined") return "N/A";
 
   return `${Number(input).toFixed(decimals)}`;
 };
 
 export const formatPercent = (input: number | null | undefined, decimals = 2): string => {
-  if (input == null || typeof input == "undefined") return "N/A";
+  if (input == null || typeof input === "undefined") return "N/A";
 
   return `${Number(input * 100).toFixed(decimals)}%`;
 };
@@ -28,7 +28,7 @@ export const formatPercent = (input: number | null | undefined, decimals = 2): s
  * @returns
  */
 export const numbersEqual = (one: number | null | undefined, two: number | null | undefined, decimals = 2): boolean => {
-  return formatNumber(one, decimals) == formatNumber(two, decimals);
+  return formatNumber(one, decimals) === formatNumber(two, decimals);
 };
 
 /**
@@ -36,7 +36,7 @@ export const numbersEqual = (one: number | null | undefined, two: number | null 
  * so we do a runtime check of the type and parse it as a float if needed.
  */
 export const castFloat = (input: number | string): number => {
-  if (typeof input == "string") return parseFloat(input);
+  if (typeof input === "string") return parseFloat(input);
 
   return input;
 };
@@ -58,7 +58,7 @@ export const castFloatNullable = (input: number | string | undefined | null): nu
  * so we do a runtime check of the type and parse it as an int if needed.
  */
 export const castInt = (input: number | string): number => {
-  if (typeof input == "string") return parseInt(input);
+  if (typeof input === "string") return parseInt(input, 10);
 
   return input;
 };

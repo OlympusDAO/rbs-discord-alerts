@@ -1,6 +1,13 @@
-import { CodegenConfig } from "@graphql-codegen/cli";
+import type { CodegenConfig } from "@graphql-codegen/cli";
 
-import { getBondsSubgraphUrl, getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl, getYRFSubgraphUrl, getEmissionManagerSubgraphUrl, getConvertibleDepositsSubgraphUrl } from "./src/constants";
+import {
+  getBondsSubgraphUrl,
+  getConvertibleDepositsSubgraphUrl,
+  getEmissionManagerSubgraphUrl,
+  getPriceSnapshotSubgraphUrl,
+  getRbsSubgraphUrl,
+  getYRFSubgraphUrl,
+} from "./src/constants";
 
 const config: CodegenConfig = {
   generates: {

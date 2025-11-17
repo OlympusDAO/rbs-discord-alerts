@@ -31,7 +31,8 @@ export const getBondsSubgraphUrl = (): string => {
   return BONDS_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
-const YRF_SUBGRAPH_URL = "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/BVcdoUHemeVF5qmbvgLvHqLKH2oNouwJBuZXBVwdyNLe";
+const YRF_SUBGRAPH_URL =
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/BVcdoUHemeVF5qmbvgLvHqLKH2oNouwJBuZXBVwdyNLe";
 
 export const getYRFSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
@@ -41,7 +42,8 @@ export const getYRFSubgraphUrl = (): string => {
   return YRF_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
-const EMISSION_MANAGER_SUBGRAPH_URL = "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7KwoppR1FTbHpz7VieAEFmyyPh9z2ZWUvYjSs5w3cTV8";
+const EMISSION_MANAGER_SUBGRAPH_URL =
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7KwoppR1FTbHpz7VieAEFmyyPh9z2ZWUvYjSs5w3cTV8";
 
 export const getEmissionManagerSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;

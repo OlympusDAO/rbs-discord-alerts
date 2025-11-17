@@ -1,9 +1,9 @@
-import { DocumentReference } from "@google-cloud/firestore";
+import type { DocumentReference } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "../constants";
-import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotAtBlockDocument } from "../graphql/rangeSnapshot";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import { castFloat, castFloatNullable, castInt } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
@@ -42,7 +42,7 @@ export const checkLowerWall = async (
   const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
   console.debug(`Fetching latest block for RangeSnapshot`);
   const latestBlockResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();
-  if (!latestBlockResults.data || latestBlockResults.data.rangeSnapshots.length == 0) {
+  if (!latestBlockResults.data || latestBlockResults.data.rangeSnapshots.length === 0) {
     throw new Error(
       `Did not receive results from latest RangeSnapshot GraphQL query. Error: ${latestBlockResults.error}`,
     );
@@ -74,7 +74,7 @@ export const checkLowerWall = async (
     );
   }
 
-  if (previousBlockResults.data.rangeSnapshots.length == 0) {
+  if (previousBlockResults.data.rangeSnapshots.length === 0) {
     console.warn(`RangeSnapshot GraphQL query with block ${historicalBlock} returned 0 records. Exiting.`);
     return;
   }

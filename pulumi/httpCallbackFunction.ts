@@ -1,6 +1,6 @@
 import * as gcp from "@pulumi/gcp";
-import { HttpCallback } from "@pulumi/gcp/cloudfunctions";
-import * as pulumi from "@pulumi/pulumi";
+import type { HttpCallback } from "@pulumi/gcp/cloudfunctions";
+import type * as pulumi from "@pulumi/pulumi";
 
 export const scheduleJob = (
   name: string,

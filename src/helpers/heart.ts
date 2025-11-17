@@ -38,4 +38,4 @@ export const getHeartAddress = (block: number): string => {
   }
 
   return address.toLowerCase();
-}
+};

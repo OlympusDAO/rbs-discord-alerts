@@ -1,24 +1,11 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
-
-import { getYRFSubgraphUrl, YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK } from "./constants";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
-import {
-  RepoMarket,
-  RepoMarketsCreatedSinceDocument,
-  RepoMarketDocument,
-} from "./graphql/yrf";
-import {
-  MarketClosedEvent,
-  MarketClosedEventsDocument,
-} from "./graphql/bondMarket";
-import { getBondsSubgraphUrl } from "./constants";
+import { type DocumentReference, Firestore } from "@google-cloud/firestore";
+import { getBondsSubgraphUrl, getYRFSubgraphUrl, YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK } from "./constants";
+import { type EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
+import { type MarketClosedEvent, MarketClosedEventsDocument } from "./graphql/bondMarket";
+import { type RepoMarket, RepoMarketDocument, RepoMarketsCreatedSinceDocument } from "./graphql/yrf";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import {
-  castFloat,
-  castInt,
-  formatNumber,
-} from "./helpers/numberHelper";
+import { createGraphQLClient } from "./helpers/graphqlClient";
+import { castFloat, castInt, formatNumber } from "./helpers/numberHelper";
 
 const FUNCTION_KEY = "yrfMarkets";
 const LATEST_BLOCK_CREATED = "latestBlockCreated";
@@ -69,13 +56,7 @@ const sendYRFMarketCreatedAlert = (
     },
   ];
 
-  sendAlert(
-    webhookUrl,
-    getRoleMentions(mentionRoles),
-    `🏛️ YRF Market Created`,
-    description,
-    fields
-  );
+  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ YRF Market Created`, description, fields);
 };
 
 /**
@@ -93,7 +74,7 @@ const sendYRFMarketClosedAlert = (
   marketEvent: MarketClosedEvent,
 ): void => {
   const marketId = marketEvent.market.marketId;
-  const timestamp = Number.parseInt(marketEvent.timestamp) * 1000; // Convert to milliseconds
+  const timestamp = Number.parseInt(marketEvent.timestamp, 10) * 1000; // Convert to milliseconds
 
   const tokenSymbol = repoMarket.contract.reserveToken.symbol;
 
@@ -114,27 +95,23 @@ const sendYRFMarketClosedAlert = (
     },
   ];
 
-  sendAlert(
-    webhookUrl,
-    getRoleMentions(mentionRoles),
-    `🏛️ YRF Market Closed`,
-    description,
-    fields
-  );
+  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ YRF Market Closed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference, key: string): Promise<number> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${key}`) || 0);
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${key}`) || 0, 10);
 
-  if (latestBlock == 0) {
-    console.info(`No latest block found for ${key}, defaulting to starting block ${YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK}`);
+  if (latestBlock === 0) {
+    console.info(
+      `No latest block found for ${key}, defaulting to starting block ${YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK}`,
+    );
     return YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK;
   }
 
   console.info(`Latest block for ${key} is ${latestBlock}`);
   return latestBlock;
-}
+};
 
 /**
  * Processes YRF market creation events and sends alerts
@@ -144,10 +121,7 @@ const getLatestBlock = async (firestoreDocument: DocumentReference, key: string)
  * @param webhookUrl
  * @returns
  */
-const processYRFMarketCreated = async (
-  firestoreDocument: DocumentReference,
-  webhookUrl: string,
-): Promise<void> => {
+const processYRFMarketCreated = async (firestoreDocument: DocumentReference, webhookUrl: string): Promise<void> => {
   console.info(`\n\n⏰ Processing YRF Market Created Events`);
 
   // Get the latest block
@@ -205,10 +179,7 @@ const processYRFMarketCreated = async (
  * @param webhookUrl
  * @returns
  */
-const processYRFMarketsClosed = async (
-  firestoreDocument: DocumentReference,
-  webhookUrl: string,
-): Promise<void> => {
+const processYRFMarketsClosed = async (firestoreDocument: DocumentReference, webhookUrl: string): Promise<void> => {
   console.info(`\n\n⏰ Processing YRF Market Closed Events`);
 
   // Get the latest block
@@ -223,7 +194,9 @@ const processYRFMarketsClosed = async (
     .toPromise();
 
   if (!marketsClosedResults.data) {
-    throw new Error(`Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`);
+    throw new Error(
+      `Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`,
+    );
   }
 
   const marketClosedEvents: MarketClosedEvent[] = marketsClosedResults.data.marketClosedEvents;
@@ -248,7 +221,9 @@ const processYRFMarketsClosed = async (
       .toPromise();
 
     if (!yrfResults.data) {
-      throw new Error(`Did not receive results from YRF GraphQL query for market ${marketId}. Error: ${yrfResults.error}`);
+      throw new Error(
+        `Did not receive results from YRF GraphQL query for market ${marketId}. Error: ${yrfResults.error}`,
+      );
     }
 
     const repoMarkets: RepoMarket[] = yrfResults.data.repoMarkets;
@@ -295,9 +270,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performYRFMarketChecks(
-    "rbs-discord-alerts-dev",
-    "default",
-    process.env.WEBHOOK_URL
-  );
+  performYRFMarketChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
 }

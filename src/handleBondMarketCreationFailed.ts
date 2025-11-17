@@ -1,17 +1,21 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
+import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
+import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import {
+  BondMarketCreationFailedSinceDocument,
+  type BondMarketCreationFailedSinceQuery,
+} from "./graphql/convertibleDeposits";
+import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
-import { getEtherscanTransactionUrl, getEtherscanAddressUrl, ChainId } from "./helpers/contractHelper";
+import { castFloat, formatNumber } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
-import { formatNumber, castFloat } from "./helpers/numberHelper";
-import { BondMarketCreationFailedSinceDocument, BondMarketCreationFailedSinceQuery } from "./graphql/convertibleDeposits";
 
 const FUNCTION_KEY = "bondMarketCreationFailed";
 const LATEST_BLOCK = "latestBlock";
 
-type BondMarketCreationFailedEvent = BondMarketCreationFailedSinceQuery["emissionManagerBondMarketCreationFaileds"]["items"][number];
+type BondMarketCreationFailedEvent =
+  BondMarketCreationFailedSinceQuery["emissionManagerBondMarketCreationFaileds"]["items"][number];
 
 /**
  * Sends a Discord alert when a bond market creation failed event is detected
@@ -57,12 +61,18 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
     },
   ];
 
-  sendAlert(webhookUrl, "", `⚠️ The EmissionManager was unable to create a bond market for the under-selling of OHM.`, description, fields);
+  sendAlert(
+    webhookUrl,
+    "",
+    `⚠️ The EmissionManager was unable to create a bond market for the under-selling of OHM.`,
+    description,
+    fields,
+  );
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0");
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0", 10);
 
   if (latestBlock === 0) {
     console.info(`No latest block found, defaulting to 0 (process all events)`);

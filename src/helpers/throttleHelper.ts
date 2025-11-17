@@ -1,4 +1,4 @@
-import { DocumentReference } from "@google-cloud/firestore";
+import type { DocumentReference } from "@google-cloud/firestore";
 
 const ELAPSED_THRESHOLD_SECONDS = 5 * 60; // 5 minutes
 const KEY_LAST_ALERT = "lastAlertDate";
@@ -17,7 +17,7 @@ export const getShouldThrottle = async (
   }
 
   const lastAlertDate = new Date(lastAlertDateValue);
-  const elapsedSeconds = (new Date().getTime() - lastAlertDate.getTime()) / 1000;
+  const elapsedSeconds = (Date.now() - lastAlertDate.getTime()) / 1000;
 
   console.info(`
     Last alert date: ${lastAlertDate}

@@ -1,10 +1,5 @@
 query EmissionManagerMarketsCreatedSince($latestBlock: BigInt!) {
-  saleCreateds(
-    orderBy: blockNumber,
-    orderDirection: desc,
-    first: 1000,
-    where: { blockNumber_gt: $latestBlock }
-  ) {
+  saleCreateds(orderBy: blockNumber, orderDirection: desc, first: 1000, where: { blockNumber_gt: $latestBlock }) {
     id
     contract {
       id
@@ -51,9 +46,7 @@ query EmissionManagerMarketsCreatedSince($latestBlock: BigInt!) {
 }
 
 query EmissionManagerMarket($marketId: BigInt!) {
-  saleCreateds(
-    where: { marketId: $marketId }
-  ) {
+  saleCreateds(where: { marketId: $marketId }) {
     id
     contract {
       id

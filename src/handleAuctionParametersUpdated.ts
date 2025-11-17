@@ -1,15 +1,15 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
+import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
-import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { shorten } from "./helpers/stringHelper";
-import { castFloat, castInt } from "./helpers/numberHelper";
+import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import {
   AuctionParametersUpdatedSinceDocument,
-  AuctionParametersUpdatedSinceQuery,
+  type AuctionParametersUpdatedSinceQuery,
 } from "./graphql/convertibleDeposits";
+import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { createGraphQLClient } from "./helpers/graphqlClient";
+import { castFloat } from "./helpers/numberHelper";
+import { shorten } from "./helpers/stringHelper";
 
 const FUNCTION_KEY = "auctionParametersUpdated";
 const LATEST_BLOCK = "latestBlock";
@@ -27,7 +27,6 @@ const FRONTEND_URL = "https://deposits.olympusdao.finance";
  */
 const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionParametersUpdatedEvent): void => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
-  const blockNumber = Number(event.block);
   const txHash = event.txHash;
   const target = castFloat(event.targetDecimal);
   const minPrice = castFloat(event.minPriceDecimal);
@@ -80,7 +79,7 @@ const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionPar
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0");
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0", 10);
 
   if (latestBlock === 0) {
     console.info(`No latest block found, defaulting to 0 (process all events)`);
@@ -176,4 +175,3 @@ if (require.main === module) {
 
   performAuctionParametersUpdatedChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
 }
-

@@ -3,15 +3,15 @@ import * as pulumi from "@pulumi/pulumi";
 
 import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
 import { createFunction } from "./pulumi/httpCallbackFunction";
+import { performAuctionParametersUpdatedChecks } from "./src/handleAuctionParametersUpdated";
+import { performBondMarketCreationFailedChecks } from "./src/handleBondMarketCreationFailed";
+import { performEmissionManagerMarketChecks } from "./src/handleEmissionManagerMarkets";
+import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
 import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
 import { performSnapshotChecks } from "./src/handleSnapshotCheck";
 import { performTargetPriceChangedCheck } from "./src/handleTargetPriceChangedEvents";
 import { performYRFMarketChecks } from "./src/handleYRFMarkets";
-import { performEmissionManagerMarketChecks } from "./src/handleEmissionManagerMarkets";
-import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
-import { performBondMarketCreationFailedChecks } from "./src/handleBondMarketCreationFailed";
-import { performAuctionParametersUpdatedChecks } from "./src/handleAuctionParametersUpdated";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -71,7 +71,7 @@ const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunct
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
     await performTargetPriceChangedCheck(datastore.documentId.get(), datastore.collection.get(), [
       webhookAlertCommunity,
@@ -97,11 +97,9 @@ const [functionPriceEvents, functionPriceEventsName] = createFunction(
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), [
-      webhookAlertCommunity,
-    ]);
+    await performEventChecks(datastore.documentId.get(), datastore.collection.get(), [webhookAlertCommunity]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
@@ -123,7 +121,7 @@ const [functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
     await performSnapshotChecks(
       datastore.documentId.get(),
@@ -153,13 +151,13 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
     await performHeartbeatChecks(
       datastore.documentId.get(),
       datastore.collection.get(),
       [pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
-      [webhookAlertCommunity]
+      [webhookAlertCommunity],
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -182,7 +180,7 @@ const [functionYRFCheck, functionYRFCheckName] = createFunction(
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
     await performYRFMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
@@ -206,9 +204,13 @@ const [functionEmissionManagerCheck, functionEmissionManagerCheckName] = createF
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performEmissionManagerMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    await performEmissionManagerMarketChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      webhookAlertCommunity,
+    );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
@@ -225,12 +227,12 @@ const [functionEmissionManagerCheck, functionEmissionManagerCheckName] = createF
 const FUNCTION_FAILED_PERIODIC_TASKS_CHECK = "failed-periodic-tasks-check";
 const FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK = `${FUNCTION_FAILED_PERIODIC_TASKS_CHECK}-${pulumi.getStack()}`;
 
-const [functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] = createFunction(
+const [_functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] = createFunction(
   FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
     await performFailedPeriodicTasksChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertDAO);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
@@ -249,14 +251,18 @@ const [functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] =
 const FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK = "bond-market-creation-failed-check";
 const FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK = `${FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK}-${pulumi.getStack()}`;
 
-const [functionBondMarketCreationFailedCheck, functionBondMarketCreationFailedCheckName] = createFunction(
+const [_functionBondMarketCreationFailedCheck, functionBondMarketCreationFailedCheckName] = createFunction(
   FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performBondMarketCreationFailedChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertDAO);
+    await performBondMarketCreationFailedChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      webhookAlertDAO,
+    );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (<any>res).send("OK").end();
@@ -273,12 +279,12 @@ const [functionBondMarketCreationFailedCheck, functionBondMarketCreationFailedCh
 const FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK = "auction-parameters-updated-check";
 const FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK = `${FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK}-${pulumi.getStack()}`;
 
-const [functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedCheckName] = createFunction(
+const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedCheckName] = createFunction(
   FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
   DEFAULT_RUNTIME,
-  async (req, res) => {
+  async (_req, res) => {
     console.log("Received callback. Initiating handler.");
     await performAuctionParametersUpdatedChecks(
       datastore.documentId.get(),
@@ -388,25 +394,33 @@ createAlertFunctionExecutions(FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK, functi
   notificationDiscordId,
 ]);
 
-createAlertFunctionError(FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK, functionBondMarketCreationFailedCheckName, 60, [
-  notificationEmailId,
-  notificationDiscordId,
-]);
+createAlertFunctionError(
+  FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK,
+  functionBondMarketCreationFailedCheckName,
+  60,
+  [notificationEmailId, notificationDiscordId],
+);
 
-createAlertFunctionExecutions(FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK, functionBondMarketCreationFailedCheckName, 60, [
-  notificationEmailId,
-  notificationDiscordId,
-]);
+createAlertFunctionExecutions(
+  FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK,
+  functionBondMarketCreationFailedCheckName,
+  60,
+  [notificationEmailId, notificationDiscordId],
+);
 
-createAlertFunctionError(FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK, functionAuctionParametersUpdatedCheckName, 60, [
-  notificationEmailId,
-  notificationDiscordId,
-]);
+createAlertFunctionError(
+  FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK,
+  functionAuctionParametersUpdatedCheckName,
+  60,
+  [notificationEmailId, notificationDiscordId],
+);
 
-createAlertFunctionExecutions(FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK, functionAuctionParametersUpdatedCheckName, 60, [
-  notificationEmailId,
-  notificationDiscordId,
-]);
+createAlertFunctionExecutions(
+  FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK,
+  functionAuctionParametersUpdatedCheckName,
+  60,
+  [notificationEmailId, notificationDiscordId],
+);
 
 /**
  * Create a dashboard for monitoring activity
@@ -758,6 +772,15 @@ new gcp.monitoring.Dashboard(
         }
       }`,
   },
-  { dependsOn: [functionPriceEvents, functionSnapshotCheck, functionHeartbeatCheck, functionTargetPriceChanged, functionYRFCheck, functionEmissionManagerCheck] },
+  {
+    dependsOn: [
+      functionPriceEvents,
+      functionSnapshotCheck,
+      functionHeartbeatCheck,
+      functionTargetPriceChanged,
+      functionYRFCheck,
+      functionEmissionManagerCheck,
+    ],
+  },
 );
 export const dashboardName = DASHBOARD_NAME;

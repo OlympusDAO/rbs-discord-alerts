@@ -5,55 +5,55 @@ query ClaimAllYieldFailedEventsSince($latestBlock: BigInt!, $chainId: Int!) {
     where: { block_gt: $latestBlock, chainId: $chainId }
   ) {
     items {
-        chainId
-        block
-        logIndex
-        txHash
-        timestamp
-        facility
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      facility
     }
   }
 }
 
 query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
-    convertibleDepositAuctioneerAuctionParametersUpdateds(
-        orderBy: "block"
-        orderDirection: "asc"
-        where: { block_gt: $latestBlock, chainId: $chainId }
-    ) {
-        items {
-            chainId
-            block
-            logIndex
-            txHash
-            timestamp
-            auctioneer
-            depositAsset
-            target
-            targetDecimal
-            tickSize
-            tickSizeDecimal
-            minPrice
-            minPriceDecimal
-        }
+  convertibleDepositAuctioneerAuctionParametersUpdateds(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      auctioneer
+      depositAsset
+      target
+      targetDecimal
+      tickSize
+      tickSizeDecimal
+      minPrice
+      minPriceDecimal
     }
+  }
 }
 
 query BondMarketCreationFailedSince($latestBlock: BigInt!, $chainId: Int!) {
-    emissionManagerBondMarketCreationFaileds(
-        orderBy: "block"
-        orderDirection: "asc"
-        where: { block_gt: $latestBlock, chainId: $chainId }
-    ) {
-        items {
-            chainId
-            block
-            logIndex
-            txHash
-            timestamp
-            emissionManager
-            saleAmount
-            saleAmountDecimal
-        }
+  emissionManagerBondMarketCreationFaileds(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      emissionManager
+      saleAmount
+      saleAmountDecimal
     }
+  }
 }

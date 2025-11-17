@@ -1,10 +1,10 @@
-import { DocumentReference } from "@google-cloud/firestore";
+import type { DocumentReference } from "@google-cloud/firestore";
 
 import { getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl } from "../constants";
-import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import { castFloat, castFloatNullable, formatPercent } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
@@ -67,7 +67,7 @@ export const checkPrice = async (
   // Grab latest RangeSnapshot
   const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
   const rangeSnapshotResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();
-  if (!rangeSnapshotResults.data || rangeSnapshotResults.data.rangeSnapshots.length == 0) {
+  if (!rangeSnapshotResults.data || rangeSnapshotResults.data.rangeSnapshots.length === 0) {
     throw new Error(
       `Did not receive results from latest RangeSnapshot GraphQL query. Error: ${rangeSnapshotResults.error}`,
     );
@@ -86,7 +86,7 @@ export const checkPrice = async (
   // Grab latest price from the protocol-metrics PriceSnapshot
   const priceSnapshotClient = createGraphQLClient(getPriceSnapshotSubgraphUrl());
   const priceSnapshotResults = await priceSnapshotClient.query(LatestPriceSnapshotDocument, {}).toPromise();
-  if (!priceSnapshotResults.data || priceSnapshotResults.data.priceSnapshots.length == 0) {
+  if (!priceSnapshotResults.data || priceSnapshotResults.data.priceSnapshots.length === 0) {
     throw new Error(
       `Did not receive results from latest PriceSnapshot GraphQL query. Error: ${priceSnapshotResults.error}`,
     );
