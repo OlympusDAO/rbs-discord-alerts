@@ -10,6 +10,7 @@ import { performTargetPriceChangedCheck } from "./src/handleTargetPriceChangedEv
 import { performYRFMarketChecks } from "./src/handleYRFMarkets";
 import { performEmissionManagerMarketChecks } from "./src/handleEmissionManagerMarkets";
 import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
+import { performBondMarketCreationFailedChecks } from "./src/handleBondMarketCreationFailed";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -242,6 +243,30 @@ const [functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] =
 );
 
 /**
+ * Bond Market Creation Failed Checks
+ */
+const FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK = "bond-market-creation-failed-check";
+const FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK = `${FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK}-${pulumi.getStack()}`;
+
+const [functionBondMarketCreationFailedCheck, functionBondMarketCreationFailedCheckName] = createFunction(
+  FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performBondMarketCreationFailedChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertDAO);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  {
+    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+  },
+  "*/5 * * * *", // Every 5 minutes
+);
+
+/**
  * Create Alert Policies
  */
 // Email notification channel
@@ -330,6 +355,16 @@ createAlertFunctionError(FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK, functionFai
 ]);
 
 createAlertFunctionExecutions(FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK, functionFailedPeriodicTasksCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK, functionBondMarketCreationFailedCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK, functionBondMarketCreationFailedCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
