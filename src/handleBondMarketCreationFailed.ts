@@ -3,7 +3,7 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
-import { getEtherscanTransactionUrl, getEtherscanAddressUrl } from "./helpers/contractHelper";
+import { getEtherscanTransactionUrl, getEtherscanAddressUrl, ChainId } from "./helpers/contractHelper";
 import { shorten } from "./helpers/stringHelper";
 import { formatNumber, castFloat } from "./helpers/numberHelper";
 import { BondMarketCreationFailedSinceDocument, BondMarketCreationFailedSinceQuery } from "./graphql/convertibleDeposits";
@@ -30,7 +30,7 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
   const fields: EmbedField[] = [
     {
       name: "Emission Manager Address",
-      value: `[${shorten(event.emissionManager)}](${getEtherscanAddressUrl(event.emissionManager, "mainnet")})`,
+      value: `[${shorten(event.emissionManager)}](${getEtherscanAddressUrl(event.emissionManager, ChainId.MAINNET)})`,
     },
     {
       name: "Sale Amount",
@@ -47,7 +47,7 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
     },
     {
       name: "Transaction",
-      value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, "Mainnet")})`,
+      value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, ChainId.MAINNET)})`,
       inline: true,
     },
     {

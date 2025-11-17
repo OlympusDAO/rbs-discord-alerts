@@ -3,7 +3,7 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
-import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { shorten } from "./helpers/stringHelper";
 import { ClaimAllYieldFailedEventsSinceDocument, ClaimAllYieldFailedEventsSinceQuery } from "./graphql/convertibleDeposits";
 
@@ -28,7 +28,7 @@ const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFa
   const fields: EmbedField[] = [
     {
       name: "Facility Address",
-      value: `[${shorten(event.facility)}](${getEtherscanAddressUrl(event.facility, "mainnet")})`,
+      value: `[${shorten(event.facility)}](${getEtherscanAddressUrl(event.facility, ChainId.MAINNET)})`,
     },
     {
       name: "Date",
@@ -41,7 +41,7 @@ const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFa
     },
     {
       name: "Transaction",
-      value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, "Mainnet")})`,
+      value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, ChainId.MAINNET)})`,
       inline: true,
     },
     {

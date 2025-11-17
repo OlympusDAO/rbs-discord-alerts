@@ -24,7 +24,7 @@ import {
   RangeSnapshotSinceBlockDocument,
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
-import { getEtherscanTransactionUrl } from "../helpers/contractHelper";
+import { ChainId, getEtherscanTransactionUrl } from "../helpers/contractHelper";
 import {
   castFloat,
   castFloatNullable,
@@ -694,7 +694,7 @@ export const checkBondMarkets = async (
           name: "Market ID",
           value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
         },
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}` },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);
@@ -707,7 +707,7 @@ export const checkBondMarkets = async (
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionDown Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
         // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+          { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}` },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);
@@ -720,7 +720,7 @@ export const checkBondMarkets = async (
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallUp Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
         // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}` },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);
@@ -733,7 +733,7 @@ export const checkBondMarkets = async (
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallDown Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
         // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}` },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);

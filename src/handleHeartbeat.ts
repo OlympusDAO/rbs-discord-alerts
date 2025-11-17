@@ -4,7 +4,7 @@ import { getRbsSubgraphUrl } from "./constants";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
 import { Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
-import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castInt } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
@@ -70,7 +70,7 @@ const sendHeartbeatAlert = async (firestoreDocument: DocumentReference, _mention
         name: "Transaction",
         value: `[${shorten(beatEvent.transaction.toString())}](${getEtherscanTransactionUrl(
           beatEvent.transaction.toString(),
-          beatEvent.blockchain,
+          ChainId.MAINNET,
         )})`,
         inline: true,
       },
@@ -153,7 +153,7 @@ const checkHeartbeat = async (firestoreDocument: DocumentReference, mentionRoles
     },
     {
       name: "Contract",
-      value: getEtherscanAddressUrl(heartAddress, "mainnet"),
+      value: getEtherscanAddressUrl(heartAddress, ChainId.MAINNET),
     },
   ];
 

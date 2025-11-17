@@ -2,8 +2,6 @@ import { Firestore } from "@google-cloud/firestore";
 
 import { checkBondMarkets } from "./snapshotCheck/checkBondMarkets";
 import { checkCapacityDepletion } from "./snapshotCheck/checkCapacity";
-import { checkLowerWall } from "./snapshotCheck/checkLowerWall";
-import { checkPrice } from "./snapshotCheck/checkPrice";
 
 /**
  * Checks regular snapshots of the Range contracts to determine if there are any problems.

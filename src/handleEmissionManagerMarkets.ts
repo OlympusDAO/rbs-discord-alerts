@@ -15,7 +15,7 @@ import {
   MarketClosedEventsDocument,
 } from "./graphql/bondMarket";
 import { getBondsSubgraphUrl } from "./constants";
-import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import {
   castFloat,
   castInt,
@@ -63,7 +63,7 @@ const sendEmissionManagerMarketCreatedAlert = (
     },
     {
       name: "Transaction",
-      value: `${getEtherscanTransactionUrl(transaction, "Mainnet")}`,
+      value: `${getEtherscanTransactionUrl(transaction, ChainId.MAINNET)}`,
     },
   ];
 
