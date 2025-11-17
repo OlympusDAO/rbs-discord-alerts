@@ -408,66 +408,6 @@ createAlertFunctionExecutions(FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK, f
   notificationDiscordId,
 ]);
 
-// One alert for all functions (as it can't be filtered further)
-const ALERT_POLICY_FIRESTORE_QUERIES = `${PROJECT_NAME_STACK}-firestore-queries`;
-const ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS = 5 * 60;
-const FIRESTORE_WRITE_PER_WINDOW = 15;
-const FIRESTORE_READ_PER_WINDOW = 100;
-
-new gcp.monitoring.AlertPolicy(ALERT_POLICY_FIRESTORE_QUERIES, {
-  displayName: ALERT_POLICY_FIRESTORE_QUERIES,
-  conditions: [
-    {
-      displayName: `Firestore Read Activity > ${FIRESTORE_READ_PER_WINDOW} / ${
-        ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60
-      } minutes`,
-      conditionThreshold: {
-        filter: pulumi.interpolate`resource.type = "firestore_instance" AND resource.labels.project_id = "${gcp.config.project}" AND metric.type = "firestore.googleapis.com/document/read_count"`,
-        aggregations: [
-          {
-            alignmentPeriod: `${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS}s`,
-            crossSeriesReducer: "REDUCE_NONE",
-            perSeriesAligner: "ALIGN_SUM",
-          },
-        ],
-        comparison: "COMPARISON_GT",
-        duration: "0s",
-        trigger: {
-          count: 1,
-        },
-        thresholdValue: FIRESTORE_READ_PER_WINDOW, // > FIRESTORE_READ_PER_WINDOW per 5 minutes (higher than expected) will trigger an alert
-      },
-    },
-    {
-      displayName: `Firestore Write Activity > ${FIRESTORE_WRITE_PER_WINDOW} / ${
-        ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS / 60
-      } minutes`,
-      conditionThreshold: {
-        filter: pulumi.interpolate`resource.type = "firestore_instance" AND resource.labels.project_id = "${gcp.config.project}" AND metric.type = "firestore.googleapis.com/document/write_count"`,
-        aggregations: [
-          {
-            alignmentPeriod: `${ALERT_POLICY_FIRESTORE_QUERIES_WINDOW_SECONDS}s`,
-            crossSeriesReducer: "REDUCE_NONE",
-            perSeriesAligner: "ALIGN_SUM",
-          },
-        ],
-        comparison: "COMPARISON_GT",
-        duration: "0s",
-        trigger: {
-          count: 1,
-        },
-        thresholdValue: FIRESTORE_WRITE_PER_WINDOW, // > FIRESTORE_WRITE_PER_WINDOW per 5 minutes (higher than expected) will trigger an alert
-      },
-    },
-  ],
-  alertStrategy: {
-    autoClose: "604800s",
-  },
-  combiner: "OR",
-  enabled: true,
-  notificationChannels: [notificationEmailId, notificationDiscordId],
-});
-
 /**
  * Create a dashboard for monitoring activity
  */
