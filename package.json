@@ -52,6 +52,7 @@
         "graphql-tag": "^2.12.6"
     },
     "resolutions": {
-        "@urql/core": "^3.0.3"
+        "@urql/core": "^3.0.3",
+        "google-protobuf": "3.21.4"
     }
 }
