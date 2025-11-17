@@ -96,6 +96,7 @@ export const performFailedPeriodicTasksChecks = async (
   const queryResults = await client
     .query(ClaimAllYieldFailedEventsSinceDocument, {
       latestBlock: latestBlock.toString(),
+      chainId: 1,
     })
     .toPromise();
 

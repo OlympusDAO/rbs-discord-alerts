@@ -1,8 +1,8 @@
-query ClaimAllYieldFailedEventsSince($latestBlock: BigInt!) {
+query ClaimAllYieldFailedEventsSince($latestBlock: BigInt!, $chainId: Int!) {
   convertibleDepositFacilityClaimAllYieldFaileds(
     orderBy: "block"
     orderDirection: "asc"
-    where: { block_gt: $latestBlock }
+    where: { block_gt: $latestBlock, chainId: $chainId }
   ) {
     items {
         chainId
@@ -15,11 +15,11 @@ query ClaimAllYieldFailedEventsSince($latestBlock: BigInt!) {
   }
 }
 
-query AuctionParametersUpdatedSince($latestBlock: BigInt!) {
+query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
     convertibleDepositAuctioneerAuctionParametersUpdateds(
         orderBy: "block"
         orderDirection: "asc"
-        where: { block_gt: $latestBlock }
+        where: { block_gt: $latestBlock, chainId: $chainId }
     ) {
         items {
             chainId
@@ -39,11 +39,11 @@ query AuctionParametersUpdatedSince($latestBlock: BigInt!) {
     }
 }
 
-query BondMarketCreationFailedSince($latestBlock: BigInt!) {
+query BondMarketCreationFailedSince($latestBlock: BigInt!, $chainId: Int!) {
     emissionManagerBondMarketCreationFaileds(
         orderBy: "block"
         orderDirection: "asc"
-        where: { block_gt: $latestBlock }
+        where: { block_gt: $latestBlock, chainId: $chainId }
     ) {
         items {
             chainId

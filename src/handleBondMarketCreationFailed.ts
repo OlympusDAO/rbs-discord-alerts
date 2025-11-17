@@ -102,6 +102,7 @@ export const performBondMarketCreationFailedChecks = async (
   const queryResults = await client
     .query(BondMarketCreationFailedSinceDocument, {
       latestBlock: latestBlock.toString(),
+      chainId: 1,
     })
     .toPromise();
 

@@ -10186,6 +10186,7 @@ export type RedemptionPage = {
 
 export type ClaimAllYieldFailedEventsSinceQueryVariables = Exact<{
   latestBlock: Scalars["BigInt"];
+  chainId: Scalars["Int"];
 }>;
 
 export type ClaimAllYieldFailedEventsSinceQuery = {
@@ -10206,6 +10207,7 @@ export type ClaimAllYieldFailedEventsSinceQuery = {
 
 export type AuctionParametersUpdatedSinceQueryVariables = Exact<{
   latestBlock: Scalars["BigInt"];
+  chainId: Scalars["Int"];
 }>;
 
 export type AuctionParametersUpdatedSinceQuery = {
@@ -10233,6 +10235,7 @@ export type AuctionParametersUpdatedSinceQuery = {
 
 export type BondMarketCreationFailedSinceQueryVariables = Exact<{
   latestBlock: Scalars["BigInt"];
+  chainId: Scalars["Int"];
 }>;
 
 export type BondMarketCreationFailedSinceQuery = {
@@ -10266,6 +10269,11 @@ export const ClaimAllYieldFailedEventsSinceDocument = {
           variable: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
           type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Int" } } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -10294,6 +10302,11 @@ export const ClaimAllYieldFailedEventsSinceDocument = {
                       kind: "ObjectField",
                       name: { kind: "Name", value: "block_gt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "chainId" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
                     },
                   ],
                 },
@@ -10338,6 +10351,11 @@ export const AuctionParametersUpdatedSinceDocument = {
           variable: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
           type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Int" } } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -10366,6 +10384,11 @@ export const AuctionParametersUpdatedSinceDocument = {
                       kind: "ObjectField",
                       name: { kind: "Name", value: "block_gt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "chainId" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
                     },
                   ],
                 },
@@ -10417,6 +10440,11 @@ export const BondMarketCreationFailedSinceDocument = {
           variable: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
           type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Int" } } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -10445,6 +10473,11 @@ export const BondMarketCreationFailedSinceDocument = {
                       kind: "ObjectField",
                       name: { kind: "Name", value: "block_gt" },
                       value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "chainId" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
                     },
                   ],
                 },
