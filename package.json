@@ -10,6 +10,7 @@
         "execute:emissionmanagermarkets": "export $(cat .env | xargs) && ts-node src/handleEmissionManagerMarkets.ts",
         "execute:failedperiodictasks": "export $(cat .env | xargs) && ts-node src/handleFailedPeriodicTasks.ts",
         "execute:bondmarketcreationfailed": "export $(cat .env | xargs) && ts-node src/handleBondMarketCreationFailed.ts",
+        "execute:auctionparametersupdated": "export $(cat .env | xargs) && ts-node src/handleAuctionParametersUpdated.ts",
         "codegen": "export $(cat .env | xargs) && graphql-codegen",
         "build": "tsc",
         "lint": "eslint --config ./.eslintrc.js --fix",

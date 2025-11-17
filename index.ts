@@ -11,6 +11,7 @@ import { performYRFMarketChecks } from "./src/handleYRFMarkets";
 import { performEmissionManagerMarketChecks } from "./src/handleEmissionManagerMarkets";
 import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
 import { performBondMarketCreationFailedChecks } from "./src/handleBondMarketCreationFailed";
+import { performAuctionParametersUpdatedChecks } from "./src/handleAuctionParametersUpdated";
 
 const pulumiConfig = new pulumi.Config();
 
@@ -267,6 +268,34 @@ const [functionBondMarketCreationFailedCheck, functionBondMarketCreationFailedCh
 );
 
 /**
+ * Auction Parameters Updated Checks
+ */
+const FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK = "auction-parameters-updated-check";
+const FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK = `${FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK}-${pulumi.getStack()}`;
+
+const [functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedCheckName] = createFunction(
+  FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performAuctionParametersUpdatedChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      webhookAlertCommunity,
+    );
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  {
+    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+  },
+  "* * * * *", // Every minute
+);
+
+/**
  * Create Alert Policies
  */
 // Email notification channel
@@ -365,6 +394,16 @@ createAlertFunctionError(FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK, funct
 ]);
 
 createAlertFunctionExecutions(FUNCTION_BOND_MARKET_CREATION_FAILED_CHECK_STACK, functionBondMarketCreationFailedCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK, functionAuctionParametersUpdatedCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_AUCTION_PARAMETERS_UPDATED_CHECK_STACK, functionAuctionParametersUpdatedCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
