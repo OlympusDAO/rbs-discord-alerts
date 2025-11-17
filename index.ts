@@ -29,7 +29,7 @@ const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 const SECRET_GRAPHQL_API_KEY = "GRAPHQL_API_KEY";
-const SECRET_CONVERTIBLE_DEPOSITS_ENDPOINT = "CONVERTIBLE_DEPOSITS_ENDPOINT";
+const SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL = "CONVERTIBLE_DEPOSITS_SUBGRAPH_URL";
 
 const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
@@ -56,7 +56,7 @@ const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 
 const graphQlApiKey = pulumiConfig.requireSecret(SECRET_GRAPHQL_API_KEY);
-const convertibleDepositsEndpoint = pulumiConfig.requireSecret(SECRET_CONVERTIBLE_DEPOSITS_ENDPOINT);
+const convertibleDepositsSubgraphUrl = pulumiConfig.requireSecret(SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL);
 
 /**
  * Target Price Changed Events
@@ -236,7 +236,7 @@ const [functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] =
     (<any>res).send("OK").end();
   },
   {
-    CONVERTIBLE_DEPOSITS_ENDPOINT: convertibleDepositsEndpoint,
+    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
   },
   "*/5 * * * *", // Every 5 minutes
 );

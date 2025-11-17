@@ -1,6 +1,6 @@
 import { CodegenConfig } from "@graphql-codegen/cli";
 
-import { getBondsSubgraphUrl, getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl, getYRFSubgraphUrl, getEmissionManagerSubgraphUrl } from "./src/constants";
+import { getBondsSubgraphUrl, getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl, getYRFSubgraphUrl, getEmissionManagerSubgraphUrl, getConvertibleDepositsSubgraphUrl } from "./src/constants";
 
 const config: CodegenConfig = {
   generates: {
@@ -86,6 +86,24 @@ const config: CodegenConfig = {
           BigDecimal: "string",
           BigInt: "string",
           Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
+          Int8: "number",
+          Timestamp: "number",
+        },
+      },
+      hooks: {
+        afterOneFileWrite: ["yarn lint"],
+      },
+    },
+    "src/graphql/convertibleDeposits.ts": {
+      schema: getConvertibleDepositsSubgraphUrl(),
+      documents: "src/graphql/convertibleDeposits.graphql",
+      plugins: ["typescript", "typescript-operations", "typed-document-node"],
+      config: {
+        preResolveTypes: true,
+        scalars: {
+          BigDecimal: "string",
+          BigInt: "string",
+          Bytes: "Uint8Array",
           Int8: "number",
           Timestamp: "number",
         },

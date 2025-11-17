@@ -1,16 +1,16 @@
 import { DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getPonderClient } from "./helpers/ponderClient";
+import { getConvertibleDepositsSubgraphUrl } from "./constants";
+import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { shorten } from "./helpers/stringHelper";
-import * as schema from "./ponder/ponder.schema";
-import { asc, gt } from "@ponder/client";
+import { ClaimAllYieldFailedEventsSinceDocument, ClaimAllYieldFailedEventsSinceQuery } from "./graphql/convertibleDeposits";
 
 const FUNCTION_KEY = "failedPeriodicTasks";
 const LATEST_BLOCK = "latestBlock";
 
-type ClaimAllYieldFailedEvent = typeof schema.convertibleDepositFacilityClaimAllYieldFailed.$inferSelect;
+type ClaimAllYieldFailedEvent = ClaimAllYieldFailedEventsSinceQuery["convertibleDepositFacilityClaimAllYieldFaileds"]["items"][number];
 
 /**
  * Sends a Discord alert when a claim all yield failed event is detected
@@ -21,7 +21,7 @@ type ClaimAllYieldFailedEvent = typeof schema.convertibleDepositFacilityClaimAll
 const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFailedEvent): void => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const blockNumber = Number(event.block);
-  const txHash = event.txHash.toString();
+  const txHash = event.txHash;
 
   const description = `The heartbeat is unaffected`;
 
@@ -66,7 +66,7 @@ const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<num
  * Performs checks for failed periodic tasks (claim all yield failed events)
  *
  * This function:
- * - Queries the Ponder convertible deposits endpoint for claim all yield failed events
+ * - Queries the GraphQL convertible deposits endpoint for claim all yield failed events
  * - Sends Discord alerts with facility address and transaction hash
  * - Updates Firestore with the latest processed block
  *
@@ -88,48 +88,51 @@ export const performFailedPeriodicTasksChecks = async (
 
   // Get the latest block
   const latestBlock = await getLatestBlock(firestoreDocument);
-  let updatedLatestBlock = latestBlock;
 
-  // Fetch failed events using Ponder client
-  const client = getPonderClient();
+  // Fetch failed events using GraphQL
+  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
   console.debug(`Fetching claim all yield failed events since block ${latestBlock}`);
 
-  try {
-    const events = await client.db
-      .select()
-      .from(schema.convertibleDepositFacilityClaimAllYieldFailed)
-      .where(gt(schema.convertibleDepositFacilityClaimAllYieldFailed.block, BigInt(latestBlock)))
-      .orderBy(asc(schema.convertibleDepositFacilityClaimAllYieldFailed.block));
+  const queryResults = await client
+    .query(ClaimAllYieldFailedEventsSinceDocument, {
+      latestBlock: latestBlock.toString(),
+    })
+    .toPromise();
 
-    console.info(`Processing ${events.length} claim all yield failed events`);
+  if (!queryResults.data) {
+    throw new Error(
+      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
+    );
+  }
 
-    if (events.length === 0) {
-      console.info(`No claim all yield failed events to process`);
-      return;
+  const events = queryResults.data.convertibleDepositFacilityClaimAllYieldFaileds.items || [];
+  console.info(`Processing ${events.length} claim all yield failed events`);
+
+  if (events.length === 0) {
+    console.info(`No claim all yield failed events to process`);
+    return;
+  }
+
+  let updatedLatestBlock = latestBlock;
+
+  // Process events and send alerts
+  for (const event of events) {
+    const eventBlock = Number(event.block);
+    console.info(`Processing claim all yield failed event for facility ${event.facility} at block ${eventBlock}`);
+    sendClaimAllYieldFailedAlert(webhookUrl, event);
+
+    // Update the latest block to this event's block
+    if (eventBlock > updatedLatestBlock) {
+      updatedLatestBlock = eventBlock;
     }
+  }
 
-    // Process events and send alerts
-    for (const event of events) {
-      console.info(`Processing claim all yield failed event for facility ${event.facility} at block ${Number(event.block)}`);
-      sendClaimAllYieldFailedAlert(webhookUrl, event);
-
-      // Update the latest block to this event's block
-      const eventBlock = Number(event.block);
-      if (eventBlock > updatedLatestBlock) {
-        updatedLatestBlock = eventBlock;
-      }
-    }
-
-    // Update latest block
-    if (updatedLatestBlock > latestBlock) {
-      await firestoreDocument.update({
-        [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
-      });
-      console.info(`Updated latest block to ${updatedLatestBlock}`);
-    }
-  } catch (error) {
-    console.error("Error querying Ponder endpoint:", error);
-    throw error;
+  // Update latest block
+  if (updatedLatestBlock > latestBlock) {
+    await firestoreDocument.update({
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+    });
+    console.info(`Updated latest block to ${updatedLatestBlock}`);
   }
 };
 
@@ -141,4 +144,3 @@ if (require.main === module) {
 
   performFailedPeriodicTasksChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
 }
-

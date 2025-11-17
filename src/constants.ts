@@ -63,10 +63,10 @@ export const EMISSION_MANAGER_V1_0 = "0x50f441a3387625bDA8B8081cE3fd6C04CC48C0A2
 export const YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK = 23415000; // 2025-09-22
 export const EMISSION_MANAGER_ALERT_STARTING_BLOCK = 23354000; // 2025-09-13
 
-export const getConvertibleDepositsEndpoint = (): string => {
-  const endpoint = process.env.CONVERTIBLE_DEPOSITS_ENDPOINT;
-  if (!endpoint) {
-    throw new Error("CONVERTIBLE_DEPOSITS_ENDPOINT is not set");
+export const getConvertibleDepositsSubgraphUrl = (): string => {
+  const url = process.env.CONVERTIBLE_DEPOSITS_SUBGRAPH_URL;
+  if (!url) {
+    throw new Error("CONVERTIBLE_DEPOSITS_SUBGRAPH_URL is not set");
   }
-  return endpoint;
+  return url;
 };
