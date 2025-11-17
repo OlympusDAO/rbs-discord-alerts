@@ -3,7 +3,7 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
-import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { shorten } from "./helpers/stringHelper";
 import { ClaimAllYieldFailedEventsSinceDocument, ClaimAllYieldFailedEventsSinceQuery } from "./graphql/convertibleDeposits";
 
@@ -28,7 +28,7 @@ const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFa
   const fields: EmbedField[] = [
     {
       name: "Facility Address",
-      value: event.facility,
+      value: `[${shorten(event.facility)}](${getEtherscanAddressUrl(event.facility, "mainnet")})`,
     },
     {
       name: "Date",
@@ -44,6 +44,11 @@ const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFa
       value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, "Mainnet")})`,
       inline: true,
     },
+    {
+      name: "Manual Resolution",
+      value: `Call \`claimAllYield()\` on the facility contract to manually claim the yield.`,
+      inline: false,
+    }
   ];
 
   sendAlert(webhookUrl, "", `⚠️ Claim All Yield Failed`, description, fields);

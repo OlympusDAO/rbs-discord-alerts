@@ -3,7 +3,7 @@ import { DocumentReference, Firestore } from "@google-cloud/firestore";
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
-import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { getEtherscanTransactionUrl, getEtherscanAddressUrl } from "./helpers/contractHelper";
 import { shorten } from "./helpers/stringHelper";
 import { formatNumber, castFloat } from "./helpers/numberHelper";
 import { BondMarketCreationFailedSinceDocument, BondMarketCreationFailedSinceQuery } from "./graphql/convertibleDeposits";
@@ -30,7 +30,7 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
   const fields: EmbedField[] = [
     {
       name: "Emission Manager Address",
-      value: event.emissionManager,
+      value: `[${shorten(event.emissionManager)}](${getEtherscanAddressUrl(event.emissionManager, "mainnet")})`,
     },
     {
       name: "Sale Amount",
@@ -50,9 +50,14 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
       value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, "Mainnet")})`,
       inline: true,
     },
+    {
+      name: "Manual Resolution",
+      value: `Call \`createPendingBondMarket()\` on the EmissionManager contract as admin or manager to manually create the bond market.`,
+      inline: false,
+    },
   ];
 
-  sendAlert(webhookUrl, "", `⚠️ Bond Market Creation Failed`, description, fields);
+  sendAlert(webhookUrl, "", `⚠️ The EmissionManager was unable to create a bond market for the under-selling of OHM.`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
