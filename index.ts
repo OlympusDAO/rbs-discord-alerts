@@ -4,6 +4,7 @@ import * as pulumi from "@pulumi/pulumi";
 import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulumi/alertPolicy";
 import { createFunction } from "./pulumi/httpCallbackFunction";
 import { performAuctionParametersUpdatedChecks } from "./src/handleAuctionParametersUpdated";
+import { performAuctionResultChecks } from "./src/handleAuctionResult";
 import { performBondMarketCreationFailedChecks } from "./src/handleBondMarketCreationFailed";
 import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
 import { performHeartbeatChecks } from "./src/handleHeartbeat";
@@ -303,6 +304,30 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
 );
 
 /**
+ * Auction Result Checks
+ */
+const FUNCTION_AUCTION_RESULT_CHECK = "auction-result-check";
+const FUNCTION_AUCTION_RESULT_CHECK_STACK = `${FUNCTION_AUCTION_RESULT_CHECK}-${pulumi.getStack()}`;
+
+const [_functionAuctionResultCheck, functionAuctionResultCheckName] = createFunction(
+  FUNCTION_AUCTION_RESULT_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (_req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performAuctionResultChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  {
+    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+  },
+  "*/5 * * * *", // Every 5 minutes
+);
+
+/**
  * Create Alert Policies
  */
 // Email notification channel
@@ -422,3 +447,13 @@ createAlertFunctionExecutions(
   60,
   [notificationEmailId, notificationDiscordId],
 );
+
+createAlertFunctionError(FUNCTION_AUCTION_RESULT_CHECK_STACK, functionAuctionResultCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_AUCTION_RESULT_CHECK_STACK, functionAuctionResultCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);

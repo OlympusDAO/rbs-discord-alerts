@@ -11,6 +11,7 @@
     "execute:failedperiodictasks": "export $(cat .env | xargs) && ts-node src/handleFailedPeriodicTasks.ts",
     "execute:bondmarketcreationfailed": "export $(cat .env | xargs) && ts-node src/handleBondMarketCreationFailed.ts",
     "execute:auctionparametersupdated": "export $(cat .env | xargs) && ts-node src/handleAuctionParametersUpdated.ts",
+    "execute:auctionresult": "export $(cat .env | xargs) && ts-node src/handleAuctionResult.ts",
     "codegen": "export $(cat .env | xargs) && graphql-codegen",
     "build": "tsc",
     "lint": "biome check --write .",

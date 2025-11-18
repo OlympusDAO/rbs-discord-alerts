@@ -39,6 +39,29 @@ query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
   }
 }
 
+query AuctionResultSince($latestBlock: BigInt!, $chainId: Int!) {
+  convertibleDepositAuctioneerAuctionResults(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      auctioneer
+      depositAsset
+      ohmConvertible
+      ohmConvertibleDecimal
+      target
+      targetDecimal
+      periodIndex
+    }
+  }
+}
+
 query BondMarketCreationFailedSince($latestBlock: BigInt!, $chainId: Int!) {
   emissionManagerBondMarketCreationFaileds(
     orderBy: "block"

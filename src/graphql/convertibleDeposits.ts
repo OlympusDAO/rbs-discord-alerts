@@ -10233,6 +10233,33 @@ export type AuctionParametersUpdatedSinceQuery = {
   };
 };
 
+export type AuctionResultSinceQueryVariables = Exact<{
+  latestBlock: Scalars["BigInt"];
+  chainId: Scalars["Int"];
+}>;
+
+export type AuctionResultSinceQuery = {
+  __typename?: "Query";
+  convertibleDepositAuctioneerAuctionResults: {
+    __typename?: "convertibleDepositAuctioneerAuctionResultPage";
+    items: Array<{
+      __typename?: "convertibleDepositAuctioneerAuctionResult";
+      chainId: number;
+      block: string;
+      logIndex: number;
+      txHash: string;
+      timestamp: string;
+      auctioneer: string;
+      depositAsset: string;
+      ohmConvertible: string;
+      ohmConvertibleDecimal: string;
+      target: string;
+      targetDecimal: string;
+      periodIndex: number;
+    }>;
+  };
+};
+
 export type BondMarketCreationFailedSinceQueryVariables = Exact<{
   latestBlock: Scalars["BigInt"];
   chainId: Scalars["Int"];
@@ -10427,6 +10454,94 @@ export const AuctionParametersUpdatedSinceDocument = {
     },
   ],
 } as unknown as DocumentNode<AuctionParametersUpdatedSinceQuery, AuctionParametersUpdatedSinceQueryVariables>;
+export const AuctionResultSinceDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "AuctionResultSince" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Int" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "convertibleDepositAuctioneerAuctionResults" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "StringValue", value: "block", block: false },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "StringValue", value: "asc", block: false },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "block_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "chainId" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "items" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "chainId" } },
+                      { kind: "Field", name: { kind: "Name", value: "block" } },
+                      { kind: "Field", name: { kind: "Name", value: "logIndex" } },
+                      { kind: "Field", name: { kind: "Name", value: "txHash" } },
+                      { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                      { kind: "Field", name: { kind: "Name", value: "auctioneer" } },
+                      { kind: "Field", name: { kind: "Name", value: "depositAsset" } },
+                      { kind: "Field", name: { kind: "Name", value: "ohmConvertible" } },
+                      { kind: "Field", name: { kind: "Name", value: "ohmConvertibleDecimal" } },
+                      { kind: "Field", name: { kind: "Name", value: "target" } },
+                      { kind: "Field", name: { kind: "Name", value: "targetDecimal" } },
+                      { kind: "Field", name: { kind: "Name", value: "periodIndex" } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AuctionResultSinceQuery, AuctionResultSinceQueryVariables>;
 export const BondMarketCreationFailedSinceDocument = {
   kind: "Document",
   definitions: [
