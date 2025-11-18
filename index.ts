@@ -66,7 +66,7 @@ const convertibleDepositsSubgraphUrl = pulumiConfig.requireSecret(SECRET_CONVERT
 const FUNCTION_TARGET_PRICE = "rbs-target-price-changed-events";
 const FUNCTION_TARGET_PRICE_STACK = `${FUNCTION_TARGET_PRICE}-${pulumi.getStack()}`;
 
-const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunction(
+const [_functionTargetPriceChanged, functionTargetPriceChangedName] = createFunction(
   FUNCTION_TARGET_PRICE_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
@@ -92,7 +92,7 @@ const [functionTargetPriceChanged, functionTargetPriceChangedName] = createFunct
 const FUNCTION_PRICE_EVENTS = "rbs-price-events";
 const FUNCTION_PRICE_EVENTS_STACK = `${FUNCTION_PRICE_EVENTS}-${pulumi.getStack()}`;
 
-const [functionPriceEvents, functionPriceEventsName] = createFunction(
+const [_functionPriceEvents, functionPriceEventsName] = createFunction(
   FUNCTION_PRICE_EVENTS_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
@@ -116,7 +116,7 @@ const [functionPriceEvents, functionPriceEventsName] = createFunction(
 const FUNCTION_SNAPSHOT_CHECK = "rbs-snapshot-check";
 const FUNCTION_SNAPSHOT_CHECK_STACK = `${FUNCTION_SNAPSHOT_CHECK}-${pulumi.getStack()}`;
 
-const [functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
+const [_functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
   FUNCTION_SNAPSHOT_CHECK_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
@@ -146,7 +146,7 @@ const [functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
 const FUNCTION_HEARTBEAT_CHECK = "rbs-heartbeat-check";
 const FUNCTION_HEARTBEAT_CHECK_STACK = `${FUNCTION_HEARTBEAT_CHECK}-${pulumi.getStack()}`;
 
-const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
+const [_functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
   FUNCTION_HEARTBEAT_CHECK_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
@@ -175,7 +175,7 @@ const [functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
 const FUNCTION_YRF_CHECK = "yrf-market-check";
 const FUNCTION_YRF_CHECK_STACK = `${FUNCTION_YRF_CHECK}-${pulumi.getStack()}`;
 
-const [functionYRFCheck, functionYRFCheckName] = createFunction(
+const [_functionYRFCheck, functionYRFCheckName] = createFunction(
   FUNCTION_YRF_CHECK_STACK,
   FUNCTION_EXPIRATION_SECONDS,
   DEFAULT_MEMORY_MB,
