@@ -2,6 +2,7 @@ import type { DocumentReference } from "@google-cloud/firestore";
 
 import {
   EMISSION_MANAGER_V1_0,
+  EMISSION_MANAGER_V1_2,
   ERC20_DAI,
   ERC20_OHM_V2,
   getBondsSubgraphUrl,
@@ -87,7 +88,7 @@ const isYRFOwner = (owner: Uint8Array): boolean => {
 };
 
 const isEmissionManagerOwner = (owner: Uint8Array): boolean => {
-  return isBytesEqual(owner, EMISSION_MANAGER_V1_0);
+  return isBytesEqual(owner, EMISSION_MANAGER_V1_0) || isBytesEqual(owner, EMISSION_MANAGER_V1_2);
 };
 
 const isValidMarketOwner = (owner: Uint8Array, block: number): boolean => {
