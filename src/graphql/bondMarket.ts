@@ -868,6 +868,88 @@ export type QueryMarketsArgs = {
   where?: InputMaybe<Market_Filter>;
 };
 
+export type Subscription = {
+  __typename?: "Subscription";
+  /** Access to subgraph metadata */
+  _meta?: Maybe<_Meta_>;
+  bondPurchase?: Maybe<BondPurchase>;
+  bondPurchases: Array<BondPurchase>;
+  market?: Maybe<Market>;
+  marketClosedEvent?: Maybe<MarketClosedEvent>;
+  marketClosedEvents: Array<MarketClosedEvent>;
+  marketCreatedEvent?: Maybe<MarketCreatedEvent>;
+  marketCreatedEvents: Array<MarketCreatedEvent>;
+  markets: Array<Market>;
+};
+
+export type Subscription_MetaArgs = {
+  block?: InputMaybe<Block_Height>;
+};
+
+export type SubscriptionBondPurchaseArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionBondPurchasesArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<BondPurchase_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<BondPurchase_Filter>;
+};
+
+export type SubscriptionMarketArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionMarketClosedEventArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionMarketClosedEventsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<MarketClosedEvent_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<MarketClosedEvent_Filter>;
+};
+
+export type SubscriptionMarketCreatedEventArgs = {
+  block?: InputMaybe<Block_Height>;
+  id: Scalars["ID"];
+  subgraphError?: _SubgraphErrorPolicy_;
+};
+
+export type SubscriptionMarketCreatedEventsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<MarketCreatedEvent_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<MarketCreatedEvent_Filter>;
+};
+
+export type SubscriptionMarketsArgs = {
+  block?: InputMaybe<Block_Height>;
+  first?: InputMaybe<Scalars["Int"]>;
+  orderBy?: InputMaybe<Market_OrderBy>;
+  orderDirection?: InputMaybe<OrderDirection>;
+  skip?: InputMaybe<Scalars["Int"]>;
+  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<Market_Filter>;
+};
+
 export type _Block_ = {
   __typename?: "_Block_";
   /** The hash of the block */
