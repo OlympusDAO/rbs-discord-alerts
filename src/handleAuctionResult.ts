@@ -25,22 +25,23 @@ const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): 
   const target = castFloat(event.targetDecimal);
   const ohmConvertible = castFloat(event.ohmConvertibleDecimal);
 
-  const title = "Convertible Deposit Auction Ended";
-  const description = "";
+  const title = "CD Auction Result";
+  const description = "The daily auction has ended.";
 
   const fields: EmbedField[] = [
     {
       name: "Deposit Asset",
       value: `[${shorten(event.depositAsset)}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
-    },
-    {
-      name: "End Date",
-      value: getRelativeTimestamp(timestamp),
+      inline: true,
     },
     {
       name: "Transaction",
       value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, ChainId.MAINNET)})`,
       inline: true,
+    },
+    {
+      name: "End Date",
+      value: getRelativeTimestamp(timestamp),
     },
     {
       name: "Day Target",

@@ -33,24 +33,25 @@ const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionPar
 
   const isDisabled = target === 0;
 
-  const title = isDisabled ? "🛑 Convertible Deposits Auction Disabled" : "🟢 Convertible Deposits Auction Enabled";
+  const title = "CD Auction Tuning";
   const description = isDisabled
-    ? "The Convertible Deposits auction has been disabled."
-    : "Auction parameters have been updated for Convertible Deposits.";
+    ? "🛑 The auction has been disabled, due to market conditions."
+    : "🟢 The auction parameters have been tuned for the emissions target.";
 
   const fields: EmbedField[] = [
     {
       name: "Deposit Asset",
       value: `[${shorten(event.depositAsset)}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
-    },
-    {
-      name: "Date",
-      value: getRelativeTimestamp(timestamp),
+      inline: true,
     },
     {
       name: "Transaction",
       value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, ChainId.MAINNET)})`,
       inline: true,
+    },
+    {
+      name: "Date",
+      value: getRelativeTimestamp(timestamp),
     },
   ];
 
