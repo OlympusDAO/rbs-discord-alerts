@@ -83,7 +83,7 @@ const [_functionTargetPriceChanged, functionTargetPriceChangedName] = createFunc
   {
     GRAPHQL_API_KEY: graphQlApiKey,
   },
-  "* * * * *", // Every minute
+  "*/5 * * * *", // Every 5 minutes
 );
 
 /**
@@ -300,7 +300,7 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
   {
     CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
   },
-  "* * * * *", // Every minute
+  "*/5 * * * *", // Every 5 minutes
 );
 
 /**
