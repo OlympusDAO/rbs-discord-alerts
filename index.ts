@@ -5,7 +5,6 @@ import { createAlertFunctionError, createAlertFunctionExecutions } from "./pulum
 import { createFunction } from "./pulumi/httpCallbackFunction";
 import { performAuctionParametersUpdatedChecks } from "./src/handleAuctionParametersUpdated";
 import { performBondMarketCreationFailedChecks } from "./src/handleBondMarketCreationFailed";
-import { performEmissionManagerMarketChecks } from "./src/handleEmissionManagerMarkets";
 import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
 import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
@@ -195,31 +194,33 @@ const [_functionYRFCheck, functionYRFCheckName] = createFunction(
 
 /**
  * EmissionManager Market Checks
+ *
+ * Disabled - this is covered by the auction parameters updated check (and with greater detail)
  */
-const FUNCTION_EMISSION_MANAGER_CHECK = "emission-manager-market-check";
-const FUNCTION_EMISSION_MANAGER_CHECK_STACK = `${FUNCTION_EMISSION_MANAGER_CHECK}-${pulumi.getStack()}`;
+// const FUNCTION_EMISSION_MANAGER_CHECK = "emission-manager-market-check";
+// const FUNCTION_EMISSION_MANAGER_CHECK_STACK = `${FUNCTION_EMISSION_MANAGER_CHECK}-${pulumi.getStack()}`;
 
-const [functionEmissionManagerCheck, functionEmissionManagerCheckName] = createFunction(
-  FUNCTION_EMISSION_MANAGER_CHECK_STACK,
-  FUNCTION_EXPIRATION_SECONDS,
-  DEFAULT_MEMORY_MB,
-  DEFAULT_RUNTIME,
-  async (_req, res) => {
-    console.log("Received callback. Initiating handler.");
-    await performEmissionManagerMarketChecks(
-      datastore.documentId.get(),
-      datastore.collection.get(),
-      webhookAlertCommunity,
-    );
-    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (<any>res).send("OK").end();
-  },
-  {
-    GRAPHQL_API_KEY: graphQlApiKey,
-  },
-  "* * * * *", // Every minute
-);
+// const [functionEmissionManagerCheck, functionEmissionManagerCheckName] = createFunction(
+//   FUNCTION_EMISSION_MANAGER_CHECK_STACK,
+//   FUNCTION_EXPIRATION_SECONDS,
+//   DEFAULT_MEMORY_MB,
+//   DEFAULT_RUNTIME,
+//   async (_req, res) => {
+//     console.log("Received callback. Initiating handler.");
+//     await performEmissionManagerMarketChecks(
+//       datastore.documentId.get(),
+//       datastore.collection.get(),
+//       webhookAlertCommunity,
+//     );
+//     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//     (<any>res).send("OK").end();
+//   },
+//   {
+//     GRAPHQL_API_KEY: graphQlApiKey,
+//   },
+//   "* * * * *", // Every minute
+// );
 
 /**
  * Failed Periodic Tasks Checks
@@ -374,15 +375,15 @@ createAlertFunctionExecutions(FUNCTION_YRF_CHECK_STACK, functionYRFCheckName, 60
   notificationDiscordId,
 ]);
 
-createAlertFunctionError(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmissionManagerCheckName, 60, [
-  notificationEmailId,
-  notificationDiscordId,
-]);
+// createAlertFunctionError(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmissionManagerCheckName, 60, [
+//   notificationEmailId,
+//   notificationDiscordId,
+// ]);
 
-createAlertFunctionExecutions(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmissionManagerCheckName, 60, [
-  notificationEmailId,
-  notificationDiscordId,
-]);
+// createAlertFunctionExecutions(FUNCTION_EMISSION_MANAGER_CHECK_STACK, functionEmissionManagerCheckName, 60, [
+//   notificationEmailId,
+//   notificationDiscordId,
+// ]);
 
 createAlertFunctionError(FUNCTION_FAILED_PERIODIC_TASKS_CHECK_STACK, functionFailedPeriodicTasksCheckName, 60, [
   notificationEmailId,
