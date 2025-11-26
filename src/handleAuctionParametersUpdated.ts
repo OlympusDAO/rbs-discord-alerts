@@ -17,7 +17,7 @@ const LATEST_BLOCK = "latestBlock";
 type AuctionParametersUpdatedEvent =
   AuctionParametersUpdatedSinceQuery["convertibleDepositAuctioneerAuctionParametersUpdateds"]["items"][number];
 
-const FRONTEND_URL = "https://deposits.olympusdao.finance";
+const FRONTEND_URL = "https://deposit.olympusdao.finance";
 
 /**
  * Sends a Discord alert when auction parameters are updated
@@ -69,7 +69,7 @@ const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionPar
       },
       {
         name: "View Auction",
-        value: `[View on deposits.olympusdao.finance](${FRONTEND_URL})`,
+        value: `[View on deposit.olympusdao.finance](${FRONTEND_URL})`,
         inline: false,
       },
     );
