@@ -36,7 +36,7 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
 
   console.debug(`Discord response status: ${response.status}`);
   // Ignore rate-limiting
-  if (response.status == 429) {
+  if (response.status === 429) {
     console.error(`Rate-limited by Discord`);
     const body = await response.json();
     console.error(`Discord response: ${JSON.stringify(body)}`);

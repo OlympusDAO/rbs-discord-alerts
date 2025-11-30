@@ -1,23 +1,19 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "outDir": "dist",
-        "target": "es2020",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "experimentalDecorators": true,
-        "pretty": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "forceConsistentCasingInFileNames": true,
-        "esModuleInterop": true
-    },
-    "files": [
-        "index.ts",
-    ],
-    "include": [
-        "src/**/*.ts",
-        "pulumi/*.ts"
-    ]
+  "compilerOptions": {
+    "strict": true,
+    "outDir": "dist",
+    "target": "es2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "pretty": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "files": ["index.ts"],
+  "include": ["src/**/*.ts", "pulumi/*.ts"]
 }

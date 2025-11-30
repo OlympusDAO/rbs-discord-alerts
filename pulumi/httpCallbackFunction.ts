@@ -1,6 +1,6 @@
 import * as gcp from "@pulumi/gcp";
-import { HttpCallback } from "@pulumi/gcp/cloudfunctions";
-import * as pulumi from "@pulumi/pulumi";
+import type { HttpCallback } from "@pulumi/gcp/cloudfunctions";
+import type * as pulumi from "@pulumi/pulumi";
 
 export const scheduleJob = (
   name: string,
@@ -30,7 +30,7 @@ export const createFunction = (
   memoryMb: number,
   runtime: string,
   callback: HttpCallback,
-  graphlApiKey: pulumi.Output<string>,
+  environmentVariables: Record<string, pulumi.Output<string>>,
   cronSchedule?: string,
 ): [gcp.cloudfunctions.HttpCallbackFunction, pulumi.Output<string>, pulumi.Output<string>] => {
   const newFunction = new gcp.cloudfunctions.HttpCallbackFunction(name, {
@@ -38,9 +38,7 @@ export const createFunction = (
     timeout: timeout,
     availableMemoryMb: memoryMb,
     callback: callback,
-    environmentVariables: {
-      GRAPHQL_API_KEY: graphlApiKey,
-    },
+    environmentVariables: environmentVariables,
   });
 
   if (cronSchedule) {

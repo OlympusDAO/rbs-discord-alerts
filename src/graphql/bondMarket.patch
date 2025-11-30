@@ -1,36 +1,34 @@
-diff --git forkSrcPrefix/src/graphql/bondMarket.ts forkDstPrefix/src/graphql/bondMarket.ts
-index 9b29728c8cdf8bd4b761daf7cc1d98405f90f966..b60f8a9ea1d6a11f726841de4fc2d1888dae130f 100644
---- forkSrcPrefix/src/graphql/bondMarket.ts
-+++ forkDstPrefix/src/graphql/bondMarket.ts
-@@ -260,7 +260,6 @@ export type MarketClosedEvent = {
-   date: Scalars["String"];
-   id: Scalars["ID"];
+--- src/graphql/bondMarket.ts	2025-11-18 16:29:55
++++ src/graphql/bondMarket-new.ts	2025-11-18 16:30:57
+@@ -267,7 +267,6 @@
+   date: Scalars['String'];
+   id: Scalars['ID'];
    market: Market;
--  marketId: Scalars["BigInt"];
-   timestamp: Scalars["BigInt"];
+-  marketId: Scalars['BigInt'];
+   timestamp: Scalars['BigInt'];
  };
  
-@@ -365,7 +364,6 @@ export enum MarketClosedEvent_OrderBy {
-   Date = "date",
-   Id = "id",
-   Market = "market",
--  MarketId = "marketId",
-   MarketBondContract = "market__bondContract",
-   MarketBondType = "market__bondType",
-   MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
-@@ -400,7 +398,6 @@ export type MarketCreatedEvent = {
-   date: Scalars["String"];
-   id: Scalars["ID"];
+@@ -372,7 +371,6 @@
+   Date = 'date',
+   Id = 'id',
+   Market = 'market',
+-  MarketId = 'marketId',
+   MarketBondContract = 'market__bondContract',
+   MarketBondType = 'market__bondType',
+   MarketCapacityInPayoutToken = 'market__capacityInPayoutToken',
+@@ -407,7 +405,6 @@
+   date: Scalars['String'];
+   id: Scalars['ID'];
    market: Market;
--  marketId: Scalars["BigInt"];
-   timestamp: Scalars["BigInt"];
+-  marketId: Scalars['BigInt'];
+   timestamp: Scalars['BigInt'];
  };
  
-@@ -505,7 +502,6 @@ export enum MarketCreatedEvent_OrderBy {
-   Date = "date",
-   Id = "id",
-   Market = "market",
--  MarketId = "marketId",
-   MarketBondContract = "market__bondContract",
-   MarketBondType = "market__bondType",
-   MarketCapacityInPayoutToken = "market__capacityInPayoutToken",
+@@ -512,7 +509,6 @@
+   Date = 'date',
+   Id = 'id',
+   Market = 'market',
+-  MarketId = 'marketId',
+   MarketBondContract = 'market__bondContract',
+   MarketBondType = 'market__bondType',
+   MarketCapacityInPayoutToken = 'market__capacityInPayoutToken',

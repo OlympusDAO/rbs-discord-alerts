@@ -7,7 +7,7 @@ export const createAlertFunctionError = (
   executionFrequencySeconds: number,
   notificationChannels: pulumi.Input<pulumi.Input<string>[]>,
 ): void => {
-  const alertWindowSeconds = 5 * executionFrequencySeconds;
+  const _alertWindowSeconds = 5 * executionFrequencySeconds;
   const autoCloseSeconds = 1 * 24 * 60 * 60; // 1 day
   const notificationRateLimitSeconds = 1 * 60 * 60; // Once per 1 hour
 

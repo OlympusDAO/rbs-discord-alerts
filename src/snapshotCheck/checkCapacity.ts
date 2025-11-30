@@ -1,10 +1,10 @@
-import { DocumentReference } from "@google-cloud/firestore";
+import type { DocumentReference } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "../constants";
-import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "../graphql/rangeSnapshot";
 import { addDate } from "../helpers/dateHelper";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
 

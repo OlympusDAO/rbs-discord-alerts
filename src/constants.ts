@@ -31,7 +31,8 @@ export const getBondsSubgraphUrl = (): string => {
   return BONDS_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
-const YRF_SUBGRAPH_URL = "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/BVcdoUHemeVF5qmbvgLvHqLKH2oNouwJBuZXBVwdyNLe";
+const YRF_SUBGRAPH_URL =
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/BVcdoUHemeVF5qmbvgLvHqLKH2oNouwJBuZXBVwdyNLe";
 
 export const getYRFSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
@@ -41,7 +42,8 @@ export const getYRFSubgraphUrl = (): string => {
   return YRF_SUBGRAPH_URL.replace("[api-key]", apiKey);
 };
 
-const EMISSION_MANAGER_SUBGRAPH_URL = "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7KwoppR1FTbHpz7VieAEFmyyPh9z2ZWUvYjSs5w3cTV8";
+const EMISSION_MANAGER_SUBGRAPH_URL =
+  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7KwoppR1FTbHpz7VieAEFmyyPh9z2ZWUvYjSs5w3cTV8";
 
 export const getEmissionManagerSubgraphUrl = (): string => {
   const apiKey = process.env.GRAPHQL_API_KEY;
@@ -59,6 +61,15 @@ export const YIELD_REPURCHASE_FACILITY_V1_1 = "0xcaA3d3E653A626e2656d2E799564fE9
 export const YIELD_REPURCHASE_FACILITY_V1_2 = "0x271e35a8555a62F6bA76508E85dfD76D580B0692";
 
 export const EMISSION_MANAGER_V1_0 = "0x50f441a3387625bDA8B8081cE3fd6C04CC48C0A2";
+export const EMISSION_MANAGER_V1_2 = "0xA61b846D5D8b757e3d541E0e4F80390E28f0B6Ff";
 
 export const YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK = 23415000; // 2025-09-22
 export const EMISSION_MANAGER_ALERT_STARTING_BLOCK = 23354000; // 2025-09-13
+
+export const getConvertibleDepositsSubgraphUrl = (): string => {
+  const url = process.env.CONVERTIBLE_DEPOSITS_SUBGRAPH_URL;
+  if (!url) {
+    throw new Error("CONVERTIBLE_DEPOSITS_SUBGRAPH_URL is not set");
+  }
+  return url;
+};

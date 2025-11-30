@@ -1,5 +1,5 @@
-import { Client, createClient, fetchExchange } from "@urql/core";
-import { retryExchange, RetryExchangeOptions } from "@urql/exchange-retry";
+import { type Client, createClient, fetchExchange } from "@urql/core";
+import { type RetryExchangeOptions, retryExchange } from "@urql/exchange-retry";
 import fetch from "cross-fetch";
 
 const retryOptions: RetryExchangeOptions = {
@@ -17,9 +17,6 @@ export const createGraphQLClient = (url: string): Client => {
   return createClient({
     url,
     fetch: fetch,
-    exchanges: [
-      retryExchange(retryOptions),
-      fetchExchange,
-    ],
+    exchanges: [retryExchange(retryOptions), fetchExchange],
   });
 };

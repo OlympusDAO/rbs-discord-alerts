@@ -1,0 +1,82 @@
+query ClaimAllYieldFailedEventsSince($latestBlock: BigInt!, $chainId: Int!) {
+  convertibleDepositFacilityClaimAllYieldFaileds(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      facility
+    }
+  }
+}
+
+query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
+  convertibleDepositAuctioneerAuctionParametersUpdateds(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      auctioneer
+      depositAsset
+      target
+      targetDecimal
+      tickSize
+      tickSizeDecimal
+      minPrice
+      minPriceDecimal
+    }
+  }
+}
+
+query AuctionResultSince($latestBlock: BigInt!, $chainId: Int!) {
+  convertibleDepositAuctioneerAuctionResults(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      auctioneer
+      depositAsset
+      ohmConvertible
+      ohmConvertibleDecimal
+      target
+      targetDecimal
+      periodIndex
+    }
+  }
+}
+
+query BondMarketCreationFailedSince($latestBlock: BigInt!, $chainId: Int!) {
+  emissionManagerBondMarketCreationFaileds(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      emissionManager
+      saleAmount
+      saleAmountDecimal
+    }
+  }
+}

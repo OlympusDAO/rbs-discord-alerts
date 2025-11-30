@@ -1,6 +1,13 @@
-import { CodegenConfig } from "@graphql-codegen/cli";
+import type { CodegenConfig } from "@graphql-codegen/cli";
 
-import { getBondsSubgraphUrl, getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl, getYRFSubgraphUrl, getEmissionManagerSubgraphUrl } from "./src/constants";
+import {
+  getBondsSubgraphUrl,
+  getConvertibleDepositsSubgraphUrl,
+  getEmissionManagerSubgraphUrl,
+  getPriceSnapshotSubgraphUrl,
+  getRbsSubgraphUrl,
+  getYRFSubgraphUrl,
+} from "./src/constants";
 
 const config: CodegenConfig = {
   generates: {
@@ -19,7 +26,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix", "patch -p0 < src/graphql/bondMarket.patch"],
+        afterOneFileWrite: ["patch -p0 < src/graphql/bondMarket.patch", "yarn lint"],
       },
     },
     "src/graphql/rangeSnapshot.ts": {
@@ -37,7 +44,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
       },
     },
     "src/graphql/priceSnapshot.ts": {
@@ -55,7 +62,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
       },
     },
     "src/graphql/yrf.ts": {
@@ -73,7 +80,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
       },
     },
     "src/graphql/emissionManager.ts": {
@@ -91,7 +98,25 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint:fix"],
+        afterOneFileWrite: ["yarn lint"],
+      },
+    },
+    "src/graphql/convertibleDeposits.ts": {
+      schema: getConvertibleDepositsSubgraphUrl(),
+      documents: "src/graphql/convertibleDeposits.graphql",
+      plugins: ["typescript", "typescript-operations", "typed-document-node"],
+      config: {
+        preResolveTypes: true,
+        scalars: {
+          BigDecimal: "string",
+          BigInt: "string",
+          Bytes: "Uint8Array",
+          Int8: "number",
+          Timestamp: "number",
+        },
+      },
+      hooks: {
+        afterOneFileWrite: ["yarn lint"],
       },
     },
   },

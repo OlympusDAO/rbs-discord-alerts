@@ -1,10 +1,10 @@
 import { Firestore } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "./constants";
+import { type EmbedField, sendAlert } from "./discord";
+import { type PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
+import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, sendAlert } from "./discord";
-import { PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
-import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castFloat, castFloatNullable, castInt, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -84,7 +84,7 @@ export const performEventChecks = async (
         name: "Transaction",
         value: `[${shorten(priceEvent.transaction.toString())}](${getEtherscanTransactionUrl(
           priceEvent.transaction.toString(),
-          priceEvent.blockchain,
+          ChainId.MAINNET,
         )})`,
         inline: true,
       },

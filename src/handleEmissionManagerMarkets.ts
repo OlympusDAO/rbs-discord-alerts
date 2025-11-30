@@ -1,26 +1,20 @@
-import { DocumentReference, Firestore } from "@google-cloud/firestore";
+import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getEmissionManagerSubgraphUrl, EMISSION_MANAGER_ALERT_STARTING_BLOCK } from "./constants";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
+import { EMISSION_MANAGER_ALERT_STARTING_BLOCK, getEmissionManagerSubgraphUrl } from "./constants";
+import { type EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
 import {
-  EmissionManagerMarketsCreatedSinceDocument,
   EmissionManagerMarketDocument,
-  EmissionManagerMarketsCreatedSinceQuery,
+  EmissionManagerMarketsCreatedSinceDocument,
+  type EmissionManagerMarketsCreatedSinceQuery,
 } from "./graphql/emissionManager";
+import { createGraphQLClient } from "./helpers/graphqlClient";
 
 type EmissionManagerSaleCreated = EmissionManagerMarketsCreatedSinceQuery["saleCreateds"][0];
-import {
-  MarketClosedEvent,
-  MarketClosedEventsDocument,
-} from "./graphql/bondMarket";
+
 import { getBondsSubgraphUrl } from "./constants";
-import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import {
-  castFloat,
-  castInt,
-  formatNumber,
-} from "./helpers/numberHelper";
+import { type MarketClosedEvent, MarketClosedEventsDocument } from "./graphql/bondMarket";
+import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
+import { castFloat, castInt, formatNumber } from "./helpers/numberHelper";
 
 const FUNCTION_KEY = "emissionManagerMarkets";
 const LATEST_BLOCK_CREATED = "latestBlockCreated";
@@ -63,17 +57,11 @@ const sendEmissionManagerMarketCreatedAlert = (
     },
     {
       name: "Transaction",
-      value: `${getEtherscanTransactionUrl(transaction, "Mainnet")}`,
+      value: `${getEtherscanTransactionUrl(transaction, ChainId.MAINNET)}`,
     },
   ];
 
-  sendAlert(
-    webhookUrl,
-    getRoleMentions(mentionRoles),
-    `🏛️ EmissionManager Market Created`,
-    description,
-    fields
-  );
+  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ EmissionManager Market Created`, description, fields);
 };
 
 /**
@@ -87,11 +75,11 @@ const sendEmissionManagerMarketCreatedAlert = (
 const sendEmissionManagerMarketClosedAlert = (
   webhookUrl: string,
   mentionRoles: string[],
-  saleCreated: EmissionManagerSaleCreated,
+  _saleCreated: EmissionManagerSaleCreated,
   marketEvent: MarketClosedEvent,
 ): void => {
   const marketId = marketEvent.market.marketId;
-  const timestamp = Number.parseInt(marketEvent.timestamp) * 1000; // Convert to milliseconds
+  const timestamp = Number.parseInt(marketEvent.timestamp, 10) * 1000; // Convert to milliseconds
 
   const description = `EmissionManager market closed`;
 
@@ -110,27 +98,23 @@ const sendEmissionManagerMarketClosedAlert = (
     },
   ];
 
-  sendAlert(
-    webhookUrl,
-    getRoleMentions(mentionRoles),
-    `🏛️ EmissionManager Market Closed`,
-    description,
-    fields
-  );
+  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ EmissionManager Market Closed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference, key: string): Promise<number> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${key}`) || 0);
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${key}`) || 0, 10);
 
-  if (latestBlock == 0) {
-    console.info(`No latest block found for ${key}, defaulting to starting block ${EMISSION_MANAGER_ALERT_STARTING_BLOCK}`);
+  if (latestBlock === 0) {
+    console.info(
+      `No latest block found for ${key}, defaulting to starting block ${EMISSION_MANAGER_ALERT_STARTING_BLOCK}`,
+    );
     return EMISSION_MANAGER_ALERT_STARTING_BLOCK;
   }
 
   console.info(`Latest block for ${key} is ${latestBlock}`);
   return latestBlock;
-}
+};
 
 /**
  * Processes EmissionManager market creation events and sends alerts
@@ -159,7 +143,9 @@ const processEmissionManagerMarketCreated = async (
     })
     .toPromise();
   if (!saleCreatedResults.data) {
-    throw new Error(`Did not receive results from EmissionManager SaleCreated GraphQL query. Error: ${saleCreatedResults.error}`);
+    throw new Error(
+      `Did not receive results from EmissionManager SaleCreated GraphQL query. Error: ${saleCreatedResults.error}`,
+    );
   }
 
   const saleCreateds: EmissionManagerSaleCreated[] = saleCreatedResults.data.saleCreateds;
@@ -219,7 +205,9 @@ const processEmissionManagerMarketsClosed = async (
     .toPromise();
 
   if (!marketsClosedResults.data) {
-    throw new Error(`Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`);
+    throw new Error(
+      `Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`,
+    );
   }
 
   const marketClosedEvents: MarketClosedEvent[] = marketsClosedResults.data.marketClosedEvents;
@@ -244,7 +232,9 @@ const processEmissionManagerMarketsClosed = async (
       .toPromise();
 
     if (!emissionManagerResults.data) {
-      throw new Error(`Did not receive results from EmissionManager GraphQL query for market ${marketId}. Error: ${emissionManagerResults.error}`);
+      throw new Error(
+        `Did not receive results from EmissionManager GraphQL query for market ${marketId}. Error: ${emissionManagerResults.error}`,
+      );
     }
 
     const saleCreateds: EmissionManagerSaleCreated[] = emissionManagerResults.data.saleCreateds;
@@ -291,9 +281,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performEmissionManagerMarketChecks(
-    "rbs-discord-alerts-dev",
-    "default",
-    process.env.WEBHOOK_URL
-  );
+  performEmissionManagerMarketChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
 }

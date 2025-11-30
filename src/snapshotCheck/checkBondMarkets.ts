@@ -1,7 +1,8 @@
-import { DocumentReference } from "@google-cloud/firestore";
+import type { DocumentReference } from "@google-cloud/firestore";
 
 import {
   EMISSION_MANAGER_V1_0,
+  EMISSION_MANAGER_V1_2,
   ERC20_DAI,
   ERC20_OHM_V2,
   getBondsSubgraphUrl,
@@ -10,21 +11,21 @@ import {
   YIELD_REPURCHASE_FACILITY_V1_1,
   YIELD_REPURCHASE_FACILITY_V1_2,
 } from "../constants";
-import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getRoleMentions, sendAlert } from "../discord";
 import {
-  MarketClosedEvent,
+  type MarketClosedEvent,
   MarketClosedEventsDocument,
-  MarketCreatedEvent,
+  type MarketCreatedEvent,
   MarketCreatedEventsDocument,
 } from "../graphql/bondMarket";
 import {
-  PriceEvent,
-  RangeSnapshot,
+  type PriceEvent,
+  type RangeSnapshot,
   RangeSnapshotSinceBlockDocument,
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
-import { getEtherscanTransactionUrl } from "../helpers/contractHelper";
+import { ChainId, getEtherscanTransactionUrl } from "../helpers/contractHelper";
+import { createGraphQLClient } from "../helpers/graphqlClient";
 import {
   castFloat,
   castFloatNullable,
@@ -34,9 +35,9 @@ import {
   formatNumber,
   numbersEqual,
 } from "../helpers/numberHelper";
+import { getCurrentOperatorContractAddress } from "../helpers/operator";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
-import { getCurrentOperatorContractAddress } from "../helpers/operator";
 
 const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
@@ -44,33 +45,33 @@ const CAPACITY_DECIMALS = 0; // Whole number
 const ORACLE_UPDATE_THRESHOLD = 0.02; // 2% swing required to force the oracle to update
 
 const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): PriceEvent[] => {
-  const filteredByBlock = events.filter(priceEvent => castInt(priceEvent.block) == block);
+  const filteredByBlock = events.filter(priceEvent => castInt(priceEvent.block) === block);
 
   if (!type) {
     return filteredByBlock;
   }
 
-  return filteredByBlock.filter(priceEvent => priceEvent.type == type);
+  return filteredByBlock.filter(priceEvent => priceEvent.type === type);
 };
 
 const filterCreatedEvents = (events: MarketCreatedEvent[], block: number, marketId?: number): MarketCreatedEvent[] => {
-  const filteredByBlock = events.filter(createdEvent => castInt(createdEvent.block) == block);
+  const filteredByBlock = events.filter(createdEvent => castInt(createdEvent.block) === block);
 
   if (!marketId) {
     return filteredByBlock;
   }
 
-  return filteredByBlock.filter(createdEvent => castInt(createdEvent.market.marketId) == marketId);
+  return filteredByBlock.filter(createdEvent => castInt(createdEvent.market.marketId) === marketId);
 };
 
 const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId?: number): MarketClosedEvent[] => {
-  const filteredByBlock = events.filter(closedEvent => castInt(closedEvent.block) == block);
+  const filteredByBlock = events.filter(closedEvent => castInt(closedEvent.block) === block);
 
   if (!marketId) {
     return filteredByBlock;
   }
 
-  return filteredByBlock.filter(createdEvent => castInt(createdEvent.market.marketId) == marketId);
+  return filteredByBlock.filter(createdEvent => castInt(createdEvent.market.marketId) === marketId);
 };
 
 const pushError = (error: string, errors: string[]): void => {
@@ -84,21 +85,17 @@ const isYRFOwner = (owner: Uint8Array): boolean => {
     isBytesEqual(owner, YIELD_REPURCHASE_FACILITY_V1_1) ||
     isBytesEqual(owner, YIELD_REPURCHASE_FACILITY_V1_2)
   );
-}
+};
 
 const isEmissionManagerOwner = (owner: Uint8Array): boolean => {
-  return isBytesEqual(owner, EMISSION_MANAGER_V1_0);
-}
+  return isBytesEqual(owner, EMISSION_MANAGER_V1_0) || isBytesEqual(owner, EMISSION_MANAGER_V1_2);
+};
 
 const isValidMarketOwner = (owner: Uint8Array, block: number): boolean => {
   const currentOperatorAddress = getCurrentOperatorContractAddress(block);
   // The owner should be the operator contract or the yield repurchase facility or the emission manager
-  return (
-    isBytesEqual(owner, currentOperatorAddress) ||
-    isYRFOwner(owner) ||
-    isEmissionManagerOwner(owner)
-  );
-}
+  return isBytesEqual(owner, currentOperatorAddress) || isYRFOwner(owner) || isEmissionManagerOwner(owner);
+};
 
 /**
  * Performs check when a CushionUp event is received:
@@ -161,7 +158,10 @@ const checkCushionUp = (
   const createdMarket = createdMarkets[0];
 
   if (!isValidMarketOwner(createdMarket.market.owner, castInt(createdMarket.block))) {
-    pushError(`Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract, yield repurchase facility or emission manager`, errors);
+    pushError(
+      `Expected market owner (${createdMarket.market.owner.toString()}) to be the Olympus operator contract, yield repurchase facility or emission manager`,
+      errors,
+    );
   }
 
   // In the low cushion, the initial price is in terms of the quote token, and the quote token is OHM and the payout token is DAI. To get it into DAI (USD), we need to flip it.
@@ -374,7 +374,7 @@ const checkCushionDown = (
   console.debug(`Capacity Exhausted? ${capacityExhausted}`);
   // The wall should have been manually regenerated
   const hasWallUpRegenerationEvent: boolean =
-    wallUpEvents.filter(wallUpEvent => wallUpEvent.isHigh == priceEvent.isHigh).length > 0;
+    wallUpEvents.filter(wallUpEvent => wallUpEvent.isHigh === priceEvent.isHigh).length > 0;
   console.debug(`Has WallUp event? ${hasWallUpRegenerationEvent}`);
 
   // If none of the above conditions are true, then the bond market was closed for an unknown reason, and we want to alert about that
@@ -412,7 +412,7 @@ const checkMarketCreated = (
 
   const matchingCushionUpEvents = cushionUpEvents.filter(
     priceEvent =>
-      castInt(event.market.marketId) ==
+      castInt(event.market.marketId) ===
       castIntNullable(priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId),
   );
 
@@ -423,13 +423,15 @@ const checkMarketCreated = (
       errors,
     );
   } else {
-    console.debug(`Market owner is correctly the Olympus operator contract, yield repurchase facility or emission manager`);
+    console.debug(
+      `Market owner is correctly the Olympus operator contract, yield repurchase facility or emission manager`,
+    );
   }
 
   // YRF and EmissionManager don't emit a CushionUp event, so we don't need to check for that
   if (!isYRFOwner(event.market.owner) && !isEmissionManagerOwner(event.market.owner)) {
     // If a market is created, but there was no CushionUp, it may have been created outside of RBS
-    if (matchingCushionUpEvents.length == 0) {
+    if (matchingCushionUpEvents.length === 0) {
       pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
     } else {
       console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
@@ -456,7 +458,7 @@ const checkMarketCreated = (
  * @returns
  */
 const checkMarketClosed = (
-  event: MarketClosedEvent,
+  _event: MarketClosedEvent,
   _rangeSnapshot: RangeSnapshot,
   cushionDownEvents: PriceEvent[],
 ): string[] => {
@@ -464,7 +466,7 @@ const checkMarketClosed = (
   console.info(`\n\nCommencing market closed check`);
 
   // If a market is closed, but there was no CushionUp, it may have been closed outside of RBS
-  if (cushionDownEvents.length == 0) {
+  if (cushionDownEvents.length === 0) {
     pushError(`Market was closed, but there was no corresponding RBS CushionDown event`, errors);
   } else {
     console.debug(`MarketClosedEvent has a corresponding CushionDown event`);
@@ -613,7 +615,7 @@ export const checkBondMarkets = async (
 
   // Get the latest block
   const firestoreSnapshot = await firestore.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0);
+  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0, 10);
   let updatedLatestBlock = latestBlock;
   console.info(`Latest block is ${latestBlock}`);
 
@@ -686,7 +688,7 @@ export const checkBondMarkets = async (
 
     cushionUpEventsAtBlock.forEach(priceEvent => {
       const errors = checkCushionUp(priceEvent, rangeSnapshot, marketCreatedEvents);
-      if (errors.length == 0) return;
+      if (errors.length === 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionUp Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
@@ -694,7 +696,10 @@ export const checkBondMarkets = async (
           name: "Market ID",
           value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
         },
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        {
+          name: "Transaction",
+          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+        },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);
@@ -702,12 +707,15 @@ export const checkBondMarkets = async (
 
     cushionDownEventsAtBlock.forEach(priceEvent => {
       const errors = checkCushionDown(priceEvent, rangeSnapshot, marketClosedEvents, wallUpEventsAtBlock);
-      if (errors.length == 0) return;
+      if (errors.length === 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionDown Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
         // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        {
+          name: "Transaction",
+          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+        },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);
@@ -715,12 +723,15 @@ export const checkBondMarkets = async (
 
     wallUpEventsAtBlock.forEach(priceEvent => {
       const errors = checkWallUp(priceEvent, rangeSnapshot);
-      if (errors.length == 0) return;
+      if (errors.length === 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallUp Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
         // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        {
+          name: "Transaction",
+          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+        },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);
@@ -728,12 +739,15 @@ export const checkBondMarkets = async (
 
     wallDownEventsAtBlock.forEach(priceEvent => {
       const errors = checkWallDown(priceEvent, rangeSnapshot);
-      if (errors.length == 0) return;
+      if (errors.length === 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallDown Discrepancies`, toUnorderedList(errors), [
         { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
         // marketId is not available
-        { name: "Transaction", value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), "Mainnet")}` },
+        {
+          name: "Transaction",
+          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+        },
         { name: "Block", value: `${priceEvent.block}` },
         ...getShutdownEmbedField(contractUrl),
       ]);
@@ -742,7 +756,7 @@ export const checkBondMarkets = async (
     const marketCreatedEventsAtBlock = filterCreatedEvents(marketCreatedEvents, rangeSnapshotBlock);
     marketCreatedEventsAtBlock.forEach(marketEvent => {
       const errors = checkMarketCreated(marketEvent, rangeSnapshot, cushionUpEventsAtBlock);
-      if (errors.length == 0) return;
+      if (errors.length === 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CreatedMarket Discrepancies`, toUnorderedList(errors), [
         {
@@ -757,7 +771,7 @@ export const checkBondMarkets = async (
     const marketClosedEventsAtBlock = filterClosedEvents(marketClosedEvents, rangeSnapshotBlock);
     marketClosedEventsAtBlock.forEach(marketEvent => {
       const errors = checkMarketClosed(marketEvent, rangeSnapshot, cushionDownEventsAtBlock);
-      if (errors.length == 0) return;
+      if (errors.length === 0) return;
 
       sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 ClosedMarket Discrepancies`, toUnorderedList(errors), [
         {

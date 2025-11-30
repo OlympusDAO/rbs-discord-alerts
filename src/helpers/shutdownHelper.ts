@@ -1,6 +1,6 @@
 import dedent from "dedent-js";
 
-import { EmbedField } from "../discord";
+import type { EmbedField } from "../discord";
 
 const getShutdownMessage = (contractUrl: string): string => {
   return dedent(`

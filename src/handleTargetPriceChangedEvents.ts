@@ -1,10 +1,10 @@
 import { Firestore } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "./constants";
+import { type EmbedField, sendAlert } from "./discord";
+import { type MinimumTargetPriceChanged, MinimumTargetPriceChangedEventsDocument } from "./graphql/rangeSnapshot";
+import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
-import { EmbedField, sendAlert } from "./discord";
-import { MinimumTargetPriceChanged, MinimumTargetPriceChangedEventsDocument } from "./graphql/rangeSnapshot";
-import { getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castFloat, castInt, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -74,7 +74,7 @@ export const performTargetPriceChangedCheck = async (
         name: "Transaction",
         value: `[${shorten(targetPriceChangedEvent.transaction.toString())}](${getEtherscanTransactionUrl(
           targetPriceChangedEvent.transaction.toString(),
-          targetPriceChangedEvent.blockchain,
+          ChainId.MAINNET,
         )})`,
         inline: false,
       },
