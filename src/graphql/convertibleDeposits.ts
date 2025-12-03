@@ -10205,6 +10205,34 @@ export type ClaimAllYieldFailedEventsSinceQuery = {
   };
 };
 
+export type ConvertibleDepositFacilityClaimedYieldsSinceQueryVariables = Exact<{
+  latestBlock: Scalars["BigInt"];
+  chainId: Scalars["Int"];
+}>;
+
+export type ConvertibleDepositFacilityClaimedYieldsSinceQuery = {
+  __typename?: "Query";
+  convertibleDepositFacilityClaimedYields: {
+    __typename?: "convertibleDepositFacilityClaimedYieldPage";
+    items: Array<{
+      __typename?: "convertibleDepositFacilityClaimedYield";
+      chainId: number;
+      block: string;
+      logIndex: number;
+      txHash: string;
+      timestamp: string;
+      facility: string;
+      depositAsset: string;
+      amount: string;
+      amountDecimal: string;
+      rDepositAsset?: {
+        __typename?: "depositAsset";
+        rAsset?: { __typename?: "asset"; name: string; symbol: string } | null;
+      } | null;
+    }>;
+  };
+};
+
 export type AuctionParametersUpdatedSinceQueryVariables = Exact<{
   latestBlock: Scalars["BigInt"];
   chainId: Scalars["Int"];
@@ -10229,6 +10257,10 @@ export type AuctionParametersUpdatedSinceQuery = {
       tickSizeDecimal: string;
       minPrice: string;
       minPriceDecimal: string;
+      rDepositAsset?: {
+        __typename?: "depositAsset";
+        rAsset?: { __typename?: "asset"; name: string; symbol: string } | null;
+      } | null;
     }>;
   };
 };
@@ -10256,6 +10288,10 @@ export type AuctionResultSinceQuery = {
       target: string;
       targetDecimal: string;
       periodIndex: number;
+      rDepositAsset?: {
+        __typename?: "depositAsset";
+        rAsset?: { __typename?: "asset"; name: string; symbol: string } | null;
+      } | null;
     }>;
   };
 };
@@ -10365,6 +10401,114 @@ export const ClaimAllYieldFailedEventsSinceDocument = {
     },
   ],
 } as unknown as DocumentNode<ClaimAllYieldFailedEventsSinceQuery, ClaimAllYieldFailedEventsSinceQueryVariables>;
+export const ConvertibleDepositFacilityClaimedYieldsSinceDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "ConvertibleDepositFacilityClaimedYieldsSince" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "BigInt" } } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Int" } } },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "convertibleDepositFacilityClaimedYields" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderBy" },
+                value: { kind: "StringValue", value: "block", block: false },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "orderDirection" },
+                value: { kind: "StringValue", value: "asc", block: false },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "where" },
+                value: {
+                  kind: "ObjectValue",
+                  fields: [
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "block_gt" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "latestBlock" } },
+                    },
+                    {
+                      kind: "ObjectField",
+                      name: { kind: "Name", value: "chainId" },
+                      value: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
+                    },
+                  ],
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "items" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "chainId" } },
+                      { kind: "Field", name: { kind: "Name", value: "block" } },
+                      { kind: "Field", name: { kind: "Name", value: "logIndex" } },
+                      { kind: "Field", name: { kind: "Name", value: "txHash" } },
+                      { kind: "Field", name: { kind: "Name", value: "timestamp" } },
+                      { kind: "Field", name: { kind: "Name", value: "facility" } },
+                      { kind: "Field", name: { kind: "Name", value: "depositAsset" } },
+                      { kind: "Field", name: { kind: "Name", value: "amount" } },
+                      { kind: "Field", name: { kind: "Name", value: "amountDecimal" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "rDepositAsset" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rAsset" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  { kind: "Field", name: { kind: "Name", value: "name" } },
+                                  { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ConvertibleDepositFacilityClaimedYieldsSinceQuery,
+  ConvertibleDepositFacilityClaimedYieldsSinceQueryVariables
+>;
 export const AuctionParametersUpdatedSinceDocument = {
   kind: "Document",
   definitions: [
@@ -10443,6 +10587,26 @@ export const AuctionParametersUpdatedSinceDocument = {
                       { kind: "Field", name: { kind: "Name", value: "tickSizeDecimal" } },
                       { kind: "Field", name: { kind: "Name", value: "minPrice" } },
                       { kind: "Field", name: { kind: "Name", value: "minPriceDecimal" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "rDepositAsset" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rAsset" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  { kind: "Field", name: { kind: "Name", value: "name" } },
+                                  { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
                     ],
                   },
                 },
@@ -10531,6 +10695,26 @@ export const AuctionResultSinceDocument = {
                       { kind: "Field", name: { kind: "Name", value: "target" } },
                       { kind: "Field", name: { kind: "Name", value: "targetDecimal" } },
                       { kind: "Field", name: { kind: "Name", value: "periodIndex" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "rDepositAsset" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rAsset" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  { kind: "Field", name: { kind: "Name", value: "name" } },
+                                  { kind: "Field", name: { kind: "Name", value: "symbol" } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
                     ],
                   },
                 },

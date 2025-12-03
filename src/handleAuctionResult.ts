@@ -31,7 +31,7 @@ const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): 
   const fields: EmbedField[] = [
     {
       name: "Deposit Asset",
-      value: `[${shorten(event.depositAsset)}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
+      value: `[${event.rDepositAsset?.rAsset?.symbol || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
       inline: true,
     },
     {

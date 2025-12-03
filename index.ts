@@ -6,6 +6,7 @@ import { createFunction } from "./pulumi/httpCallbackFunction";
 import { performAuctionParametersUpdatedChecks } from "./src/handleAuctionParametersUpdated";
 import { performAuctionResultChecks } from "./src/handleAuctionResult";
 import { performBondMarketCreationFailedChecks } from "./src/handleBondMarketCreationFailed";
+import { performClaimedYieldChecks } from "./src/handleClaimedYield";
 import { performFailedPeriodicTasksChecks } from "./src/handleFailedPeriodicTasks";
 import { performHeartbeatChecks } from "./src/handleHeartbeat";
 import { performEventChecks } from "./src/handlePriceEvents";
@@ -328,6 +329,30 @@ const [_functionAuctionResultCheck, functionAuctionResultCheckName] = createFunc
 );
 
 /**
+ * Claimed Yield Checks
+ */
+const FUNCTION_CLAIMED_YIELD_CHECK = "claimed-yield-check";
+const FUNCTION_CLAIMED_YIELD_CHECK_STACK = `${FUNCTION_CLAIMED_YIELD_CHECK}-${pulumi.getStack()}`;
+
+const [_functionClaimedYieldCheck, functionClaimedYieldCheckName] = createFunction(
+  FUNCTION_CLAIMED_YIELD_CHECK_STACK,
+  FUNCTION_EXPIRATION_SECONDS,
+  DEFAULT_MEMORY_MB,
+  DEFAULT_RUNTIME,
+  async (_req, res) => {
+    console.log("Received callback. Initiating handler.");
+    await performClaimedYieldChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (<any>res).send("OK").end();
+  },
+  {
+    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+  },
+  "*/5 * * * *", // Every 5 minutes
+);
+
+/**
  * Create Alert Policies
  */
 // Email notification channel
@@ -454,6 +479,16 @@ createAlertFunctionError(FUNCTION_AUCTION_RESULT_CHECK_STACK, functionAuctionRes
 ]);
 
 createAlertFunctionExecutions(FUNCTION_AUCTION_RESULT_CHECK_STACK, functionAuctionResultCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionError(FUNCTION_CLAIMED_YIELD_CHECK_STACK, functionClaimedYieldCheckName, 60, [
+  notificationEmailId,
+  notificationDiscordId,
+]);
+
+createAlertFunctionExecutions(FUNCTION_CLAIMED_YIELD_CHECK_STACK, functionClaimedYieldCheckName, 60, [
   notificationEmailId,
   notificationDiscordId,
 ]);
