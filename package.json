@@ -18,7 +18,8 @@
     "lint": "biome check --write .",
     "lint:check": "biome check .",
     "deploy:dev": "pulumi up --stack dev",
-    "deploy:prod": "pulumi up --stack prod"
+    "deploy:prod": "pulumi up --stack prod",
+    "preinstall": "npx only-allow pnpm"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.6",
@@ -48,5 +49,11 @@
   "resolutions": {
     "@urql/core": "^3.0.3",
     "google-protobuf": "3.21.4"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "pnpm": "10.33.0",
+    "npm": "use-pnpm",
+    "yarn": "use-pnpm"
   }
 }
