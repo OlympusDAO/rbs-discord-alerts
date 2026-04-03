@@ -3,79 +3,57 @@ import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import {
-  AuctionParametersUpdatedSinceDocument,
-  type AuctionParametersUpdatedSinceQuery,
+  ConvertibleDepositFacilityClaimedYieldsSinceDocument,
+  type ConvertibleDepositFacilityClaimedYieldsSinceQuery,
 } from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { castFloat } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
-const FUNCTION_KEY = "auctionParametersUpdated";
+const FUNCTION_KEY = "convertibleDepositFacilityClaimedYield";
 const LATEST_BLOCK = "latestBlock";
 
-type AuctionParametersUpdatedEvent =
-  AuctionParametersUpdatedSinceQuery["convertibleDepositAuctioneerAuctionParametersUpdateds"]["items"][number];
-
-const FRONTEND_URL = "https://deposit.olympusdao.finance";
+type ConvertibleDepositFacilityClaimedYieldEvent =
+  ConvertibleDepositFacilityClaimedYieldsSinceQuery["convertibleDepositFacilityClaimedYields"]["items"][number];
 
 /**
- * Sends a Discord alert when auction parameters are updated
+ * Sends a Discord alert when a convertible deposit facility claimed yield event is detected
  *
  * @param webhookUrl
  * @param event
  */
-const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionParametersUpdatedEvent): void => {
+const sendClaimYieldAlert = (webhookUrl: string, event: ConvertibleDepositFacilityClaimedYieldEvent): void => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
-  const target = castFloat(event.targetDecimal);
-  const minPrice = castFloat(event.minPriceDecimal);
+  const amount = castFloat(event.amountDecimal);
 
-  const isDisabled = target === 0;
-
-  const title = "CD Auction Tuning";
-  const description = isDisabled
-    ? "🛑 The auction has been disabled, due to market conditions."
-    : "🟢 The auction parameters have been tuned for the emissions target.";
+  const description = "The protocol has claimed yield from convertible deposits";
 
   const fields: EmbedField[] = [
     {
-      name: "Deposit Asset",
-      value: `[${event.rDepositAsset?.rAsset?.symbol || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
-      inline: true,
+      name: "Date",
+      value: getRelativeTimestamp(timestamp),
+      inline: false,
     },
     {
       name: "Transaction",
       value: `[${shorten(txHash)}](${getEtherscanTransactionUrl(txHash, ChainId.MAINNET)})`,
+      inline: false,
+    },
+    {
+      name: "Asset",
+      value: `[${event.rDepositAsset?.rAsset?.symbol || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
       inline: true,
     },
     {
-      name: "Date",
-      value: getRelativeTimestamp(timestamp),
+      name: "Amount",
+      value: `${amount.toFixed(2)}`,
+      inline: true,
     },
   ];
 
-  if (!isDisabled) {
-    fields.push(
-      {
-        name: "Day Target",
-        value: `${target.toFixed(2)} OHM`,
-        inline: true,
-      },
-      {
-        name: "Min Price",
-        value: `$${minPrice.toFixed(2)}`,
-        inline: true,
-      },
-      {
-        name: "View Auction",
-        value: `[View on deposit.olympusdao.finance](${FRONTEND_URL})`,
-        inline: false,
-      },
-    );
-  }
-
-  sendAlert(webhookUrl, "", title, description, fields);
+  sendAlert(webhookUrl, "", `💸 Protocol Yield Claimed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -92,11 +70,11 @@ const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<num
 };
 
 /**
- * Performs checks for auction parameters updated events
+ * Performs checks for convertible deposit facility claimed yield events
  *
  * This function:
- * - Queries the GraphQL convertible deposits endpoint for auction parameters updated events
- * - Sends Discord alerts with auction details (or disabled status if target is 0)
+ * - Queries the GraphQL convertible deposits endpoint for convertible deposit facility claimed yield events
+ * - Sends Discord alerts with facility address and transaction hash
  * - Updates Firestore with the latest processed block
  *
  * @param firestoreDocumentPath
@@ -104,7 +82,7 @@ const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<num
  * @param webhookUrl
  * @returns
  */
-export const performAuctionParametersUpdatedChecks = async (
+export const performClaimedYieldChecks = async (
   firestoreDocumentPath: string,
   firestoreCollectionName: string,
   webhookUrl: string,
@@ -113,17 +91,17 @@ export const performAuctionParametersUpdatedChecks = async (
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  console.info(`\n\n⏰ Processing Auction Parameters Updated Events`);
+  console.info(`\n\n⏰ Processing Claimed Yield Events`);
 
   // Get the latest block
   const latestBlock = await getLatestBlock(firestoreDocument);
 
-  // Fetch events using GraphQL
+  // Fetch claimed yield events using GraphQL
   const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
-  console.debug(`Fetching auction parameters updated events since block ${latestBlock}`);
+  console.debug(`Fetching claimed yield events since block ${latestBlock}`);
 
   const queryResults = await client
-    .query(AuctionParametersUpdatedSinceDocument, {
+    .query(ConvertibleDepositFacilityClaimedYieldsSinceDocument, {
       latestBlock: latestBlock.toString(),
       chainId: 1,
     })
@@ -135,11 +113,11 @@ export const performAuctionParametersUpdatedChecks = async (
     );
   }
 
-  const events = queryResults.data.convertibleDepositAuctioneerAuctionParametersUpdateds.items || [];
-  console.info(`Processing ${events.length} auction parameters updated events`);
+  const events = queryResults.data.convertibleDepositFacilityClaimedYields.items || [];
+  console.info(`Processing ${events.length} claimed yield events`);
 
   if (events.length === 0) {
-    console.info(`No auction parameters updated events to process`);
+    console.info(`No claimed yield events to process`);
     return;
   }
 
@@ -148,10 +126,8 @@ export const performAuctionParametersUpdatedChecks = async (
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
-    console.info(
-      `Processing auction parameters updated event for auctioneer ${event.auctioneer} at block ${eventBlock}`,
-    );
-    sendAuctionParametersUpdatedAlert(webhookUrl, event);
+    console.info(`Processing claimed yield event for facility ${event.facility} at block ${eventBlock}`);
+    sendClaimYieldAlert(webhookUrl, event);
 
     // Update the latest block to this event's block
     if (eventBlock > updatedLatestBlock) {
@@ -174,5 +150,5 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performAuctionParametersUpdatedChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
+  performClaimedYieldChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
 }

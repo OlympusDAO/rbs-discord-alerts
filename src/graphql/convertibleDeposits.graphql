@@ -15,6 +15,32 @@ query ClaimAllYieldFailedEventsSince($latestBlock: BigInt!, $chainId: Int!) {
   }
 }
 
+query ConvertibleDepositFacilityClaimedYieldsSince($latestBlock: BigInt!, $chainId: Int!) {
+  convertibleDepositFacilityClaimedYields(
+    orderBy: "block"
+    orderDirection: "asc"
+    where: { block_gt: $latestBlock, chainId: $chainId }
+  ) {
+    items {
+      chainId
+      block
+      logIndex
+      txHash
+      timestamp
+      facility
+      depositAsset
+      amount
+      amountDecimal
+      rDepositAsset {
+        rAsset {
+          name
+          symbol
+        }
+      }
+    }
+  }
+}
+
 query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
   convertibleDepositAuctioneerAuctionParametersUpdateds(
     orderBy: "block"
@@ -35,6 +61,12 @@ query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
       tickSizeDecimal
       minPrice
       minPriceDecimal
+      rDepositAsset {
+        rAsset {
+          name
+          symbol
+        }
+      }
     }
   }
 }
@@ -58,6 +90,12 @@ query AuctionResultSince($latestBlock: BigInt!, $chainId: Int!) {
       target
       targetDecimal
       periodIndex
+      rDepositAsset {
+        rAsset {
+          name
+          symbol
+        }
+      }
     }
   }
 }
