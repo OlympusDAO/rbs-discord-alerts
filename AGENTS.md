@@ -212,7 +212,7 @@ State is stored in a single Firestore document per environment:
 2. **Regenerate Types**:
 
    ```bash
-   yarn codegen
+   pnpm run codegen
    ```
 
 3. **Import Generated Types**:
@@ -232,11 +232,11 @@ State is stored in a single Firestore document per environment:
 ### Manual Testing
 
 - CLI execution scripts in `package.json`:
-  - `yarn execute:events`
-  - `yarn execute:heartbeats`
-  - `yarn execute:snapshots`
-  - `yarn execute:targetPrice`
-  - `yarn execute:yrfmarkets`
+  - `pnpm run execute:events`
+  - `pnpm run execute:heartbeats`
+  - `pnpm run execute:snapshots`
+  - `pnpm run execute:targetPrice`
+  - `pnpm run execute:yrfmarkets`
 
 ### Environment Variables for Testing
 
@@ -262,17 +262,17 @@ export $(cat .env | xargs)
 
 ### Required Tools
 
-- `yarn lint:fix`: Fix linting issues. It is recommended to run this after any code changes to ensure consistency.
-- `yarn build`: TypeScript compilation. It is recommended to run this after any code changes to ensure accuracy.
-- `yarn codegen`: GraphQL code generation. Run this after updating any `.graphql` files.
+- `pnpm run lint`: Fix linting issues. It is recommended to run this after any code changes to ensure consistency.
+- `pnpm run build`: TypeScript compilation. It is recommended to run this after any code changes to ensure accuracy.
+- `pnpm run codegen`: GraphQL code generation. Run this after updating any `.graphql` files.
 
 ### Post-Change Checklist
 
 After making any code changes, **always** run these commands in order:
 
-1. `yarn codegen` - if you modified any GraphQL files
-2. `yarn lint:fix` - to fix any linting issues and ensure code consistency
-3. `yarn build` - to verify TypeScript compilation succeeds
+1. `pnpm run codegen` - if you modified any GraphQL files
+2. `pnpm run lint` - to fix any linting issues and ensure code consistency
+3. `pnpm run build` - to verify TypeScript compilation succeeds
 
 This ensures code quality and catches any type errors or linting issues before committing changes.
 
@@ -280,8 +280,8 @@ This ensures code quality and catches any type errors or linting issues before c
 
 ### Environment Stacks
 
-- **dev**: `yarn deploy:dev` or `pulumi up --stack dev`
-- **prod**: `yarn deploy:prod` or `pulumi up --stack prod`
+- **dev**: `pnpm run deploy:dev` or `pulumi up --stack dev`
+- **prod**: `pnpm run deploy:prod` or `pulumi up --stack prod`
 
 ### Prerequisites
 

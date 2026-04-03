@@ -42,9 +42,9 @@ Secrets are stored in Pulumi on a per-stack basis.
 
 ## Deployment
 
-`yarn deploy:dev`
+`pnpm run deploy:dev`
 
-`yarn deploy:prod`
+`pnpm run deploy:prod`
 
 ## How To Update Subgraph Versions
 
