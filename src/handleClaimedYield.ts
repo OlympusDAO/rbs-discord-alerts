@@ -23,7 +23,10 @@ type ConvertibleDepositFacilityClaimedYieldEvent =
  * @param webhookUrl
  * @param event
  */
-const sendClaimYieldAlert = (webhookUrl: string, event: ConvertibleDepositFacilityClaimedYieldEvent): void => {
+const sendClaimYieldAlert = async (
+  webhookUrl: string,
+  event: ConvertibleDepositFacilityClaimedYieldEvent,
+): Promise<void> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
   const amount = castFloat(event.amountDecimal);
@@ -53,7 +56,7 @@ const sendClaimYieldAlert = (webhookUrl: string, event: ConvertibleDepositFacili
     },
   ];
 
-  sendAlert(webhookUrl, "", `💸 Protocol Yield Claimed`, description, fields);
+  await sendAlert(webhookUrl, "", `💸 Protocol Yield Claimed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -127,7 +130,7 @@ export const performClaimedYieldChecks = async (
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing claimed yield event for facility ${event.facility} at block ${eventBlock}`);
-    sendClaimYieldAlert(webhookUrl, event);
+    await sendClaimYieldAlert(webhookUrl, event);
 
     // Update the latest block to this event's block
     if (eventBlock > updatedLatestBlock) {
@@ -150,5 +153,14 @@ if (require.main === module) {
     throw new Error("Set the WEBHOOK_URL environment variable");
   }
 
-  performClaimedYieldChecks("rbs-discord-alerts-dev", "default", process.env.WEBHOOK_URL);
+  const webhookUrl = process.env.WEBHOOK_URL;
+
+  void (async () => {
+    try {
+      await performClaimedYieldChecks("rbs-discord-alerts-dev", "default", webhookUrl);
+    } catch (error) {
+      console.error(error);
+      process.exit(1);
+    }
+  })();
 }
