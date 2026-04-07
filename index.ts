@@ -57,6 +57,8 @@ const FUNCTION_EXPIRATION_SECONDS = 30;
 const webhookAlertDAO = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
 const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY);
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
+const discordRoleCore = pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE);
+const contractUrl = pulumiConfig.get(CONFIG_CONTRACT);
 
 const graphQlApiKey = pulumiConfig.requireSecret(SECRET_GRAPHQL_API_KEY);
 const convertibleDepositsSubgraphUrl = pulumiConfig.requireSecret(SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL);
@@ -127,9 +129,9 @@ const [_functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
     await performSnapshotChecks(
       datastore.documentId.get(),
       datastore.collection.get(),
-      [pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
+      [discordRoleCore],
       webhookEmergency,
-      pulumiConfig.get(CONFIG_CONTRACT),
+      contractUrl,
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -157,7 +159,7 @@ const [_functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
     await performHeartbeatChecks(
       datastore.documentId.get(),
       datastore.collection.get(),
-      [pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE)],
+      [discordRoleCore],
       [webhookAlertCommunity],
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
