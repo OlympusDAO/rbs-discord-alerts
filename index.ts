@@ -38,7 +38,7 @@ const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
 
 const DEFAULT_MEMORY_MB = 256;
-const DEFAULT_RUNTIME = "nodejs20";
+const DEFAULT_RUNTIME = "nodejs24";
 
 // Create the KV store
 const FIRESTORE_DOCUMENT_STACK = PROJECT_NAME_STACK;
