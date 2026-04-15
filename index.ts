@@ -36,6 +36,7 @@ const SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL = "CONVERTIBLE_DEPOSITS_SUBGRAPH_
 
 const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
+const ARTIFACT_REGISTRY_GCF_REPOSITORY = "gcf-artifacts";
 
 const DEFAULT_MEMORY_MB = 256;
 const DEFAULT_RUNTIME = "nodejs22";
@@ -49,6 +50,49 @@ const datastore = new gcp.firestore.Document(FIRESTORE_DOCUMENT_STACK, {
 });
 
 export const datastoreId = datastore.id;
+
+const projectMetadata = gcp.organizations.getProjectOutput({
+  projectId: PROJECT_NAME,
+});
+
+const cloudBuildServiceAccount = projectMetadata.number.apply(
+  number => `serviceAccount:${number}@cloudbuild.gserviceaccount.com`,
+);
+const computeBuildServiceAccount = projectMetadata.number.apply(
+  number => `serviceAccount:${number}-compute@developer.gserviceaccount.com`,
+);
+const gcfAdminRobotServiceAccount = projectMetadata.number.apply(
+  number => `serviceAccount:service-${number}@gcf-admin-robot.iam.gserviceaccount.com`,
+);
+const appEngineDefaultServiceAccount = pulumi.interpolate`serviceAccount:${PROJECT_NAME}@appspot.gserviceaccount.com`;
+
+new gcp.artifactregistry.RepositoryIamMember(`${PROJECT_NAME_STACK}-gcf-artifacts-cloudbuild-writer`, {
+  location: gcp.config.region,
+  repository: ARTIFACT_REGISTRY_GCF_REPOSITORY,
+  role: "roles/artifactregistry.writer",
+  member: cloudBuildServiceAccount,
+});
+
+new gcp.artifactregistry.RepositoryIamMember(`${PROJECT_NAME_STACK}-gcf-artifacts-gcf-admin-writer`, {
+  location: gcp.config.region,
+  repository: ARTIFACT_REGISTRY_GCF_REPOSITORY,
+  role: "roles/artifactregistry.writer",
+  member: gcfAdminRobotServiceAccount,
+});
+
+new gcp.artifactregistry.RepositoryIamMember(`${PROJECT_NAME_STACK}-gcf-artifacts-compute-writer`, {
+  location: gcp.config.region,
+  repository: ARTIFACT_REGISTRY_GCF_REPOSITORY,
+  role: "roles/artifactregistry.writer",
+  member: computeBuildServiceAccount,
+});
+
+new gcp.artifactregistry.RepositoryIamMember(`${PROJECT_NAME_STACK}-gcf-artifacts-appspot-reader`, {
+  location: gcp.config.region,
+  repository: ARTIFACT_REGISTRY_GCF_REPOSITORY,
+  role: "roles/artifactregistry.reader",
+  member: appEngineDefaultServiceAccount,
+});
 
 const FUNCTION_EXPIRATION_SECONDS = 30;
 
