@@ -12,7 +12,7 @@ config:
   rbs-discord-alerts:discordWebhookEmergency:
     secure: AAABAC/UPKwGWdLAqTipeQjI6sn77QHoKVPuWoKqjr8NhyM4r3NqdeaaySj3dDq/FPIrO+4ep5Rwv5uGBafgTkkUvJNRgaxaWufqJzYZ4QU3Zjyxmf6EYjZhL/LuHGwcY0CqoLDvWjZp+q/duQp9mkp4H4Ep1mCveZtOVTPs8fjRtkHX3jRzcigyL6A63G9jT46WPrywiGHr
   rbs-discord-alerts:notificationEmail:
-    secure: AAABAGbtcNdSPrHwxV2iAL/g2kZPdaJboWKPBvY6JKKYb1ApsoN/kVcZ0/eXirRJHw==
+    secure: AAABAJUMrczur3McEVoMFalu/UXZpv8E242Xm+Wc7JVKPF29QC4uKfQNYrD2F+Y70NCLxajc
   rbs-discord-alerts:notificationEmailDiscord:
     secure: AAABAD8aklF93tVOYMrQw8v/QbRntHNRu0IHEdsjasY0G8HK9mAJfTrcYfI3B3FXOCOcezxN7/B/LZF0UPRXD/4bv5y36eUKdmAWfTjwVL9Esg==
   rbs-discord-alerts:CONVERTIBLE_DEPOSITS_SUBGRAPH_URL:

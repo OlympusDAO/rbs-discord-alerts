@@ -42,9 +42,11 @@ Secrets are stored in Pulumi on a per-stack basis.
 
 ## Deployment
 
-`yarn deploy:dev`
+`pnpm run deploy:dev`
 
-`yarn deploy:prod`
+`pnpm run deploy:prod`
+
+Pulumi may require pnpm's hoisted linker layout to avoid `.pnpm/...` closure-loading or export-path errors; this repo sets `node-linker=hoisted` in `.npmrc` for that reason.
 
 ## How To Update Subgraph Versions
 
