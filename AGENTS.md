@@ -156,6 +156,46 @@ State is stored in a single Firestore document per environment:
 
 ## Development Workflow
 
+### Common Commands
+
+Install dependencies with pnpm:
+
+```bash
+pnpm install
+```
+
+The repo uses `pnpm-workspace.yaml` for shared pnpm policy:
+
+- `nodeLinker: hoisted` is required for Pulumi's Node.js function serialization and avoids `.pnpm/...` closure-loading or export-path errors.
+- `minimumReleaseAge`, `strictDepBuilds`, `blockExoticSubdeps`, `preferFrozenLockfile`, and `overrides` are pnpm settings. They should stay in `pnpm-workspace.yaml`, not `.npmrc`.
+- Avoid `npx` in lifecycle scripts. pnpm exposes its settings to lifecycle scripts through `npm_config_*` environment variables, and npm/npx reports pnpm-only settings as unknown env config warnings.
+
+Common verification commands:
+
+```bash
+pnpm run codegen
+pnpm run lint
+pnpm run build
+```
+
+Run `pnpm run codegen` only when GraphQL documents or schema inputs change. Run `pnpm run lint` and `pnpm run build` after code changes.
+
+Local monitor scripts load `.env` and execute the corresponding handler:
+
+```bash
+pnpm run execute:events
+pnpm run execute:heartbeats
+pnpm run execute:snapshots
+pnpm run execute:targetPrice
+pnpm run execute:yrfmarkets
+pnpm run execute:emissionmanagermarkets
+pnpm run execute:failedperiodictasks
+pnpm run execute:bondmarketcreationfailed
+pnpm run execute:auctionparametersupdated
+pnpm run execute:auctionresult
+pnpm run execute:claimedyield
+```
+
 ### Adding New Functions/Endpoints
 
 1. **Create Handler Function**:
@@ -278,16 +318,42 @@ This ensures code quality and catches any type errors or linting issues before c
 
 ## Deployment
 
-### Environment Stacks
+### Pulumi Stacks
 
-- **dev**: `pnpm run deploy:dev` or `pulumi up --stack dev`
-- **prod**: `pnpm run deploy:prod` or `pulumi up --stack prod`
+Pulumi manages Google Cloud Functions, Scheduler jobs, Firestore state, Monitoring alert policies, dashboards, and notification channels. Deploy through the package scripts:
+
+- **dev**: `pnpm run deploy:dev`
+- **prod**: `pnpm run deploy:prod`
+
+Equivalent direct Pulumi commands:
+
+```bash
+pulumi up --stack dev
+pulumi up --stack prod
+```
+
+Use `pulumi preview --stack <stack>` before applying changes when you need to inspect infrastructure diffs without deploying.
 
 ### Prerequisites
 
 1. Set GCP project and region in Pulumi configuration
 2. Configure required secrets in Pulumi
 3. Ensure GraphQL API key is valid
+4. Ensure the active GCP credentials can update Cloud Functions, Scheduler, Firestore, Monitoring, and notification channels
+
+Required stack config includes:
+
+- `gcp:project`
+- `gcp:region`
+- `GRAPHQL_API_KEY`
+- `discordWebhookAlert`
+- `discordWebhookAlertCommunity`
+- `discordWebhookEmergency`
+- `notificationEmail`
+- `notificationEmailDiscord`
+- `discordRoleIdCore`
+- `contractUrl`
+- `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL`
 
 ### Monitoring
 
