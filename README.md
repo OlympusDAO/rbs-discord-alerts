@@ -40,13 +40,68 @@ To be implemented:
 
 Secrets are stored in Pulumi on a per-stack basis.
 
+## Common Tasks
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+This repository uses pnpm configuration from `pnpm-workspace.yaml`, including the hoisted linker layout required by Pulumi's Node.js closure serialization. Do not move these settings back to `.npmrc`; npm and `npx` do not understand pnpm-only keys such as `minimumReleaseAge`, `strictDepBuilds`, `blockExoticSubdeps`, or `nodeLinker`.
+
+Regenerate GraphQL types after editing `src/graphql/*.graphql` files:
+
+```bash
+pnpm run codegen
+```
+
+Run formatting and lint fixes:
+
+```bash
+pnpm run lint
+```
+
+Check TypeScript compilation:
+
+```bash
+pnpm run build
+```
+
+Run a monitor locally against values from `.env`:
+
+```bash
+pnpm run execute:events
+pnpm run execute:heartbeats
+pnpm run execute:snapshots
+pnpm run execute:targetPrice
+pnpm run execute:yrfmarkets
+```
+
 ## Deployment
 
-`pnpm run deploy:dev`
+Deployments are managed by Pulumi. The package scripts wrap the corresponding stack commands:
 
-`pnpm run deploy:prod`
+```bash
+pnpm run deploy:dev
+pnpm run deploy:prod
+```
 
-Pulumi may require pnpm's hoisted linker layout to avoid `.pnpm/...` closure-loading or export-path errors; this repo sets `node-linker=hoisted` in `.npmrc` for that reason.
+Equivalent Pulumi commands:
+
+```bash
+pulumi up --stack dev
+pulumi up --stack prod
+```
+
+Before deploying, confirm the selected stack with `pulumi stack ls` or `pulumi stack select <stack>`, and verify that the required stack config is present:
+
+```bash
+pulumi config --stack dev
+pulumi config --stack prod
+```
+
+Required stack config includes `gcp:project`, `gcp:region`, `GRAPHQL_API_KEY`, Discord webhook URLs, notification emails, `discordRoleIdCore`, `contractUrl`, and `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL`.
 
 ## How To Update Subgraph Versions
 

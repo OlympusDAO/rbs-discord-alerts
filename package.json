@@ -18,8 +18,7 @@
     "lint": "biome check --write .",
     "lint:check": "biome check .",
     "deploy:dev": "pulumi up --stack dev",
-    "deploy:prod": "pulumi up --stack prod",
-    "preinstall": "npx only-allow@1.2.2 pnpm"
+    "deploy:prod": "pulumi up --stack prod"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.11",
