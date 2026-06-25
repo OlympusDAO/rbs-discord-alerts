@@ -55,7 +55,7 @@
       },
       "suspicious": {
         "noConsole": "off",
-        "noExplicitAny": "off"
+        "noExplicitAny": "error"
       },
       "nursery": {
         "useSortedClasses": "off"
