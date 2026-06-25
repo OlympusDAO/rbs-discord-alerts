@@ -12,7 +12,7 @@ export type Scalars = {
   Int: number;
   Float: number;
   BigInt: string;
-  JSON: any;
+  JSON: unknown;
 };
 
 export type Meta = {

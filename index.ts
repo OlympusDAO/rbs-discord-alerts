@@ -80,7 +80,7 @@ const [_functionTargetPriceChanged, functionTargetPriceChangedName] = createFunc
       webhookAlertCommunity,
     ]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -104,7 +104,7 @@ const [_functionPriceEvents, functionPriceEventsName] = createFunction(
     console.log("Received callback. Initiating handler.");
     await performEventChecks(datastore.documentId.get(), datastore.collection.get(), [webhookAlertCommunity]);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -134,7 +134,7 @@ const [_functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
       contractUrl,
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -163,7 +163,7 @@ const [_functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
       [webhookAlertCommunity],
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -187,7 +187,7 @@ const [_functionYRFCheck, functionYRFCheckName] = createFunction(
     console.log("Received callback. Initiating handler.");
     await performYRFMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -217,7 +217,6 @@ const [_functionYRFCheck, functionYRFCheckName] = createFunction(
 //       webhookAlertCommunity,
 //     );
 //     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-//     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 //     (<any>res).send("OK").end();
 //   },
 //   {
@@ -241,7 +240,7 @@ const [_functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] 
     console.log("Received callback. Initiating handler.");
     await performFailedPeriodicTasksChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertDAO);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -269,7 +268,7 @@ const [_functionBondMarketCreationFailedCheck, functionBondMarketCreationFailedC
       webhookAlertDAO,
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -297,7 +296,7 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
       webhookAlertCommunity,
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -321,7 +320,7 @@ const [_functionAuctionResultCheck, functionAuctionResultCheckName] = createFunc
     console.log("Received callback. Initiating handler.");
     await performAuctionResultChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {
@@ -345,7 +344,7 @@ const [_functionClaimedYieldCheck, functionClaimedYieldCheckName] = createFuncti
     console.log("Received callback. Initiating handler.");
     await performClaimedYieldChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
   },
   {

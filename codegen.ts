@@ -26,7 +26,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["patch -p0 < src/graphql/bondMarket.patch", "yarn lint"],
+        afterOneFileWrite: ["patch -p0 < src/graphql/bondMarket.patch", "pnpm run lint"],
       },
     },
     "src/graphql/rangeSnapshot.ts": {
@@ -44,7 +44,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint"],
+        afterOneFileWrite: ["pnpm run lint"],
       },
     },
     "src/graphql/priceSnapshot.ts": {
@@ -62,7 +62,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint"],
+        afterOneFileWrite: ["pnpm run lint"],
       },
     },
     "src/graphql/yrf.ts": {
@@ -80,7 +80,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint"],
+        afterOneFileWrite: ["pnpm run lint"],
       },
     },
     "src/graphql/emissionManager.ts": {
@@ -98,7 +98,7 @@ const config: CodegenConfig = {
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint"],
+        afterOneFileWrite: ["pnpm run lint"],
       },
     },
     "src/graphql/convertibleDeposits.ts": {
@@ -112,11 +112,12 @@ const config: CodegenConfig = {
           BigInt: "string",
           Bytes: "Uint8Array",
           Int8: "number",
+          JSON: "unknown",
           Timestamp: "number",
         },
       },
       hooks: {
-        afterOneFileWrite: ["yarn lint"],
+        afterOneFileWrite: ["pnpm run lint"],
       },
     },
   },
