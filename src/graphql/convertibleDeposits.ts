@@ -10236,6 +10236,8 @@ export type ConvertibleDepositFacilityClaimedYieldsSinceQuery = {
 export type AuctionParametersUpdatedSinceQueryVariables = Exact<{
   latestBlock: Scalars["BigInt"];
   chainId: Scalars["Int"];
+  managerChainId: Scalars["Float"];
+  emissionManagerAddress: Scalars["String"];
 }>;
 
 export type AuctionParametersUpdatedSinceQuery = {
@@ -10263,6 +10265,14 @@ export type AuctionParametersUpdatedSinceQuery = {
       } | null;
     }>;
   };
+  emissionManager?: {
+    __typename?: "emissionManager";
+    address: string;
+    convertibleDepositAuctioneer: string;
+    backingDecimal: string;
+    minimumPremiumDecimal: string;
+    minPriceScalarDecimal: string;
+  } | null;
 };
 
 export type AuctionResultSinceQueryVariables = Exact<{
@@ -10527,6 +10537,16 @@ export const AuctionParametersUpdatedSinceDocument = {
           variable: { kind: "Variable", name: { kind: "Name", value: "chainId" } },
           type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Int" } } },
         },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "managerChainId" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Float" } } },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "emissionManagerAddress" } },
+          type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } },
+        },
       ],
       selectionSet: {
         kind: "SelectionSet",
@@ -10610,6 +10630,32 @@ export const AuctionParametersUpdatedSinceDocument = {
                     ],
                   },
                 },
+              ],
+            },
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "emissionManager" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "chainId" },
+                value: { kind: "Variable", name: { kind: "Name", value: "managerChainId" } },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "address" },
+                value: { kind: "Variable", name: { kind: "Name", value: "emissionManagerAddress" } },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "address" } },
+                { kind: "Field", name: { kind: "Name", value: "convertibleDepositAuctioneer" } },
+                { kind: "Field", name: { kind: "Name", value: "backingDecimal" } },
+                { kind: "Field", name: { kind: "Name", value: "minimumPremiumDecimal" } },
+                { kind: "Field", name: { kind: "Name", value: "minPriceScalarDecimal" } },
               ],
             },
           },

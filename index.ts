@@ -300,6 +300,7 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
     (<any>res).send("OK").end();
   },
   {
+    GRAPHQL_API_KEY: graphQlApiKey,
     CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
   },
   "*/5 * * * *", // Every 5 minutes

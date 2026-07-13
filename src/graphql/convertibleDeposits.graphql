@@ -41,7 +41,12 @@ query ConvertibleDepositFacilityClaimedYieldsSince($latestBlock: BigInt!, $chain
   }
 }
 
-query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
+query AuctionParametersUpdatedSince(
+  $latestBlock: BigInt!
+  $chainId: Int!
+  $managerChainId: Float!
+  $emissionManagerAddress: String!
+) {
   convertibleDepositAuctioneerAuctionParametersUpdateds(
     orderBy: "block"
     orderDirection: "asc"
@@ -68,6 +73,13 @@ query AuctionParametersUpdatedSince($latestBlock: BigInt!, $chainId: Int!) {
         }
       }
     }
+  }
+  emissionManager(chainId: $managerChainId, address: $emissionManagerAddress) {
+    address
+    convertibleDepositAuctioneer
+    backingDecimal
+    minimumPremiumDecimal
+    minPriceScalarDecimal
   }
 }
 
