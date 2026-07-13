@@ -1,14 +1,15 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getConvertibleDepositsSubgraphUrl } from "./constants";
+import { EMISSION_MANAGER_V1_2, getConvertibleDepositsSubgraphUrl, getRbsSubgraphUrl } from "./constants";
 import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import {
   AuctionParametersUpdatedSinceDocument,
   type AuctionParametersUpdatedSinceQuery,
 } from "./graphql/convertibleDeposits";
+import { RangeSnapshotAtBlockDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
-import { castFloat } from "./helpers/numberHelper";
+import { castFloat, castFloatNullable, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
 const FUNCTION_KEY = "auctionParametersUpdated";
@@ -16,16 +17,54 @@ const LATEST_BLOCK = "latestBlock";
 
 type AuctionParametersUpdatedEvent =
   AuctionParametersUpdatedSinceQuery["convertibleDepositAuctioneerAuctionParametersUpdateds"]["items"][number];
+type EmissionManagerState = NonNullable<AuctionParametersUpdatedSinceQuery["emissionManager"]>;
+
+export type AuctionPriceContext = {
+  ohmPrice: number | null;
+  auctionActivationPrice: number;
+};
+
+type AuctionParametersUpdatedAlert = {
+  title: string;
+  description: string;
+  fields: EmbedField[];
+};
 
 const FRONTEND_URL = "https://deposit.olympusdao.finance";
 
-/**
- * Sends a Discord alert when auction parameters are updated
- *
- * @param webhookUrl
- * @param event
- */
-const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionParametersUpdatedEvent): void => {
+export const deriveAuctionPriceContext = (
+  event: AuctionParametersUpdatedEvent,
+  manager: EmissionManagerState,
+  snapshotOhmPrice: number | null = null,
+): AuctionPriceContext => {
+  const minPrice = castFloat(event.minPriceDecimal);
+  const minPriceScalar = castFloat(manager.minPriceScalarDecimal);
+  const backing = castFloat(manager.backingDecimal);
+  const minimumPremium = castFloat(manager.minimumPremiumDecimal);
+
+  return {
+    ohmPrice: minPrice > 0 && minPriceScalar > 0 ? minPrice / minPriceScalar : snapshotOhmPrice,
+    auctionActivationPrice: backing * (1 + minimumPremium),
+  };
+};
+
+const getOhmPriceAtBlock = async (block: string): Promise<number> => {
+  const client = createGraphQLClient(getRbsSubgraphUrl());
+  const queryResults = await client.query(RangeSnapshotAtBlockDocument, { block }).toPromise();
+  const snapshot = queryResults.data?.rangeSnapshots[0];
+  const ohmPrice = castFloatNullable(snapshot?.ohmPrice);
+
+  if (snapshot?.block !== block || ohmPrice === null || !Number.isFinite(ohmPrice) || ohmPrice <= 0) {
+    throw new Error(`Did not receive a valid OHM price snapshot at block ${block}. Error: ${queryResults.error}`);
+  }
+
+  return ohmPrice;
+};
+
+export const buildAuctionParametersUpdatedAlert = (
+  event: AuctionParametersUpdatedEvent,
+  priceContext: AuctionPriceContext,
+): AuctionParametersUpdatedAlert => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
   const target = castFloat(event.targetDecimal);
@@ -53,6 +92,16 @@ const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionPar
       name: "Date",
       value: getRelativeTimestamp(timestamp),
     },
+    {
+      name: "OHM Price",
+      value: formatCurrency(priceContext.ohmPrice),
+      inline: true,
+    },
+    {
+      name: "Auction Activation Price",
+      value: formatCurrency(priceContext.auctionActivationPrice),
+      inline: true,
+    },
   ];
 
   if (!isDisabled) {
@@ -63,8 +112,8 @@ const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionPar
         inline: true,
       },
       {
-        name: "Min Price",
-        value: `$${minPrice.toFixed(2)}`,
+        name: "Auction Bid Floor",
+        value: formatCurrency(minPrice),
         inline: true,
       },
       {
@@ -75,7 +124,49 @@ const sendAuctionParametersUpdatedAlert = (webhookUrl: string, event: AuctionPar
     );
   }
 
-  sendAlert(webhookUrl, "", title, description, fields);
+  return { title, description, fields };
+};
+
+/**
+ * Sends a Discord alert when auction parameters are updated
+ *
+ * @param webhookUrl
+ * @param event
+ * @param priceContext
+ */
+const sendAuctionParametersUpdatedAlert = (
+  webhookUrl: string,
+  event: AuctionParametersUpdatedEvent,
+  priceContext: AuctionPriceContext,
+): void => {
+  const alert = buildAuctionParametersUpdatedAlert(event, priceContext);
+  sendAlert(webhookUrl, "", alert.title, alert.description, alert.fields);
+};
+
+const validateEmissionManagerState = (
+  manager: AuctionParametersUpdatedSinceQuery["emissionManager"],
+  events: AuctionParametersUpdatedEvent[],
+): EmissionManagerState => {
+  if (!manager) {
+    throw new Error(`Emission Manager state was not returned for CD auction tuning events`);
+  }
+
+  if (manager.address.toLowerCase() !== EMISSION_MANAGER_V1_2.toLowerCase()) {
+    throw new Error(`Emission Manager state does not match the configured manager address`);
+  }
+
+  const numericSettings = [manager.backingDecimal, manager.minimumPremiumDecimal, manager.minPriceScalarDecimal].map(
+    castFloat,
+  );
+  if (numericSettings.some(value => !Number.isFinite(value))) {
+    throw new Error(`Emission Manager state contains invalid pricing settings`);
+  }
+
+  if (events.some(event => event.auctioneer.toLowerCase() !== manager.convertibleDepositAuctioneer.toLowerCase())) {
+    throw new Error(`CD auction tuning event auctioneer does not match the Emission Manager configuration`);
+  }
+
+  return manager;
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -126,6 +217,8 @@ export const performAuctionParametersUpdatedChecks = async (
     .query(AuctionParametersUpdatedSinceDocument, {
       latestBlock: latestBlock.toString(),
       chainId: 1,
+      managerChainId: 1,
+      emissionManagerAddress: EMISSION_MANAGER_V1_2.toLowerCase(),
     })
     .toPromise();
 
@@ -143,15 +236,27 @@ export const performAuctionParametersUpdatedChecks = async (
     return;
   }
 
+  // This subgraph entity is current mutable state. Normal scheduler runs process events close to their block,
+  // while historical replays can reflect manager settings that were updated after the event.
+  const emissionManager = validateEmissionManagerState(queryResults.data.emissionManager, events);
+  const priceContexts = await Promise.all(
+    events.map(async event => {
+      const priceContext = deriveAuctionPriceContext(event, emissionManager);
+      if (priceContext.ohmPrice !== null) return priceContext;
+
+      return deriveAuctionPriceContext(event, emissionManager, await getOhmPriceAtBlock(event.block));
+    }),
+  );
+
   let updatedLatestBlock = latestBlock;
 
   // Process events and send alerts
-  for (const event of events) {
+  for (const [eventIndex, event] of events.entries()) {
     const eventBlock = Number(event.block);
     console.info(
       `Processing auction parameters updated event for auctioneer ${event.auctioneer} at block ${eventBlock}`,
     );
-    sendAuctionParametersUpdatedAlert(webhookUrl, event);
+    sendAuctionParametersUpdatedAlert(webhookUrl, event, priceContexts[eventIndex]);
 
     // Update the latest block to this event's block
     if (eventBlock > updatedLatestBlock) {
