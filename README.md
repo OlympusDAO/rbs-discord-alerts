@@ -78,6 +78,8 @@ pnpm run execute:targetPrice
 pnpm run execute:yrfmarkets
 ```
 
+`.env` is used only by the local `execute:*` commands and GraphQL code generation. It is not read by `pnpm run build`, `pnpm run lint`, or Pulumi deployments. See `.env.sample` for the variables required by each local command; there are currently no optional `.env` variables.
+
 ## Deployment
 
 Deployments are managed by Pulumi. The package scripts wrap the corresponding stack commands:
@@ -101,7 +103,19 @@ pulumi config --stack dev
 pulumi config --stack prod
 ```
 
-Required stack config includes `gcp:project`, `gcp:region`, `GRAPHQL_API_KEY`, Discord webhook URLs, notification emails, `discordRoleIdCore`, `contractUrl`, and `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL`.
+Required stack config includes `gcp:project`, `gcp:region`, `GRAPHQL_API_KEY`, Discord webhook URLs (including `discordWebhookProtocolRevenue`), notification emails, `discordRoleIdCore`, `contractUrl`, `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL`, and `ETHEREUM_RPC_URL` (an archive-capable Ethereum RPC endpoint).
+
+### Ethereum RPC requirement
+
+`ETHEREUM_RPC_URL` is required by the auction-parameters monitor. The endpoint must support historical `eth_call` requests because the monitor reads the Emission Manager configuration and `PRICE.getLastPrice()` at each auction-tuning event block. Reading exact-block values keeps delayed processing and historical replay consistent with the contract's activation logic.
+
+Removing this required configuration would first require the Convertible Deposits subgraph to persist the complete historical activation context for every auction-tuning event:
+
+- OHM price from `PRICE.getLastPrice()`
+- Emission Manager supply, backing, base emission rate, minimum premium, and tick size
+- Configured CD auctioneer address
+
+Once those exact-block values are indexed and validated against historical events, the alert can calculate the approximate activation price using GraphQL data alone. The RPC client and `ETHEREUM_RPC_URL` Pulumi configuration can then be removed. Using the subgraph's mutable current Emission Manager entity is not sufficient because replayed events could be calculated with settings from a later block.
 
 ## How To Update Subgraph Versions
 

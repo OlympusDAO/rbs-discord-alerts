@@ -28,11 +28,13 @@ const CONFIG_DISCORD_ROLE_CORE = "discordRoleIdCore";
 const CONFIG_CONTRACT = "contractUrl";
 const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
 const SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY = "discordWebhookAlertCommunity";
+const SECRET_DISCORD_WEBHOOK_PROTOCOL_REVENUE = "discordWebhookProtocolRevenue";
 const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 const SECRET_GRAPHQL_API_KEY = "GRAPHQL_API_KEY";
 const SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL = "CONVERTIBLE_DEPOSITS_SUBGRAPH_URL";
+const SECRET_ETHEREUM_RPC_URL = "ETHEREUM_RPC_URL";
 
 const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
@@ -56,12 +58,14 @@ const FUNCTION_EXPIRATION_SECONDS = 30;
 // Also use `require` instead of `requireSecret`, as requireSecret won't work
 const webhookAlertDAO = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
 const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY);
+const webhookProtocolRevenue = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_PROTOCOL_REVENUE);
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 const discordRoleCore = pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE);
 const contractUrl = pulumiConfig.get(CONFIG_CONTRACT);
 
 const graphQlApiKey = pulumiConfig.requireSecret(SECRET_GRAPHQL_API_KEY);
 const convertibleDepositsSubgraphUrl = pulumiConfig.requireSecret(SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL);
+const ethereumRpcUrl = pulumiConfig.requireSecret(SECRET_ETHEREUM_RPC_URL);
 
 /**
  * Target Price Changed Events
@@ -294,6 +298,7 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
       datastore.documentId.get(),
       datastore.collection.get(),
       webhookAlertCommunity,
+      process.env.ETHEREUM_RPC_URL || "",
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
@@ -302,6 +307,7 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
   {
     GRAPHQL_API_KEY: graphQlApiKey,
     CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+    ETHEREUM_RPC_URL: ethereumRpcUrl,
   },
   "*/5 * * * *", // Every 5 minutes
 );
@@ -343,7 +349,7 @@ const [_functionClaimedYieldCheck, functionClaimedYieldCheckName] = createFuncti
   DEFAULT_RUNTIME,
   async (_req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performClaimedYieldChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    await performClaimedYieldChecks(datastore.documentId.get(), datastore.collection.get(), webhookProtocolRevenue);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
