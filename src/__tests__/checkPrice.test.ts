@@ -16,14 +16,14 @@ describe("checkPrice", () => {
   });
 
   test("chainlink price < lp price + threshold", () => {
-    const result = isPriceDeviating(109, 100);
+    const result = isPriceDeviating(104, 100);
 
     expect(result[0]).toBe(false);
     expect(result[1]).toHaveLength(0);
   });
 
   test("chainlink price > lp price - threshold", () => {
-    const result = isPriceDeviating(91, 100);
+    const result = isPriceDeviating(96, 100);
 
     expect(result[0]).toBe(false);
     expect(result[1]).toHaveLength(0);
@@ -37,7 +37,7 @@ describe("checkPrice", () => {
   });
 
   test("chainlink price + threshold > lp price", () => {
-    const result = isPriceDeviating(100, 109);
+    const result = isPriceDeviating(100, 104);
 
     expect(result[0]).toBe(false);
     expect(result[1]).toHaveLength(0);
@@ -58,7 +58,7 @@ describe("checkPrice", () => {
   });
 
   test("chainlink price - threshold < lp price", () => {
-    const result = isPriceDeviating(100, 91);
+    const result = isPriceDeviating(100, 96);
 
     expect(result[0]).toBe(false);
     expect(result[1]).toHaveLength(0);
