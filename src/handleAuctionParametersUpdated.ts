@@ -1,7 +1,7 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { EMISSION_MANAGER_V1_2, getConvertibleDepositsSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
 import {
   AuctionParametersUpdatedSinceDocument,
   type AuctionParametersUpdatedSinceQuery,
@@ -158,12 +158,13 @@ export const buildAuctionParametersUpdatedAlert = (
  * @param priceContext
  */
 const sendAuctionParametersUpdatedAlert = (
+  alertSender: DiscordAlertSender,
   webhookUrl: string,
   event: AuctionParametersUpdatedEvent,
   priceContext: AuctionPriceContext,
 ): Promise<boolean> => {
   const alert = buildAuctionParametersUpdatedAlert(event, priceContext);
-  return sendAlert(webhookUrl, "", alert.title, alert.description, alert.fields);
+  return alertSender(webhookUrl, "", alert.title, alert.description, alert.fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -198,6 +199,7 @@ export const performAuctionParametersUpdatedChecks = async (
   webhookUrl: string,
   ethereumRpcUrl: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   if (!ethereumRpcUrl) throw new Error("Set the ETHEREUM_RPC_URL environment variable");
 
   // Get last processed block
@@ -257,7 +259,12 @@ export const performAuctionParametersUpdatedChecks = async (
     console.info(
       `Processing auction parameters updated event for auctioneer ${event.auctioneer} at block ${eventBlock}`,
     );
-    const alertSent = await sendAuctionParametersUpdatedAlert(webhookUrl, event, priceContexts[eventIndex]);
+    const alertSent = await sendAuctionParametersUpdatedAlert(
+      alertSender,
+      webhookUrl,
+      event,
+      priceContexts[eventIndex],
+    );
     if (!alertSent) throw new Error(`Discord rate-limited the CD auction tuning alert at block ${eventBlock}`);
 
     await firestoreDocument.update({

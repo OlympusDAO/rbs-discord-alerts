@@ -1,7 +1,7 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { EMISSION_MANAGER_ALERT_STARTING_BLOCK, getEmissionManagerSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
 import {
   EmissionManagerMarketDocument,
   EmissionManagerMarketsCreatedSinceDocument,
@@ -28,6 +28,7 @@ const LATEST_BLOCK_CLOSED = "latestBlockClosed";
  * @param saleCreated
  */
 const sendEmissionManagerMarketCreatedAlert = (
+  alertSender: DiscordAlertSender,
   webhookUrl: string,
   saleCreated: EmissionManagerSaleCreated,
 ): Promise<boolean> => {
@@ -60,7 +61,7 @@ const sendEmissionManagerMarketCreatedAlert = (
     },
   ];
 
-  return sendAlert(webhookUrl, "", `🏛️ EmissionManager Market Created`, description, fields);
+  return alertSender(webhookUrl, "", `🏛️ EmissionManager Market Created`, description, fields);
 };
 
 /**
@@ -69,7 +70,11 @@ const sendEmissionManagerMarketCreatedAlert = (
  * @param webhookUrl
  * @param marketEvent
  */
-const sendEmissionManagerMarketClosedAlert = (webhookUrl: string, marketEvent: MarketClosedEvent): Promise<boolean> => {
+const sendEmissionManagerMarketClosedAlert = (
+  alertSender: DiscordAlertSender,
+  webhookUrl: string,
+  marketEvent: MarketClosedEvent,
+): Promise<boolean> => {
   const marketId = marketEvent.market.marketId;
   const timestamp = Number.parseInt(marketEvent.timestamp, 10) * 1000; // Convert to milliseconds
 
@@ -90,7 +95,7 @@ const sendEmissionManagerMarketClosedAlert = (webhookUrl: string, marketEvent: M
     },
   ];
 
-  return sendAlert(webhookUrl, "", `🏛️ EmissionManager Market Closed`, description, fields);
+  return alertSender(webhookUrl, "", `🏛️ EmissionManager Market Closed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference, key: string): Promise<number> => {
@@ -117,6 +122,7 @@ const getLatestBlock = async (firestoreDocument: DocumentReference, key: string)
  * @returns
  */
 const processEmissionManagerMarketCreated = async (
+  alertSender: DiscordAlertSender,
   firestoreDocument: DocumentReference,
   webhookUrl: string,
 ): Promise<void> => {
@@ -151,7 +157,7 @@ const processEmissionManagerMarketCreated = async (
     const marketId = saleCreated.marketId;
 
     console.info(`Processing EmissionManager market created event for market ID: ${marketId}`);
-    const alertSent = await sendEmissionManagerMarketCreatedAlert(webhookUrl, saleCreated);
+    const alertSent = await sendEmissionManagerMarketCreatedAlert(alertSender, webhookUrl, saleCreated);
 
     const eventBlock = castInt(saleCreated.blockNumber);
     if (!alertSent)
@@ -172,6 +178,7 @@ const processEmissionManagerMarketCreated = async (
  * @returns
  */
 const processEmissionManagerMarketsClosed = async (
+  alertSender: DiscordAlertSender,
   firestoreDocument: DocumentReference,
   webhookUrl: string,
 ): Promise<void> => {
@@ -241,7 +248,7 @@ const processEmissionManagerMarketsClosed = async (
 
     if (saleCreateds.length > 0) {
       console.info(`Processing EmissionManager market closed event for market ID: ${marketId}`);
-      const alertSent = await sendEmissionManagerMarketClosedAlert(webhookUrl, closedEvent);
+      const alertSent = await sendEmissionManagerMarketClosedAlert(alertSender, webhookUrl, closedEvent);
       if (!alertSent)
         throw new Error(`Discord rate-limited the Emission Manager market closed alert at block ${eventBlock}`);
     }
@@ -273,12 +280,13 @@ export const performEmissionManagerMarketChecks = async (
   firestoreCollectionName: string,
   webhookUrl: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  await processEmissionManagerMarketCreated(firestoreDocument, webhookUrl);
-  await processEmissionManagerMarketsClosed(firestoreDocument, webhookUrl);
+  await processEmissionManagerMarketCreated(alertSender, firestoreDocument, webhookUrl);
+  await processEmissionManagerMarketsClosed(alertSender, firestoreDocument, webhookUrl);
 };
 
 // Running via CLI

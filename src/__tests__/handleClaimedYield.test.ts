@@ -7,7 +7,10 @@ import { createGraphQLClient } from "../helpers/graphqlClient";
 jest.mock("@google-cloud/firestore");
 jest.mock("../discord", () => ({
   ...jest.requireActual("../discord"),
-  sendAlert: jest.fn(),
+  ...(() => {
+    const sendAlert = jest.fn();
+    return { sendAlert, createDiscordAlertSender: jest.fn(() => sendAlert) };
+  })(),
 }));
 jest.mock("../helpers/graphqlClient");
 

@@ -1,7 +1,7 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
 import {
   BondMarketCreationFailedSinceDocument,
   type BondMarketCreationFailedSinceQuery,
@@ -24,6 +24,7 @@ type BondMarketCreationFailedEvent =
  * @param event
  */
 const sendBondMarketCreationFailedAlert = (
+  alertSender: DiscordAlertSender,
   webhookUrl: string,
   event: BondMarketCreationFailedEvent,
 ): Promise<boolean> => {
@@ -64,7 +65,7 @@ const sendBondMarketCreationFailedAlert = (
     },
   ];
 
-  return sendAlert(
+  return alertSender(
     webhookUrl,
     "",
     `⚠️ The EmissionManager was unable to create a bond market for the under-selling of OHM.`,
@@ -104,6 +105,7 @@ export const performBondMarketCreationFailedChecks = async (
   firestoreCollectionName: string,
   webhookUrl: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
@@ -144,7 +146,7 @@ export const performBondMarketCreationFailedChecks = async (
     console.info(
       `Processing bond market creation failed event for emission manager ${event.emissionManager} at block ${eventBlock}`,
     );
-    const alertSent = await sendBondMarketCreationFailedAlert(webhookUrl, event);
+    const alertSent = await sendBondMarketCreationFailedAlert(alertSender, webhookUrl, event);
     if (!alertSent) throw new Error(`Discord rate-limited the bond market failure alert at block ${eventBlock}`);
 
     await firestoreDocument.update({

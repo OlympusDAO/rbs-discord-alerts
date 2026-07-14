@@ -1,6 +1,6 @@
 import fetch from "cross-fetch";
 
-import { sendAlert } from "../discord";
+import { createDiscordAlertSender, sendAlert } from "../discord";
 
 jest.mock("cross-fetch");
 
@@ -58,6 +58,31 @@ describe("sendAlert", () => {
 
     await expect(sendAlert("webhook", "", "Title", "Description", [])).resolves.toBe(false);
     expect(fetch).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it("shares the retry-delay budget across alerts sent by one handler invocation", async () => {
+    (fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        status: 429,
+        ok: false,
+        json: jest.fn().mockResolvedValue({ retry_after: 6 }),
+      })
+      .mockResolvedValueOnce({ status: 204, ok: true })
+      .mockResolvedValueOnce({
+        status: 429,
+        ok: false,
+        json: jest.fn().mockResolvedValue({ retry_after: 5 }),
+      });
+
+    const alertSender = createDiscordAlertSender();
+    const firstAlert = alertSender("webhook", "", "First", "Description", []);
+
+    await jest.advanceTimersByTimeAsync(6_000);
+    await expect(firstAlert).resolves.toBe(true);
+
+    await expect(alertSender("webhook", "", "Second", "Description", [])).resolves.toBe(false);
+    expect(fetch).toHaveBeenCalledTimes(3);
     expect(jest.getTimerCount()).toBe(0);
   });
 });

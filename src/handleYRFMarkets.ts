@@ -1,6 +1,6 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 import { getBondsSubgraphUrl, getYRFSubgraphUrl, YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK } from "./constants";
-import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
 import { type MarketClosedEvent, MarketClosedEventsDocument } from "./graphql/bondMarket";
 import {
   type RepoMarket,
@@ -22,7 +22,11 @@ const LATEST_BLOCK_CLOSED = "latestBlockClosed";
  * @param webhookUrl
  * @param repoMarket
  */
-const sendYRFMarketCreatedAlert = (webhookUrl: string, repoMarket: RepoMarket): Promise<boolean> => {
+const sendYRFMarketCreatedAlert = (
+  alertSender: DiscordAlertSender,
+  webhookUrl: string,
+  repoMarket: RepoMarket,
+): Promise<boolean> => {
   const capacity = castFloat(repoMarket.bidAmountDecimal);
   const marketId = repoMarket.marketId;
   const transaction = repoMarket.transactionHash.toString();
@@ -54,7 +58,7 @@ const sendYRFMarketCreatedAlert = (webhookUrl: string, repoMarket: RepoMarket): 
     },
   ];
 
-  return sendAlert(webhookUrl, "", `🏛️ YRF Market Created`, description, fields);
+  return alertSender(webhookUrl, "", `🏛️ YRF Market Created`, description, fields);
 };
 
 /**
@@ -65,6 +69,7 @@ const sendYRFMarketCreatedAlert = (webhookUrl: string, repoMarket: RepoMarket): 
  * @param marketEvent
  */
 const sendYRFMarketClosedAlert = (
+  alertSender: DiscordAlertSender,
   webhookUrl: string,
   repoMarket: RepoMarket,
   marketEvent: MarketClosedEvent,
@@ -91,7 +96,7 @@ const sendYRFMarketClosedAlert = (
     },
   ];
 
-  return sendAlert(webhookUrl, "", `🏛️ YRF Market Closed`, description, fields);
+  return alertSender(webhookUrl, "", `🏛️ YRF Market Closed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference, key: string): Promise<number> => {
@@ -117,7 +122,11 @@ const getLatestBlock = async (firestoreDocument: DocumentReference, key: string)
  * @param webhookUrl
  * @returns
  */
-const processYRFMarketCreated = async (firestoreDocument: DocumentReference, webhookUrl: string): Promise<void> => {
+const processYRFMarketCreated = async (
+  alertSender: DiscordAlertSender,
+  firestoreDocument: DocumentReference,
+  webhookUrl: string,
+): Promise<void> => {
   console.info(`\n\n⏰ Processing YRF Market Created Events`);
 
   // Get the latest block
@@ -147,7 +156,7 @@ const processYRFMarketCreated = async (firestoreDocument: DocumentReference, web
     const marketId = repoMarket.marketId;
 
     console.info(`Processing YRF market created event for market ID: ${marketId}`);
-    const alertSent = await sendYRFMarketCreatedAlert(webhookUrl, repoMarket);
+    const alertSent = await sendYRFMarketCreatedAlert(alertSender, webhookUrl, repoMarket);
 
     const eventBlock = castInt(repoMarket.blockNumber);
     if (!alertSent) throw new Error(`Discord rate-limited the YRF market created alert at block ${eventBlock}`);
@@ -166,7 +175,11 @@ const processYRFMarketCreated = async (firestoreDocument: DocumentReference, web
  * @param webhookUrl
  * @returns
  */
-const processYRFMarketsClosed = async (firestoreDocument: DocumentReference, webhookUrl: string): Promise<void> => {
+const processYRFMarketsClosed = async (
+  alertSender: DiscordAlertSender,
+  firestoreDocument: DocumentReference,
+  webhookUrl: string,
+): Promise<void> => {
   console.info(`\n\n⏰ Processing YRF Market Closed Events`);
 
   // Get the latest block
@@ -230,7 +243,7 @@ const processYRFMarketsClosed = async (firestoreDocument: DocumentReference, web
     if (repoMarkets.length > 0) {
       const repoMarket = repoMarkets[0]; // Should only be one market with this ID
       console.info(`Processing YRF market closed event for market ID: ${marketId}`);
-      const alertSent = await sendYRFMarketClosedAlert(webhookUrl, repoMarket, closedEvent);
+      const alertSent = await sendYRFMarketClosedAlert(alertSender, webhookUrl, repoMarket, closedEvent);
       if (!alertSent) throw new Error(`Discord rate-limited the YRF market closed alert at block ${eventBlock}`);
     }
 
@@ -261,12 +274,13 @@ export const performYRFMarketChecks = async (
   firestoreCollectionName: string,
   webhookUrl: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  await processYRFMarketCreated(firestoreDocument, webhookUrl);
-  await processYRFMarketsClosed(firestoreDocument, webhookUrl);
+  await processYRFMarketCreated(alertSender, firestoreDocument, webhookUrl);
+  await processYRFMarketsClosed(alertSender, firestoreDocument, webhookUrl);
 };
 
 // Running via CLI

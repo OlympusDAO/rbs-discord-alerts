@@ -1,7 +1,7 @@
 import { Firestore } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "./constants";
-import { type EmbedField, sendAlert } from "./discord";
+import { createDiscordAlertSender, type EmbedField } from "./discord";
 import { type MinimumTargetPriceChanged, MinimumTargetPriceChangedEventsDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
@@ -26,6 +26,7 @@ export const performTargetPriceChangedCheck = async (
   firestoreCollectionName: string,
   alertWebhookUrls: string[],
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
@@ -79,7 +80,7 @@ export const performTargetPriceChangedCheck = async (
     ];
 
     for (let j = 0; j < alertWebhookUrls.length; j++) {
-      const currentAlertSuccess = await sendAlert(alertWebhookUrls[j], "", `🚨 RBS Target Price Changed`, ``, fields);
+      const currentAlertSuccess = await alertSender(alertWebhookUrls[j], "", `🚨 RBS Target Price Changed`, ``, fields);
       if (!currentAlertSuccess)
         throw new Error(`Discord rate-limited the target price alert at block ${targetPriceChangedEvent.block}`);
     }

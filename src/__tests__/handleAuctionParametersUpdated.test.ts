@@ -15,7 +15,10 @@ jest.mock("@google-cloud/firestore");
 jest.mock("../discord", () => ({
   ...jest.requireActual("../discord"),
   getRelativeTimestamp: jest.fn(() => "relative date"),
-  sendAlert: jest.fn(),
+  ...(() => {
+    const sendAlert = jest.fn();
+    return { sendAlert, createDiscordAlertSender: jest.fn(() => sendAlert) };
+  })(),
 }));
 jest.mock("../helpers/graphqlClient");
 jest.mock("../helpers/ethereumRpcClient");

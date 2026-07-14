@@ -8,6 +8,16 @@ export type EmbedField = {
   inline?: boolean;
 };
 
+export type DiscordAlertSender = (
+  webhook: string,
+  content: string,
+  title: string,
+  description: string,
+  fields: EmbedField[],
+  footer?: string,
+  timestamp?: string,
+) => Promise<boolean>;
+
 type Embed = {
   title: string;
   description: string;
@@ -34,7 +44,7 @@ type WebhookAttempt = {
 const MAX_WEBHOOK_ATTEMPTS = 3;
 const MAX_WEBHOOK_RETRY_BUDGET_MS = 10_000;
 
-export const createDiscordRetryBudget = (): RetryBudget => createRetryBudget(MAX_WEBHOOK_RETRY_BUDGET_MS);
+const createDiscordRetryBudget = (): RetryBudget => createRetryBudget(MAX_WEBHOOK_RETRY_BUDGET_MS);
 
 const getRetryAfterMs = (body: unknown): number | undefined => {
   if (typeof body !== "object" || body === null || !("retry_after" in body)) return undefined;
@@ -100,9 +110,9 @@ export const BLANK_EMBED_FIELD = {
  * @param fields
  * @param footer
  * @param timestamp
- * @param retryBudget
  */
-export const sendAlert = async (
+const sendAlertWithRetryBudget = async (
+  retryBudget: RetryBudget,
   webhook: string,
   content: string,
   title: string,
@@ -110,7 +120,6 @@ export const sendAlert = async (
   fields: EmbedField[],
   footer?: string,
   timestamp?: string,
-  retryBudget: RetryBudget = createDiscordRetryBudget(),
 ): Promise<boolean> => {
   return await executeWebhook(
     webhook,
@@ -131,6 +140,14 @@ export const sendAlert = async (
     retryBudget,
   );
 };
+
+export const createDiscordAlertSender = (): DiscordAlertSender => {
+  const retryBudget = createDiscordRetryBudget();
+  return (webhook, content, title, description, fields, footer, timestamp) =>
+    sendAlertWithRetryBudget(retryBudget, webhook, content, title, description, fields, footer, timestamp);
+};
+
+export const sendAlert: DiscordAlertSender = (...args) => createDiscordAlertSender()(...args);
 
 export const sortPriceEmbeds = (fields: EmbedField[], ascending = true): EmbedField[] => {
   return fields.sort((a, b) => {

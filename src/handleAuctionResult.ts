@@ -1,7 +1,7 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
 import { AuctionResultSinceDocument, type AuctionResultSinceQuery } from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
@@ -19,7 +19,11 @@ type AuctionResultEvent = AuctionResultSinceQuery["convertibleDepositAuctioneerA
  * @param webhookUrl
  * @param event
  */
-const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): Promise<boolean> => {
+const sendAuctionResultAlert = (
+  alertSender: DiscordAlertSender,
+  webhookUrl: string,
+  event: AuctionResultEvent,
+): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
   const target = castFloat(event.targetDecimal);
@@ -55,7 +59,7 @@ const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): 
     },
   ];
 
-  return sendAlert(webhookUrl, "", title, description, fields);
+  return alertSender(webhookUrl, "", title, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -89,6 +93,7 @@ export const performAuctionResultChecks = async (
   firestoreCollectionName: string,
   webhookUrl: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
@@ -127,7 +132,7 @@ export const performAuctionResultChecks = async (
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing auction result event for auctioneer ${event.auctioneer} at block ${eventBlock}`);
-    const alertSent = await sendAuctionResultAlert(webhookUrl, event);
+    const alertSent = await sendAuctionResultAlert(alertSender, webhookUrl, event);
     if (!alertSent) throw new Error(`Discord rate-limited the auction result alert at block ${eventBlock}`);
 
     await firestoreDocument.update({

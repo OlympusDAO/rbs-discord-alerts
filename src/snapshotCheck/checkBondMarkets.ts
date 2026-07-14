@@ -11,7 +11,7 @@ import {
   YIELD_REPURCHASE_FACILITY_V1_1,
   YIELD_REPURCHASE_FACILITY_V1_2,
 } from "../constants";
-import { createDiscordRetryBudget, type EmbedField, getRoleMentions, sendAlert } from "../discord";
+import { type DiscordAlertSender, type EmbedField, getRoleMentions } from "../discord";
 import {
   type MarketClosedEvent,
   MarketClosedEventsDocument,
@@ -36,7 +36,6 @@ import {
   numbersEqual,
 } from "../helpers/numberHelper";
 import { getCurrentOperatorContractAddress } from "../helpers/operator";
-import type { RetryBudget } from "../helpers/retryHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
 
@@ -46,24 +45,21 @@ const CAPACITY_DECIMALS = 0; // Whole number
 const ORACLE_UPDATE_THRESHOLD = 0.02; // 2% swing required to force the oracle to update
 
 const sendDiscrepancyAlert = async (
+  alertSender: DiscordAlertSender,
   webhookUrl: string,
   mentionRoles: string[],
   title: string,
   errors: string[],
   fields: EmbedField[],
-  retryBudget: RetryBudget,
   firestore: DocumentReference,
   block: number,
 ): Promise<void> => {
-  const alertSent = await sendAlert(
+  const alertSent = await alertSender(
     webhookUrl,
     getRoleMentions(mentionRoles),
     title,
     toUnorderedList(errors),
     fields,
-    undefined,
-    undefined,
-    retryBudget,
   );
   if (!alertSent) throw new Error(`Discord rate-limited the ${title} alert`);
 
@@ -636,6 +632,7 @@ const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot):
 };
 
 export const checkBondMarkets = async (
+  alertSender: DiscordAlertSender,
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
@@ -707,7 +704,6 @@ export const checkBondMarkets = async (
 
   // Iterate over blocks and perform checks
   const rangeSnapshots: RangeSnapshot[] = rangeSnapshotResults.data.rangeSnapshots;
-  const retryBudget = createDiscordRetryBudget();
   console.info(`Processing ${rangeSnapshots.length} RangeSnapshot records`);
   for (const rangeSnapshot of rangeSnapshots) {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
@@ -722,6 +718,7 @@ export const checkBondMarkets = async (
       if (errors.length === 0) continue;
 
       await sendDiscrepancyAlert(
+        alertSender,
         webhookUrl,
         mentionRoles,
         `🚨 CushionUp Discrepancies`,
@@ -739,7 +736,6 @@ export const checkBondMarkets = async (
           { name: "Block", value: `${priceEvent.block}` },
           ...getShutdownEmbedField(contractUrl),
         ],
-        retryBudget,
         firestore,
         rangeSnapshotBlock,
       );
@@ -750,6 +746,7 @@ export const checkBondMarkets = async (
       if (errors.length === 0) continue;
 
       await sendDiscrepancyAlert(
+        alertSender,
         webhookUrl,
         mentionRoles,
         `🚨 CushionDown Discrepancies`,
@@ -764,7 +761,6 @@ export const checkBondMarkets = async (
           { name: "Block", value: `${priceEvent.block}` },
           ...getShutdownEmbedField(contractUrl),
         ],
-        retryBudget,
         firestore,
         rangeSnapshotBlock,
       );
@@ -775,6 +771,7 @@ export const checkBondMarkets = async (
       if (errors.length === 0) continue;
 
       await sendDiscrepancyAlert(
+        alertSender,
         webhookUrl,
         mentionRoles,
         `🚨 WallUp Discrepancies`,
@@ -789,7 +786,6 @@ export const checkBondMarkets = async (
           { name: "Block", value: `${priceEvent.block}` },
           ...getShutdownEmbedField(contractUrl),
         ],
-        retryBudget,
         firestore,
         rangeSnapshotBlock,
       );
@@ -800,6 +796,7 @@ export const checkBondMarkets = async (
       if (errors.length === 0) continue;
 
       await sendDiscrepancyAlert(
+        alertSender,
         webhookUrl,
         mentionRoles,
         `🚨 WallDown Discrepancies`,
@@ -814,7 +811,6 @@ export const checkBondMarkets = async (
           { name: "Block", value: `${priceEvent.block}` },
           ...getShutdownEmbedField(contractUrl),
         ],
-        retryBudget,
         firestore,
         rangeSnapshotBlock,
       );
@@ -826,6 +822,7 @@ export const checkBondMarkets = async (
       if (errors.length === 0) continue;
 
       await sendDiscrepancyAlert(
+        alertSender,
         webhookUrl,
         mentionRoles,
         `🚨 CreatedMarket Discrepancies`,
@@ -838,7 +835,6 @@ export const checkBondMarkets = async (
           { name: "Block", value: `${marketEvent.block}` },
           ...getShutdownEmbedField(contractUrl),
         ],
-        retryBudget,
         firestore,
         rangeSnapshotBlock,
       );
@@ -850,6 +846,7 @@ export const checkBondMarkets = async (
       if (errors.length === 0) continue;
 
       await sendDiscrepancyAlert(
+        alertSender,
         webhookUrl,
         mentionRoles,
         `🚨 ClosedMarket Discrepancies`,
@@ -862,7 +859,6 @@ export const checkBondMarkets = async (
           { name: "Block", value: `${marketEvent.block}` },
           ...getShutdownEmbedField(contractUrl),
         ],
-        retryBudget,
         firestore,
         rangeSnapshotBlock,
       );
