@@ -19,3 +19,5 @@ config:
     secure: AAABAMvq2tgVuwoxYrtB69Y8hvWijTNVHeWCX/sFNRkIIF1Rgoerjm6Naun0qG72OKz25OsunuzjElcfPJ3CxY3weM+tlJDE9Z5ATTRa2wz+8cmNRWrKrXg+IEsk/v7a3srr
   rbs-discord-alerts:discordWebhookProtocolRevenue:
     secure: AAABAGNlMI3px62bU9uws86SzNTWenpb4+zQXW0qxTQzELZ+WmtMFU+MvNPKwjUz7Ddc7prY5s95tsMiXG9Tn5117H/S6gO6dnHPL9EB22VLbCONPaqYmaz5QVgY7FpHzYv6cIRboykmQn6MZFErP5OxTSe/goW7EYQVbONU+yXZ1QE2fX3CbxBiZZxWzANOMbVgxMw21qb3
+  rbs-discord-alerts:ETHEREUM_RPC_URL:
+    secure: AAABANWbvPZbyXu2sdpAqzQPbD0xhi4Al3W7PaV9kEW52SVZM82WSacu2RW+YMIzaNYnHBRICaHHaurNv0xf7m/fnKPrIdi643Zup7t76gA1TDLhQJMeT41E
