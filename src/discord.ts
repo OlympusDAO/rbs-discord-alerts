@@ -1,5 +1,7 @@
 import fetch from "cross-fetch";
 
+import { createRetryBudget, type RetryBudget, retryWithBackoff } from "./helpers/retryHelper";
+
 export type EmbedField = {
   name: string;
   value: string;
@@ -24,7 +26,26 @@ type DiscordMessage = {
   embeds: Embed[];
 };
 
-const executeWebhook = async (webhook: string, content: DiscordMessage): Promise<boolean> => {
+type WebhookAttempt = {
+  success: boolean;
+  retryAfterMs?: number;
+};
+
+const MAX_WEBHOOK_ATTEMPTS = 3;
+const MAX_WEBHOOK_RETRY_BUDGET_MS = 10_000;
+
+export const createDiscordRetryBudget = (): RetryBudget => createRetryBudget(MAX_WEBHOOK_RETRY_BUDGET_MS);
+
+const getRetryAfterMs = (body: unknown): number | undefined => {
+  if (typeof body !== "object" || body === null || !("retry_after" in body)) return undefined;
+
+  const retryAfterSeconds = Number(body.retry_after);
+  if (!Number.isFinite(retryAfterSeconds) || retryAfterSeconds < 0) return undefined;
+
+  return retryAfterSeconds * 1000;
+};
+
+const executeWebhookAttempt = async (webhook: string, content: DiscordMessage): Promise<WebhookAttempt> => {
   console.log(`Sending request to Discord webhook: ${JSON.stringify(content, null, 2)}`);
   const response = await fetch(webhook, {
     method: "POST",
@@ -35,20 +56,30 @@ const executeWebhook = async (webhook: string, content: DiscordMessage): Promise
   });
 
   console.debug(`Discord response status: ${response.status}`);
-  // Ignore rate-limiting
   if (response.status === 429) {
     console.error(`Rate-limited by Discord`);
     const body = await response.json();
     console.error(`Discord response: ${JSON.stringify(body)}`);
 
-    return false;
+    return { success: false, retryAfterMs: getRetryAfterMs(body) };
   }
 
   if (!response.ok) {
     throw new Error(`Encountered error with Discord webhook: ${await response.text()}`);
   }
 
-  return true;
+  return { success: true };
+};
+
+const executeWebhook = async (webhook: string, content: DiscordMessage, retryBudget: RetryBudget): Promise<boolean> => {
+  const result = await retryWithBackoff(() => executeWebhookAttempt(webhook, content), {
+    maxAttempts: MAX_WEBHOOK_ATTEMPTS,
+    maxTotalDelayMs: MAX_WEBHOOK_RETRY_BUDGET_MS,
+    getRetryDelayMs: attempt => attempt.retryAfterMs,
+    sharedBudget: retryBudget,
+  });
+
+  return result.success;
 };
 
 export const BLANK_EMBED_FIELD = {
@@ -69,6 +100,7 @@ export const BLANK_EMBED_FIELD = {
  * @param fields
  * @param footer
  * @param timestamp
+ * @param retryBudget
  */
 export const sendAlert = async (
   webhook: string,
@@ -78,21 +110,26 @@ export const sendAlert = async (
   fields: EmbedField[],
   footer?: string,
   timestamp?: string,
+  retryBudget: RetryBudget = createDiscordRetryBudget(),
 ): Promise<boolean> => {
-  return await executeWebhook(webhook, {
-    content: content,
-    embeds: [
-      {
-        title: title,
-        description: description,
-        fields: fields,
-        footer: {
-          text: footer,
+  return await executeWebhook(
+    webhook,
+    {
+      content: content,
+      embeds: [
+        {
+          title: title,
+          description: description,
+          fields: fields,
+          footer: {
+            text: footer,
+          },
+          timestamp: timestamp,
         },
-        timestamp: timestamp,
-      },
-    ],
-  });
+      ],
+    },
+    retryBudget,
+  );
 };
 
 export const sortPriceEmbeds = (fields: EmbedField[], ascending = true): EmbedField[] => {
