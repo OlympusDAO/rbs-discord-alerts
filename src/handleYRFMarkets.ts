@@ -1,8 +1,13 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 import { getBondsSubgraphUrl, getYRFSubgraphUrl, YIELD_REPURCHASE_FACILITY_ALERT_STARTING_BLOCK } from "./constants";
-import { type EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
+import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import { type MarketClosedEvent, MarketClosedEventsDocument } from "./graphql/bondMarket";
-import { type RepoMarket, RepoMarketDocument, RepoMarketsCreatedSinceDocument } from "./graphql/yrf";
+import {
+  type RepoMarket,
+  RepoMarketDocument,
+  RepoMarketsCreatedSinceDocument,
+  YrfSubgraphMetaDocument,
+} from "./graphql/yrf";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { castFloat, castInt, formatNumber } from "./helpers/numberHelper";
@@ -15,19 +20,12 @@ const LATEST_BLOCK_CLOSED = "latestBlockClosed";
  * Sends a Discord alert when a YRF market is created
  *
  * @param webhookUrl
- * @param mentionRoles
  * @param repoMarket
- * @param marketEvent
  */
-const sendYRFMarketCreatedAlert = (
-  webhookUrl: string,
-  mentionRoles: string[],
-  repoMarket: RepoMarket,
-  marketEvent: RepoMarket,
-): void => {
-  const capacity = castFloat(marketEvent.bidAmountDecimal);
-  const marketId = marketEvent.marketId;
-  const transaction = marketEvent.transactionHash.toString();
+const sendYRFMarketCreatedAlert = (webhookUrl: string, repoMarket: RepoMarket): Promise<boolean> => {
+  const capacity = castFloat(repoMarket.bidAmountDecimal);
+  const marketId = repoMarket.marketId;
+  const transaction = repoMarket.transactionHash.toString();
   const timestamp = castInt(repoMarket.blockTimestamp) * 1000; // Convert to milliseconds
   const tokenSymbol = repoMarket.contract.reserveToken.symbol;
 
@@ -56,23 +54,21 @@ const sendYRFMarketCreatedAlert = (
     },
   ];
 
-  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ YRF Market Created`, description, fields);
+  return sendAlert(webhookUrl, "", `🏛️ YRF Market Created`, description, fields);
 };
 
 /**
  * Sends a Discord alert when a YRF market is closed
  *
  * @param webhookUrl
- * @param mentionRoles
  * @param repoMarket
  * @param marketEvent
  */
 const sendYRFMarketClosedAlert = (
   webhookUrl: string,
-  mentionRoles: string[],
   repoMarket: RepoMarket,
   marketEvent: MarketClosedEvent,
-): void => {
+): Promise<boolean> => {
   const marketId = marketEvent.market.marketId;
   const timestamp = Number.parseInt(marketEvent.timestamp, 10) * 1000; // Convert to milliseconds
 
@@ -95,7 +91,7 @@ const sendYRFMarketClosedAlert = (
     },
   ];
 
-  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ YRF Market Closed`, description, fields);
+  return sendAlert(webhookUrl, "", `🏛️ YRF Market Closed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference, key: string): Promise<number> => {
@@ -126,8 +122,6 @@ const processYRFMarketCreated = async (firestoreDocument: DocumentReference, web
 
   // Get the latest block
   const latestBlock = await getLatestBlock(firestoreDocument, LATEST_BLOCK_CREATED);
-  let updatedLatestBlock = latestBlock;
-
   // Fetch YRF markets
   const yrfClient = createGraphQLClient(getYRFSubgraphUrl());
   console.debug(`Fetching RepoMarket records since block ${latestBlock}`);
@@ -153,21 +147,14 @@ const processYRFMarketCreated = async (firestoreDocument: DocumentReference, web
     const marketId = repoMarket.marketId;
 
     console.info(`Processing YRF market created event for market ID: ${marketId}`);
-    sendYRFMarketCreatedAlert(webhookUrl, [], repoMarket, repoMarket);
+    const alertSent = await sendYRFMarketCreatedAlert(webhookUrl, repoMarket);
 
-    // Update the latest block to this event's block
     const eventBlock = castInt(repoMarket.blockNumber);
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
+    if (!alertSent) throw new Error(`Discord rate-limited the YRF market created alert at block ${eventBlock}`);
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK_CREATED}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK_CREATED}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest created block to ${eventBlock}`);
   }
 };
 
@@ -208,10 +195,22 @@ const processYRFMarketsClosed = async (firestoreDocument: DocumentReference, web
   }
 
   const yrfClient = createGraphQLClient(getYRFSubgraphUrl());
+  const yrfMetaResults = await yrfClient.query(YrfSubgraphMetaDocument, {}).toPromise();
+  const yrfIndexedBlock = yrfMetaResults.data?._meta?.block.number;
+  if (yrfIndexedBlock === undefined) {
+    throw new Error(`Did not receive the indexed block from the YRF subgraph. Error: ${yrfMetaResults.error}`);
+  }
 
   // Process closed bond markets and check if they are YRF markets
   for (const closedEvent of marketClosedEvents) {
     const marketId = closedEvent.market.marketId;
+    const eventBlock = castInt(closedEvent.block);
+
+    if (eventBlock > yrfIndexedBlock) {
+      throw new Error(
+        `YRF subgraph is indexed through block ${yrfIndexedBlock}, before market closed event block ${eventBlock}`,
+      );
+    }
 
     // Query for YRF RepoMarket with this specific marketId
     const yrfResults = await yrfClient
@@ -231,8 +230,14 @@ const processYRFMarketsClosed = async (firestoreDocument: DocumentReference, web
     if (repoMarkets.length > 0) {
       const repoMarket = repoMarkets[0]; // Should only be one market with this ID
       console.info(`Processing YRF market closed event for market ID: ${marketId}`);
-      sendYRFMarketClosedAlert(webhookUrl, [], repoMarket, closedEvent);
+      const alertSent = await sendYRFMarketClosedAlert(webhookUrl, repoMarket, closedEvent);
+      if (!alertSent) throw new Error(`Discord rate-limited the YRF market closed alert at block ${eventBlock}`);
     }
+
+    await firestoreDocument.update({
+      [`${FUNCTION_KEY}.${LATEST_BLOCK_CLOSED}`]: eventBlock,
+    });
+    console.info(`Updated latest closed block to ${eventBlock}`);
   }
 };
 

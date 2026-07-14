@@ -22,7 +22,7 @@ type ClaimAllYieldFailedEvent =
  * @param webhookUrl
  * @param event
  */
-const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFailedEvent): void => {
+const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFailedEvent): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const blockNumber = Number(event.block);
   const txHash = event.txHash;
@@ -55,7 +55,7 @@ const sendClaimAllYieldFailedAlert = (webhookUrl: string, event: ClaimAllYieldFa
     },
   ];
 
-  sendAlert(webhookUrl, "", `⚠️ Claim All Yield Failed`, description, fields);
+  return sendAlert(webhookUrl, "", `⚠️ Claim All Yield Failed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -123,26 +123,17 @@ export const performFailedPeriodicTasksChecks = async (
     return;
   }
 
-  let updatedLatestBlock = latestBlock;
-
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing claim all yield failed event for facility ${event.facility} at block ${eventBlock}`);
-    sendClaimAllYieldFailedAlert(webhookUrl, event);
+    const alertSent = await sendClaimAllYieldFailedAlert(webhookUrl, event);
+    if (!alertSent) throw new Error(`Discord rate-limited the failed periodic task alert at block ${eventBlock}`);
 
-    // Update the latest block to this event's block
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest block to ${eventBlock}`);
   }
 };
 

@@ -1,5 +1,5 @@
 query EmissionManagerMarketsCreatedSince($latestBlock: BigInt!) {
-  saleCreateds(orderBy: blockNumber, orderDirection: desc, first: 1000, where: { blockNumber_gt: $latestBlock }) {
+  saleCreateds(orderBy: blockNumber, orderDirection: asc, first: 1000, where: { blockNumber_gt: $latestBlock }) {
     id
     contract {
       id
@@ -89,5 +89,13 @@ query EmissionManagerMarket($marketId: BigInt!) {
     blockNumber
     blockTimestamp
     transactionHash
+  }
+}
+
+query EmissionManagerSubgraphMeta {
+  _meta {
+    block {
+      number
+    }
   }
 }

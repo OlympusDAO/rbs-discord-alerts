@@ -23,7 +23,10 @@ type BondMarketCreationFailedEvent =
  * @param webhookUrl
  * @param event
  */
-const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarketCreationFailedEvent): void => {
+const sendBondMarketCreationFailedAlert = (
+  webhookUrl: string,
+  event: BondMarketCreationFailedEvent,
+): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const blockNumber = Number(event.block);
   const txHash = event.txHash;
@@ -61,7 +64,7 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
     },
   ];
 
-  sendAlert(
+  return sendAlert(
     webhookUrl,
     "",
     `⚠️ The EmissionManager was unable to create a bond market for the under-selling of OHM.`,
@@ -135,28 +138,19 @@ export const performBondMarketCreationFailedChecks = async (
     return;
   }
 
-  let updatedLatestBlock = latestBlock;
-
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(
       `Processing bond market creation failed event for emission manager ${event.emissionManager} at block ${eventBlock}`,
     );
-    sendBondMarketCreationFailedAlert(webhookUrl, event);
+    const alertSent = await sendBondMarketCreationFailedAlert(webhookUrl, event);
+    if (!alertSent) throw new Error(`Discord rate-limited the bond market failure alert at block ${eventBlock}`);
 
-    // Update the latest block to this event's block
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest block to ${eventBlock}`);
   }
 };
 

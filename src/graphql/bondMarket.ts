@@ -1114,7 +1114,7 @@ export const MarketClosedEventsDocument = {
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "orderDirection" },
-                value: { kind: "EnumValue", value: "desc" },
+                value: { kind: "EnumValue", value: "asc" },
               },
               { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {

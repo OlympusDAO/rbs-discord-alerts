@@ -57,9 +57,6 @@ const sendHeartbeatAlert = async (
     return;
   }
 
-  let updatedLatestBlock: string | undefined;
-  let latestHeartbeatDate: string | undefined;
-
   // Send Discord message
   for (let i = 0; i < beatEvents.length; i++) {
     const beatEvent = beatEvents[i];
@@ -82,24 +79,14 @@ const sendHeartbeatAlert = async (
 
     for (let j = 0; j < alertWebhookUrls.length; j++) {
       const currentAlertSuccess = await sendAlert(alertWebhookUrls[j], "", `⏰ Heartbeat`, ``, fields);
-
-      // If any of the Discord webhook requests succeed, we update the latest block
-      if (currentAlertSuccess) {
-        updatedLatestBlock = beatEvent.block;
-        latestHeartbeatDate = beatEvent.date;
-      }
+      if (!currentAlertSuccess) throw new Error(`Discord rate-limited the heartbeat alert at block ${beatEvent.block}`);
     }
-  }
 
-  if (updatedLatestBlock && latestHeartbeatDate) {
-    // Update last processed block
     await firestoreDocument.update({
-      [FIELD_LATEST_BLOCK]: updatedLatestBlock,
-      [FIELD_HEARTBEAT_DATE]: latestHeartbeatDate,
+      [FIELD_LATEST_BLOCK]: beatEvent.block,
+      [FIELD_HEARTBEAT_DATE]: beatEvent.date,
     });
-    console.log(`${FUNC}: Updated latest block to ${updatedLatestBlock}`);
-  } else {
-    console.log(`${FUNC}: Latest block not updated`);
+    console.log(`${FUNC}: Updated latest block to ${beatEvent.block}`);
   }
 };
 

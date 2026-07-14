@@ -2545,6 +2545,13 @@ export type EmissionManagerMarketQuery = {
   }>;
 };
 
+export type EmissionManagerSubgraphMetaQueryVariables = Exact<{ [key: string]: never }>;
+
+export type EmissionManagerSubgraphMetaQuery = {
+  __typename?: "Query";
+  _meta?: { __typename?: "_Meta_"; block: { __typename?: "_Block_"; number: number } } | null;
+};
+
 export const EmissionManagerMarketsCreatedSinceDocument = {
   kind: "Document",
   definitions: [
@@ -2574,7 +2581,7 @@ export const EmissionManagerMarketsCreatedSinceDocument = {
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "orderDirection" },
-                value: { kind: "EnumValue", value: "desc" },
+                value: { kind: "EnumValue", value: "asc" },
               },
               { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {
@@ -2804,3 +2811,35 @@ export const EmissionManagerMarketDocument = {
     },
   ],
 } as unknown as DocumentNode<EmissionManagerMarketQuery, EmissionManagerMarketQueryVariables>;
+export const EmissionManagerSubgraphMetaDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "EmissionManagerSubgraphMeta" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "_meta" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "block" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [{ kind: "Field", name: { kind: "Name", value: "number" } }],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<EmissionManagerSubgraphMetaQuery, EmissionManagerSubgraphMetaQueryVariables>;

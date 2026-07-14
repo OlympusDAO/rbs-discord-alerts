@@ -1,11 +1,12 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { EMISSION_MANAGER_ALERT_STARTING_BLOCK, getEmissionManagerSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
+import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
 import {
   EmissionManagerMarketDocument,
   EmissionManagerMarketsCreatedSinceDocument,
   type EmissionManagerMarketsCreatedSinceQuery,
+  EmissionManagerSubgraphMetaDocument,
 } from "./graphql/emissionManager";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 
@@ -24,14 +25,12 @@ const LATEST_BLOCK_CLOSED = "latestBlockClosed";
  * Sends a Discord alert when an EmissionManager market is created
  *
  * @param webhookUrl
- * @param mentionRoles
  * @param saleCreated
  */
 const sendEmissionManagerMarketCreatedAlert = (
   webhookUrl: string,
-  mentionRoles: string[],
   saleCreated: EmissionManagerSaleCreated,
-): void => {
+): Promise<boolean> => {
   const saleAmount = castFloat(saleCreated.saleAmountDecimal);
   const transaction = saleCreated.transactionHash.toString();
   const timestamp = castInt(saleCreated.blockTimestamp) * 1000; // Convert to milliseconds
@@ -61,23 +60,16 @@ const sendEmissionManagerMarketCreatedAlert = (
     },
   ];
 
-  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ EmissionManager Market Created`, description, fields);
+  return sendAlert(webhookUrl, "", `🏛️ EmissionManager Market Created`, description, fields);
 };
 
 /**
  * Sends a Discord alert when an EmissionManager market is closed
  *
  * @param webhookUrl
- * @param mentionRoles
- * @param saleCreated
  * @param marketEvent
  */
-const sendEmissionManagerMarketClosedAlert = (
-  webhookUrl: string,
-  mentionRoles: string[],
-  _saleCreated: EmissionManagerSaleCreated,
-  marketEvent: MarketClosedEvent,
-): void => {
+const sendEmissionManagerMarketClosedAlert = (webhookUrl: string, marketEvent: MarketClosedEvent): Promise<boolean> => {
   const marketId = marketEvent.market.marketId;
   const timestamp = Number.parseInt(marketEvent.timestamp, 10) * 1000; // Convert to milliseconds
 
@@ -98,7 +90,7 @@ const sendEmissionManagerMarketClosedAlert = (
     },
   ];
 
-  sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🏛️ EmissionManager Market Closed`, description, fields);
+  return sendAlert(webhookUrl, "", `🏛️ EmissionManager Market Closed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference, key: string): Promise<number> => {
@@ -132,8 +124,6 @@ const processEmissionManagerMarketCreated = async (
 
   // Get the latest block
   const latestBlock = await getLatestBlock(firestoreDocument, LATEST_BLOCK_CREATED);
-  let updatedLatestBlock = latestBlock;
-
   // Fetch EmissionManager markets
   const emissionManagerClient = createGraphQLClient(getEmissionManagerSubgraphUrl());
   console.debug(`Fetching SaleCreated records since block ${latestBlock}`);
@@ -161,21 +151,15 @@ const processEmissionManagerMarketCreated = async (
     const marketId = saleCreated.marketId;
 
     console.info(`Processing EmissionManager market created event for market ID: ${marketId}`);
-    sendEmissionManagerMarketCreatedAlert(webhookUrl, [], saleCreated);
+    const alertSent = await sendEmissionManagerMarketCreatedAlert(webhookUrl, saleCreated);
 
-    // Update the latest block to this event's block
     const eventBlock = castInt(saleCreated.blockNumber);
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
+    if (!alertSent)
+      throw new Error(`Discord rate-limited the Emission Manager market created alert at block ${eventBlock}`);
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK_CREATED}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK_CREATED}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest created block to ${eventBlock}`);
   }
 };
 
@@ -219,10 +203,26 @@ const processEmissionManagerMarketsClosed = async (
   }
 
   const emissionManagerClient = createGraphQLClient(getEmissionManagerSubgraphUrl());
+  const emissionManagerMetaResults = await emissionManagerClient
+    .query(EmissionManagerSubgraphMetaDocument, {})
+    .toPromise();
+  const emissionManagerIndexedBlock = emissionManagerMetaResults.data?._meta?.block.number;
+  if (emissionManagerIndexedBlock === undefined) {
+    throw new Error(
+      `Did not receive the indexed block from the Emission Manager subgraph. Error: ${emissionManagerMetaResults.error}`,
+    );
+  }
 
   // Process closed bond markets and check if they are EmissionManager markets
   for (const closedEvent of marketClosedEvents) {
     const marketId = closedEvent.market.marketId;
+    const eventBlock = castInt(closedEvent.block);
+
+    if (eventBlock > emissionManagerIndexedBlock) {
+      throw new Error(
+        `Emission Manager subgraph is indexed through block ${emissionManagerIndexedBlock}, before market closed event block ${eventBlock}`,
+      );
+    }
 
     // Query for EmissionManager SaleCreated with this specific marketId
     const emissionManagerResults = await emissionManagerClient
@@ -240,10 +240,16 @@ const processEmissionManagerMarketsClosed = async (
     const saleCreateds: EmissionManagerSaleCreated[] = emissionManagerResults.data.saleCreateds;
 
     if (saleCreateds.length > 0) {
-      const saleCreated = saleCreateds[0]; // Should only be one market with this ID
       console.info(`Processing EmissionManager market closed event for market ID: ${marketId}`);
-      sendEmissionManagerMarketClosedAlert(webhookUrl, [], saleCreated, closedEvent);
+      const alertSent = await sendEmissionManagerMarketClosedAlert(webhookUrl, closedEvent);
+      if (!alertSent)
+        throw new Error(`Discord rate-limited the Emission Manager market closed alert at block ${eventBlock}`);
     }
+
+    await firestoreDocument.update({
+      [`${FUNCTION_KEY}.${LATEST_BLOCK_CLOSED}`]: eventBlock,
+    });
+    console.info(`Updated latest closed block to ${eventBlock}`);
   }
 };
 

@@ -23,10 +23,10 @@ type ConvertibleDepositFacilityClaimedYieldEvent =
  * @param webhookUrl
  * @param event
  */
-const sendClaimYieldAlert = async (
+const sendClaimYieldAlert = (
   webhookUrl: string,
   event: ConvertibleDepositFacilityClaimedYieldEvent,
-): Promise<void> => {
+): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
   const amount = castFloat(event.amountDecimal);
@@ -56,7 +56,7 @@ const sendClaimYieldAlert = async (
     },
   ];
 
-  await sendAlert(webhookUrl, "", `💸 Protocol Yield Claimed`, description, fields);
+  return sendAlert(webhookUrl, "", `💸 Protocol Yield Claimed`, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -124,26 +124,17 @@ export const performClaimedYieldChecks = async (
     return;
   }
 
-  let updatedLatestBlock = latestBlock;
-
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing claimed yield event for facility ${event.facility} at block ${eventBlock}`);
-    await sendClaimYieldAlert(webhookUrl, event);
+    const alertSent = await sendClaimYieldAlert(webhookUrl, event);
+    if (!alertSent) throw new Error(`Discord rate-limited the claimed yield alert at block ${eventBlock}`);
 
-    // Update the latest block to this event's block
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest block to ${eventBlock}`);
   }
 };
 

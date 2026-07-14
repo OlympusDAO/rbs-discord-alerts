@@ -19,7 +19,7 @@ type AuctionResultEvent = AuctionResultSinceQuery["convertibleDepositAuctioneerA
  * @param webhookUrl
  * @param event
  */
-const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): void => {
+const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
   const target = castFloat(event.targetDecimal);
@@ -55,7 +55,7 @@ const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): 
     },
   ];
 
-  sendAlert(webhookUrl, "", title, description, fields);
+  return sendAlert(webhookUrl, "", title, description, fields);
 };
 
 const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
@@ -123,26 +123,17 @@ export const performAuctionResultChecks = async (
     return;
   }
 
-  let updatedLatestBlock = latestBlock;
-
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing auction result event for auctioneer ${event.auctioneer} at block ${eventBlock}`);
-    sendAuctionResultAlert(webhookUrl, event);
+    const alertSent = await sendAuctionResultAlert(webhookUrl, event);
+    if (!alertSent) throw new Error(`Discord rate-limited the auction result alert at block ${eventBlock}`);
 
-    // Update the latest block to this event's block
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest block to ${eventBlock}`);
   }
 };
 

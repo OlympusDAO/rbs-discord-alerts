@@ -67,8 +67,6 @@ export const performEventChecks = async (
     return;
   }
 
-  let updatedLatestBlock: string | undefined;
-
   // Send Discord message
   for (let i = 0; i < priceEvents.length; i++) {
     const priceEvent = priceEvents[i];
@@ -134,22 +132,14 @@ export const performEventChecks = async (
 
     for (let j = 0; j < alertWebhookUrls.length; j++) {
       const currentAlertSuccess = await sendAlert(alertWebhookUrls[j], "", `🚨 RBS Price Event`, ``, fields);
-
-      // If any of the Discord webhook requests succeed, we update the latest block
-      if (currentAlertSuccess) {
-        updatedLatestBlock = priceEvent.block;
-      }
+      if (!currentAlertSuccess)
+        throw new Error(`Discord rate-limited the price event alert at block ${priceEvent.block}`);
     }
-  }
 
-  if (updatedLatestBlock) {
-    // Update last processed block
     await firestoreDocument.update({
-      [FIELD_LATEST_BLOCK]: updatedLatestBlock,
+      [FIELD_LATEST_BLOCK]: priceEvent.block,
     });
-    console.log(`Updated latest block to ${updatedLatestBlock}`);
-  } else {
-    console.log(`Latest block not updated`);
+    console.log(`Updated latest block to ${priceEvent.block}`);
   }
 };
 

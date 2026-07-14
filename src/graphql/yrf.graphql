@@ -1,5 +1,5 @@
 query RepoMarketsCreatedSince($latestBlock: BigInt!) {
-  repoMarkets(orderBy: blockNumber, orderDirection: desc, first: 1000, where: { blockNumber_gt: $latestBlock }) {
+  repoMarkets(orderBy: blockNumber, orderDirection: asc, first: 1000, where: { blockNumber_gt: $latestBlock }) {
     id
     contract {
       id
@@ -47,5 +47,13 @@ query RepoMarket($marketId: BigInt!) {
     blockNumber
     blockTimestamp
     transactionHash
+  }
+}
+
+query YRFSubgraphMeta {
+  _meta {
+    block {
+      number
+    }
   }
 }

@@ -251,8 +251,6 @@ export const performAuctionParametersUpdatedChecks = async (
     );
   }
 
-  let updatedLatestBlock = latestBlock;
-
   // Process events and send alerts
   for (const [eventIndex, event] of events.entries()) {
     const eventBlock = Number(event.block);
@@ -262,18 +260,10 @@ export const performAuctionParametersUpdatedChecks = async (
     const alertSent = await sendAuctionParametersUpdatedAlert(webhookUrl, event, priceContexts[eventIndex]);
     if (!alertSent) throw new Error(`Discord rate-limited the CD auction tuning alert at block ${eventBlock}`);
 
-    // Update the latest block to this event's block
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest block to ${eventBlock}`);
   }
 };
 

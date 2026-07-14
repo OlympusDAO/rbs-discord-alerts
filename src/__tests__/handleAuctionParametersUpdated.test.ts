@@ -233,6 +233,22 @@ describe("performAuctionParametersUpdatedChecks", () => {
     expect(firestoreUpdate).not.toHaveBeenCalled();
   });
 
+  it("keeps the checkpoint for earlier alerts when a later alert is rate-limited", async () => {
+    const laterEvent = { ...event, block: "124", txHash: "0xdef" };
+    mockQueryResult({
+      data: {
+        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event, laterEvent] },
+      },
+    });
+    (sendAlert as jest.Mock).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+
+    await expect(
+      performAuctionParametersUpdatedChecks("document", "collection", "webhook", "https://example.com/rpc"),
+    ).rejects.toThrow("rate-limited");
+    expect(firestoreUpdate).toHaveBeenCalledTimes(1);
+    expect(firestoreUpdate).toHaveBeenCalledWith({ "auctionParametersUpdated.latestBlock": 123 });
+  });
+
   it("rejects malformed manager pricing settings before sending or checkpointing", async () => {
     mockQueryResult({
       data: {
