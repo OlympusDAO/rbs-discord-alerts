@@ -39,7 +39,7 @@ describe("performEventChecks", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.GRAPHQL_API_KEY = "graph-api-key";
-    firestoreGet.mockResolvedValue({ get: jest.fn(() => "0") });
+    firestoreGet.mockResolvedValue({ get: jest.fn(() => "1") });
     (Firestore as unknown as jest.Mock).mockImplementation(() => ({
       doc: jest.fn(() => ({ get: firestoreGet, update: firestoreUpdate })),
     }));

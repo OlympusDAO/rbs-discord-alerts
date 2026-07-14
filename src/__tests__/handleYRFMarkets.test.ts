@@ -2,7 +2,7 @@ import { Firestore } from "@google-cloud/firestore";
 
 import { sendAlert } from "../discord";
 import { MarketClosedEventsDocument } from "../graphql/bondMarket";
-import { RepoMarketDocument, RepoMarketsCreatedSinceDocument, YrfSubgraphMetaDocument } from "../graphql/yrf";
+import { RepoMarketDocument, RepoMarketsCreatedSinceDocument } from "../graphql/yrf";
 import { performYRFMarketChecks } from "../handleYRFMarkets";
 import { createGraphQLClient } from "../helpers/graphqlClient";
 
@@ -46,6 +46,10 @@ const makeClosedEvent = (block: string, marketId: string) => ({
   market: { marketId },
 });
 
+const isMetaDocument = (document: unknown): boolean =>
+  (document as { definitions?: [{ name?: { value?: string } }] }).definitions?.[0]?.name?.value ===
+  "IndexedSubgraphMeta";
+
 describe("performYRFMarketChecks", () => {
   const firestoreGet = jest.fn();
   const firestoreUpdate = jest.fn();
@@ -54,7 +58,7 @@ describe("performYRFMarketChecks", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.GRAPHQL_API_KEY = "graph-api-key";
-    firestoreGet.mockResolvedValue({ get: jest.fn(() => "0") });
+    firestoreGet.mockResolvedValue({ get: jest.fn(() => "1") });
     (Firestore as unknown as jest.Mock).mockImplementation(() => ({
       doc: jest.fn(() => ({ get: firestoreGet, update: firestoreUpdate })),
     }));
@@ -73,7 +77,7 @@ describe("performYRFMarketChecks", () => {
             ? { data: { repoMarkets: [repo101, repo102] } }
             : document === MarketClosedEventsDocument
               ? { data: { marketClosedEvents: [makeClosedEvent("201", "1"), makeClosedEvent("202", "2")] } }
-              : document === YrfSubgraphMetaDocument
+              : isMetaDocument(document)
                 ? { data: { _meta: { block: { number: 300 } } } }
                 : document === RepoMarketDocument
                   ? { data: { repoMarkets: [variables.marketId === "1" ? repo101 : repo102] } }
@@ -91,6 +95,36 @@ describe("performYRFMarketChecks", () => {
     ]);
   });
 
+  it("processes created and closed events in combined block order", async () => {
+    const repo = makeRepoMarket("200", "1");
+    query.mockImplementation((document: unknown) => ({
+      toPromise: jest
+        .fn()
+        .mockResolvedValue(
+          document === RepoMarketsCreatedSinceDocument
+            ? { data: { repoMarkets: [repo] } }
+            : document === MarketClosedEventsDocument
+              ? { data: { marketClosedEvents: [makeClosedEvent("150", "1")] } }
+              : isMetaDocument(document)
+                ? { data: { _meta: { block: { number: 300 } } } }
+                : document === RepoMarketDocument
+                  ? { data: { repoMarkets: [repo] } }
+                  : { data: undefined },
+        ),
+    }));
+
+    await performYRFMarketChecks("document", "collection", "webhook");
+
+    expect((sendAlert as jest.Mock).mock.calls.map(call => call[2])).toEqual([
+      "🏛️ YRF Market Closed",
+      "🏛️ YRF Market Created",
+    ]);
+    expect(firestoreUpdate.mock.calls.map(([value]) => value)).toEqual([
+      { "yrfMarkets.latestBlockClosed": 150 },
+      { "yrfMarkets.latestBlockCreated": 200 },
+    ]);
+  });
+
   it("stops at a Discord rate limit after checkpointing the prior closed event", async () => {
     const repo1 = makeRepoMarket("101", "1");
     const repo2 = makeRepoMarket("102", "2");
@@ -103,7 +137,7 @@ describe("performYRFMarketChecks", () => {
             ? { data: { repoMarkets: [] } }
             : document === MarketClosedEventsDocument
               ? { data: { marketClosedEvents: [makeClosedEvent("201", "1"), makeClosedEvent("202", "2")] } }
-              : document === YrfSubgraphMetaDocument
+              : isMetaDocument(document)
                 ? { data: { _meta: { block: { number: 300 } } } }
                 : document === RepoMarketDocument
                   ? { data: { repoMarkets: [variables.marketId === "1" ? repo1 : repo2] } }
@@ -127,7 +161,7 @@ describe("performYRFMarketChecks", () => {
             ? { data: { repoMarkets: [] } }
             : document === MarketClosedEventsDocument
               ? { data: { marketClosedEvents: [makeClosedEvent("201", "1")] } }
-              : document === YrfSubgraphMetaDocument
+              : isMetaDocument(document)
                 ? { data: { _meta: { block: { number: 200 } } } }
                 : { data: undefined },
         ),

@@ -85,4 +85,18 @@ describe("sendAlert", () => {
     expect(fetch).toHaveBeenCalledTimes(3);
     expect(jest.getTimerCount()).toBe(0);
   });
+
+  it("aborts a Discord request that never responds", async () => {
+    (fetch as jest.Mock).mockImplementation((_url: string, init: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(new Error("request aborted")));
+      });
+    });
+
+    const resultPromise = sendAlert("webhook", "", "Title", "Description", []);
+    const expectation = expect(resultPromise).rejects.toThrow("request aborted");
+    await jest.advanceTimersByTimeAsync(5_000);
+
+    await expectation;
+  });
 });

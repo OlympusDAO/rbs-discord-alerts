@@ -158,7 +158,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
     process.env.GRAPHQL_API_KEY = "graph-api-key";
     process.env.ETHEREUM_RPC_URL = "https://example.com/rpc";
 
-    firestoreGet.mockResolvedValue({ get: jest.fn(() => "0") });
+    firestoreGet.mockResolvedValue({ get: jest.fn(() => "1") });
     (Firestore as unknown as jest.Mock).mockImplementation(() => ({
       doc: jest.fn(() => ({ get: firestoreGet, update: firestoreUpdate })),
     }));
@@ -183,7 +183,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
     expect(query).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        latestBlock: "0",
+        latestBlock: "1",
         chainId: 1,
       }),
     );
@@ -248,6 +248,26 @@ describe("performAuctionParametersUpdatedChecks", () => {
     await expect(
       performAuctionParametersUpdatedChecks("document", "collection", "webhook", "https://example.com/rpc"),
     ).rejects.toThrow("rate-limited");
+    expect(firestoreUpdate).toHaveBeenCalledTimes(1);
+    expect(firestoreUpdate).toHaveBeenCalledWith({ "auctionParametersUpdated.latestBlock": 123 });
+  });
+
+  it("delivers and checkpoints an earlier alert before loading a later event's RPC state", async () => {
+    const laterEvent = { ...event, block: "124", txHash: "0xdef" };
+    mockQueryResult({
+      data: {
+        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event, laterEvent] },
+      },
+    });
+    (getEmissionManagerStateAtBlock as jest.Mock)
+      .mockResolvedValueOnce(manager)
+      .mockRejectedValueOnce(new Error("RPC unavailable"));
+
+    await expect(
+      performAuctionParametersUpdatedChecks("document", "collection", "webhook", "https://example.com/rpc"),
+    ).rejects.toThrow("RPC unavailable");
+
+    expect(sendAlert).toHaveBeenCalledTimes(1);
     expect(firestoreUpdate).toHaveBeenCalledTimes(1);
     expect(firestoreUpdate).toHaveBeenCalledWith({ "auctionParametersUpdated.latestBlock": 123 });
   });

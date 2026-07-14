@@ -24,8 +24,10 @@ import {
   RangeSnapshotSinceBlockDocument,
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
+import { getEventStartBlock } from "../helpers/blockHelper";
 import { ChainId, getEtherscanTransactionUrl } from "../helpers/contractHelper";
 import { createGraphQLClient } from "../helpers/graphqlClient";
+import { getSubgraphIndexedBlock } from "../helpers/indexerCursorHelper";
 import {
   castFloat,
   castFloatNullable,
@@ -642,12 +644,20 @@ export const checkBondMarkets = async (
 
   // Get the latest block
   const firestoreSnapshot = await firestore.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0, 10);
+  const storedLatestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0, 10);
+  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
+  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
+  const latestBlock = await getEventStartBlock(storedLatestBlock || undefined, async () => {
+    const [rangeIndexedBlock, bondsIndexedBlock] = await Promise.all([
+      getSubgraphIndexedBlock(rangeSnapshotClient, "RBS subgraph"),
+      getSubgraphIndexedBlock(bondsClient, "Bonds subgraph"),
+    ]);
+    return Math.min(rangeIndexedBlock, bondsIndexedBlock);
+  });
   let updatedLatestBlock = latestBlock;
   console.info(`Latest block is ${latestBlock}`);
 
   // Fetch range snapshots
-  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
   // Snapshots are in ascending order
   console.debug(`Fetching RangeSnapshot records since block ${latestBlock}`);
   const rangeSnapshotResults = await rangeSnapshotClient
@@ -659,8 +669,6 @@ export const checkBondMarkets = async (
   if (!rangeSnapshotResults.data) {
     throw new Error(`Did not receive results from RangeSnapshot GraphQL query. Error: ${rangeSnapshotResults.error}`);
   }
-
-  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
 
   // Fetch PriceEvents
   console.debug(`Fetching PriceEvent records since block ${latestBlock}`);

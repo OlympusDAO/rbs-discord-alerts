@@ -43,6 +43,7 @@ type WebhookAttempt = {
 
 const MAX_WEBHOOK_ATTEMPTS = 3;
 const MAX_WEBHOOK_RETRY_BUDGET_MS = 10_000;
+const WEBHOOK_REQUEST_TIMEOUT_MS = 5_000;
 
 const createDiscordRetryBudget = (): RetryBudget => createRetryBudget(MAX_WEBHOOK_RETRY_BUDGET_MS);
 
@@ -57,13 +58,22 @@ const getRetryAfterMs = (body: unknown): number | undefined => {
 
 const executeWebhookAttempt = async (webhook: string, content: DiscordMessage): Promise<WebhookAttempt> => {
   console.log(`Sending request to Discord webhook: ${JSON.stringify(content, null, 2)}`);
-  const response = await fetch(webhook, {
-    method: "POST",
-    body: JSON.stringify(content),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), WEBHOOK_REQUEST_TIMEOUT_MS);
+  const response = await (async () => {
+    try {
+      return await fetch(webhook, {
+        method: "POST",
+        body: JSON.stringify(content),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: abortController.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+  })();
 
   console.debug(`Discord response status: ${response.status}`);
   if (response.status === 429) {

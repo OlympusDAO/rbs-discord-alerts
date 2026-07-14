@@ -9,6 +9,7 @@ import {
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { type EmissionManagerStateAtBlock, getEmissionManagerStateAtBlock } from "./helpers/ethereumRpcClient";
 import { createGraphQLClient } from "./helpers/graphqlClient";
+import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -34,7 +35,6 @@ type AuctionParametersUpdatedAlert = {
 const FRONTEND_URL = "https://deposit.olympusdao.finance";
 const WAD = 1_000_000_000_000_000_000n;
 const OHM_SCALE = 1_000_000_000n;
-const RPC_CONCURRENCY = 3;
 
 const ceilDiv = (numerator: bigint, denominator: bigint): bigint =>
   numerator === 0n ? 0n : (numerator - 1n) / denominator + 1n;
@@ -167,14 +167,10 @@ const sendAuctionParametersUpdatedAlert = (
   return alertSender(webhookUrl, "", alert.title, alert.description, alert.fields);
 };
 
-const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
+const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number | undefined> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0", 10);
-
-  if (latestBlock === 0) {
-    console.info(`No latest block found, defaulting to 0 (process all events)`);
-    return 0;
-  }
+  const value = firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`);
+  const latestBlock = value ? parseInt(value, 10) : undefined;
 
   console.info(`Latest block is ${latestBlock}`);
   return latestBlock;
@@ -209,10 +205,10 @@ export const performAuctionParametersUpdatedChecks = async (
   console.info(`\n\n⏰ Processing Auction Parameters Updated Events`);
 
   // Get the latest block
-  const latestBlock = await getLatestBlock(firestoreDocument);
+  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
+  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
 
   // Fetch events using GraphQL
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
   console.debug(`Fetching auction parameters updated events since block ${latestBlock}`);
 
   const queryResults = await client
@@ -236,34 +232,18 @@ export const performAuctionParametersUpdatedChecks = async (
     return;
   }
 
-  const priceContexts: AuctionPriceContext[] = [];
-  for (let offset = 0; offset < events.length; offset += RPC_CONCURRENCY) {
-    const batch = events.slice(offset, offset + RPC_CONCURRENCY);
-    priceContexts.push(
-      ...(await Promise.all(
-        batch.map(async event => {
-          const emissionManager = await getEmissionManagerStateAtBlock(
-            ethereumRpcUrl,
-            EMISSION_MANAGER_V1_2,
-            event.block,
-          );
-          return deriveAuctionPriceContext(event, emissionManager);
-        }),
-      )),
-    );
-  }
-
   // Process events and send alerts
-  for (const [eventIndex, event] of events.entries()) {
+  for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(
       `Processing auction parameters updated event for auctioneer ${event.auctioneer} at block ${eventBlock}`,
     );
+    const emissionManager = await getEmissionManagerStateAtBlock(ethereumRpcUrl, EMISSION_MANAGER_V1_2, event.block);
     const alertSent = await sendAuctionParametersUpdatedAlert(
       alertSender,
       webhookUrl,
       event,
-      priceContexts[eventIndex],
+      deriveAuctionPriceContext(event, emissionManager),
     );
     if (!alertSent) throw new Error(`Discord rate-limited the CD auction tuning alert at block ${eventBlock}`);
 

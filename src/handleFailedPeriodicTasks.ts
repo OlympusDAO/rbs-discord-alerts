@@ -8,6 +8,7 @@ import {
 } from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
+import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
 import { shorten } from "./helpers/stringHelper";
 
 const FUNCTION_KEY = "failedPeriodicTasks";
@@ -62,14 +63,10 @@ const sendClaimAllYieldFailedAlert = (
   return alertSender(webhookUrl, "", `⚠️ Claim All Yield Failed`, description, fields);
 };
 
-const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
+const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number | undefined> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0", 10);
-
-  if (latestBlock === 0) {
-    console.info(`No latest block found, defaulting to 0 (process all events)`);
-    return 0;
-  }
+  const value = firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`);
+  const latestBlock = value ? parseInt(value, 10) : undefined;
 
   console.info(`Latest block is ${latestBlock}`);
   return latestBlock;
@@ -101,10 +98,10 @@ export const performFailedPeriodicTasksChecks = async (
   console.info(`\n\n⏰ Processing Failed Periodic Tasks`);
 
   // Get the latest block
-  const latestBlock = await getLatestBlock(firestoreDocument);
+  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
+  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
 
   // Fetch failed events using GraphQL
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
   console.debug(`Fetching claim all yield failed events since block ${latestBlock}`);
 
   const queryResults = await client

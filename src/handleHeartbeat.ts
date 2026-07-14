@@ -12,6 +12,7 @@ import { type Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { getHeartAddress } from "./helpers/heart";
+import { getSubgraphEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castInt } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
@@ -47,14 +48,15 @@ const sendHeartbeatAlert = async (
 
   // Fetch events since the last processed block
   const client = createGraphQLClient(getRbsSubgraphUrl());
+  const startBlock = await getSubgraphEventStartBlock(client, latestBlock, "RBS subgraph");
   const queryResults = await client
     .query(BeatsSinceBlockDocument, {
-      sinceBlock: (latestBlock || 0).toString(),
+      sinceBlock: startBlock.toString(),
     })
     .toPromise();
   if (!queryResults.data) {
     throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
+      `Did not receive results from GraphQL query with latest block ${startBlock}. Error: ${queryResults.error}`,
     );
   }
 

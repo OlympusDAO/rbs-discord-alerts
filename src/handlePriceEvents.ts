@@ -5,6 +5,7 @@ import { createDiscordAlertSender, type EmbedField } from "./discord";
 import { type PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
+import { getSubgraphEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, castFloatNullable, castInt, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -52,14 +53,15 @@ export const performEventChecks = async (
 
   // Fetch events since the last processed block
   const client = createGraphQLClient(getRbsSubgraphUrl());
+  const startBlock = await getSubgraphEventStartBlock(client, latestBlock, "RBS subgraph");
   const queryResults = await client
     .query(RbsPriceEventsDocument, {
-      latestBlock: (latestBlock || 0).toString(),
+      latestBlock: startBlock.toString(),
     })
     .toPromise();
   if (!queryResults.data) {
     throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
+      `Did not receive results from GraphQL query with latest block ${startBlock}. Error: ${queryResults.error}`,
     );
   }
 
