@@ -28,6 +28,8 @@ const CONFIG_DISCORD_ROLE_CORE = "discordRoleIdCore";
 const CONFIG_CONTRACT = "contractUrl";
 const SECRET_DISCORD_WEBHOOK_ALERT = "discordWebhookAlert";
 const SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY = "discordWebhookAlertCommunity";
+const SECRET_DISCORD_WEBHOOK_CONVERTIBLE_DEPOSITS = "discordWebhookConvertibleDeposits";
+const SECRET_DISCORD_WEBHOOK_PROTOCOL_BUYBACKS = "discordWebhookProtocolBuybacks";
 const SECRET_DISCORD_WEBHOOK_PROTOCOL_REVENUE = "discordWebhookProtocolRevenue";
 const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
@@ -58,6 +60,9 @@ const FUNCTION_EXPIRATION_SECONDS = 30;
 // Also use `require` instead of `requireSecret`, as requireSecret won't work
 const webhookAlertDAO = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT);
 const webhookAlertCommunity = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_ALERT_COMMUNITY);
+// Dedicated routing must not fall back to a general channel; missing stack values intentionally block preview/deploy.
+const webhookConvertibleDeposits = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_CONVERTIBLE_DEPOSITS);
+const webhookProtocolBuybacks = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_PROTOCOL_BUYBACKS);
 const webhookProtocolRevenue = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_PROTOCOL_REVENUE);
 const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 const discordRoleCore = pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE);
@@ -189,7 +194,7 @@ const [_functionYRFCheck, functionYRFCheckName] = createFunction(
   DEFAULT_RUNTIME,
   async (_req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performYRFMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    await performYRFMarketChecks(datastore.documentId.get(), datastore.collection.get(), webhookProtocolBuybacks);
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();
@@ -297,7 +302,7 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
     await performAuctionParametersUpdatedChecks(
       datastore.documentId.get(),
       datastore.collection.get(),
-      webhookAlertCommunity,
+      webhookConvertibleDeposits,
       process.env.ETHEREUM_RPC_URL || "",
     );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
@@ -325,7 +330,11 @@ const [_functionAuctionResultCheck, functionAuctionResultCheckName] = createFunc
   DEFAULT_RUNTIME,
   async (_req, res) => {
     console.log("Received callback. Initiating handler.");
-    await performAuctionResultChecks(datastore.documentId.get(), datastore.collection.get(), webhookAlertCommunity);
+    await performAuctionResultChecks(
+      datastore.documentId.get(),
+      datastore.collection.get(),
+      webhookConvertibleDeposits,
+    );
     // It's not documented in the Pulumi documentation, but the function will timeout if `.end()` is missing.
     // biome-ignore lint/suspicious/noExplicitAny: Pulumi's response type does not expose chained `.end()`.
     (<any>res).send("OK").end();

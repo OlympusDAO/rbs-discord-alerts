@@ -103,7 +103,24 @@ pulumi config --stack dev
 pulumi config --stack prod
 ```
 
-Required stack config includes `gcp:project`, `gcp:region`, `GRAPHQL_API_KEY`, Discord webhook URLs (including `discordWebhookProtocolRevenue`), notification emails, `discordRoleIdCore`, `contractUrl`, `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL`, and `ETHEREUM_RPC_URL` (an archive-capable Ethereum RPC endpoint).
+Required stack config includes `gcp:project`, `gcp:region`, `GRAPHQL_API_KEY`, Discord webhook URLs (including `discordWebhookConvertibleDeposits`, `discordWebhookProtocolBuybacks`, and `discordWebhookProtocolRevenue`), notification emails, `discordRoleIdCore`, `contractUrl`, `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL`, and `ETHEREUM_RPC_URL` (an archive-capable Ethereum RPC endpoint).
+
+The dedicated webhook routing is:
+
+- `discordWebhookConvertibleDeposits`: CD auction tuning and auction results
+- `discordWebhookProtocolBuybacks`: YRF market creation and closure
+- `discordWebhookProtocolRevenue`: convertible-deposit yield claims
+
+Set the dedicated webhook values as Pulumi secrets for each stack before previewing or deploying:
+
+```bash
+export CONVERTIBLE_DEPOSITS_WEBHOOK_URL="..."
+export PROTOCOL_BUYBACKS_WEBHOOK_URL="..."
+pulumi config set --secret discordWebhookConvertibleDeposits "$CONVERTIBLE_DEPOSITS_WEBHOOK_URL" --stack dev
+pulumi config set --secret discordWebhookProtocolBuybacks "$PROTOCOL_BUYBACKS_WEBHOOK_URL" --stack dev
+pulumi config set --secret discordWebhookConvertibleDeposits "$CONVERTIBLE_DEPOSITS_WEBHOOK_URL" --stack prod
+pulumi config set --secret discordWebhookProtocolBuybacks "$PROTOCOL_BUYBACKS_WEBHOOK_URL" --stack prod
+```
 
 ### Ethereum RPC requirement
 
