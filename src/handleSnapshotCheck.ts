@@ -1,5 +1,6 @@
 import { Firestore } from "@google-cloud/firestore";
 
+import { createDiscordAlertSender } from "./discord";
 import { checkBondMarkets } from "./snapshotCheck/checkBondMarkets";
 import { checkCapacityDepletion } from "./snapshotCheck/checkCapacity";
 
@@ -22,15 +23,16 @@ export const performSnapshotChecks = async (
   webhookUrl: string,
   contractUrl?: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  await checkCapacityDepletion(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
+  await checkCapacityDepletion(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   // TODO re-enable price check
-  // await checkPrice(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
+  // await checkPrice(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   // Not needed for now
-  // await checkLowerWall(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
-  await checkBondMarkets(firestoreDocument, mentionRoles, webhookUrl, contractUrl);
+  // await checkLowerWall(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
+  await checkBondMarkets(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
 };
 
 // Running via CLI

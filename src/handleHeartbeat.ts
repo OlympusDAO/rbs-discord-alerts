@@ -1,11 +1,18 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, getRoleMentions, sendAlert } from "./discord";
+import {
+  createDiscordAlertSender,
+  type DiscordAlertSender,
+  type EmbedField,
+  getRelativeTimestamp,
+  getRoleMentions,
+} from "./discord";
 import { type Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
 import { getHeartAddress } from "./helpers/heart";
+import { getSubgraphEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castInt } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
@@ -28,6 +35,7 @@ const ALERT_THRESHOLD_SECONDS = 1 * 60 * 60; // 1 hour
  * @returns
  */
 const sendHeartbeatAlert = async (
+  alertSender: DiscordAlertSender,
   firestoreDocument: DocumentReference,
   _mentionRoles: string[],
   alertWebhookUrls: string[],
@@ -40,14 +48,15 @@ const sendHeartbeatAlert = async (
 
   // Fetch events since the last processed block
   const client = createGraphQLClient(getRbsSubgraphUrl());
+  const startBlock = await getSubgraphEventStartBlock(client, latestBlock, "RBS subgraph");
   const queryResults = await client
     .query(BeatsSinceBlockDocument, {
-      sinceBlock: (latestBlock || 0).toString(),
+      sinceBlock: startBlock.toString(),
     })
     .toPromise();
   if (!queryResults.data) {
     throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
+      `Did not receive results from GraphQL query with latest block ${startBlock}. Error: ${queryResults.error}`,
     );
   }
 
@@ -56,9 +65,6 @@ const sendHeartbeatAlert = async (
     console.log(`${FUNC}: No heartbeat events to process`);
     return;
   }
-
-  let updatedLatestBlock: string | undefined;
-  let latestHeartbeatDate: string | undefined;
 
   // Send Discord message
   for (let i = 0; i < beatEvents.length; i++) {
@@ -81,25 +87,15 @@ const sendHeartbeatAlert = async (
     ];
 
     for (let j = 0; j < alertWebhookUrls.length; j++) {
-      const currentAlertSuccess = await sendAlert(alertWebhookUrls[j], "", `⏰ Heartbeat`, ``, fields);
-
-      // If any of the Discord webhook requests succeed, we update the latest block
-      if (currentAlertSuccess) {
-        updatedLatestBlock = beatEvent.block;
-        latestHeartbeatDate = beatEvent.date;
-      }
+      const currentAlertSuccess = await alertSender(alertWebhookUrls[j], "", `⏰ Heartbeat`, ``, fields);
+      if (!currentAlertSuccess) throw new Error(`Discord rate-limited the heartbeat alert at block ${beatEvent.block}`);
     }
-  }
 
-  if (updatedLatestBlock && latestHeartbeatDate) {
-    // Update last processed block
     await firestoreDocument.update({
-      [FIELD_LATEST_BLOCK]: updatedLatestBlock,
-      [FIELD_HEARTBEAT_DATE]: latestHeartbeatDate,
+      [FIELD_LATEST_BLOCK]: beatEvent.block,
+      [FIELD_HEARTBEAT_DATE]: beatEvent.date,
     });
-    console.log(`${FUNC}: Updated latest block to ${updatedLatestBlock}`);
-  } else {
-    console.log(`${FUNC}: Latest block not updated`);
+    console.log(`${FUNC}: Updated latest block to ${beatEvent.block}`);
   }
 };
 
@@ -111,6 +107,7 @@ const sendHeartbeatAlert = async (
  * @returns
  */
 const checkHeartbeat = async (
+  alertSender: DiscordAlertSender,
   firestoreDocument: DocumentReference,
   mentionRoles: string[],
   webhookUrls: string[],
@@ -168,7 +165,7 @@ const checkHeartbeat = async (
   let alertSuccess = false;
 
   for (let i = 0; i < webhookUrls.length; i++) {
-    const currentAlertSuccess = await sendAlert(
+    const currentAlertSuccess = await alertSender(
       webhookUrls[i],
       getRoleMentions(mentionRoles),
       `🚨 Late Heartbeat`,
@@ -213,12 +210,13 @@ export const performHeartbeatChecks = async (
   mentionRoles: string[],
   alertWebhookUrls: string[],
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
-  await sendHeartbeatAlert(firestoreDocument, mentionRoles, alertWebhookUrls);
-  await checkHeartbeat(firestoreDocument, mentionRoles, alertWebhookUrls);
+  await sendHeartbeatAlert(alertSender, firestoreDocument, mentionRoles, alertWebhookUrls);
+  await checkHeartbeat(alertSender, firestoreDocument, mentionRoles, alertWebhookUrls);
 };
 
 // Running via CLI

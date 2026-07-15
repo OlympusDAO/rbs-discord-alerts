@@ -11,7 +11,7 @@ import {
   YIELD_REPURCHASE_FACILITY_V1_1,
   YIELD_REPURCHASE_FACILITY_V1_2,
 } from "../constants";
-import { getRoleMentions, sendAlert } from "../discord";
+import { type DiscordAlertSender, type EmbedField, getRoleMentions } from "../discord";
 import {
   type MarketClosedEvent,
   MarketClosedEventsDocument,
@@ -24,8 +24,10 @@ import {
   RangeSnapshotSinceBlockDocument,
   RbsPriceEventsDocument,
 } from "../graphql/rangeSnapshot";
+import { getEventStartBlock } from "../helpers/blockHelper";
 import { ChainId, getEtherscanTransactionUrl } from "../helpers/contractHelper";
 import { createGraphQLClient } from "../helpers/graphqlClient";
+import { getSubgraphIndexedBlock } from "../helpers/indexerCursorHelper";
 import {
   castFloat,
   castFloatNullable,
@@ -43,6 +45,32 @@ const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
 const CAPACITY_DECIMALS = 0; // Whole number
 const ORACLE_UPDATE_THRESHOLD = 0.02; // 2% swing required to force the oracle to update
+
+const sendDiscrepancyAlert = async (
+  alertSender: DiscordAlertSender,
+  webhookUrl: string,
+  mentionRoles: string[],
+  title: string,
+  errors: string[],
+  fields: EmbedField[],
+  firestore: DocumentReference,
+  block: number,
+): Promise<void> => {
+  const alertSent = await alertSender(
+    webhookUrl,
+    getRoleMentions(mentionRoles),
+    title,
+    toUnorderedList(errors),
+    fields,
+  );
+  if (!alertSent) throw new Error(`Discord rate-limited the ${title} alert`);
+
+  // This handler intentionally uses its existing block-only cursor without grouping alerts by block.
+  await firestore.update({
+    [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: block,
+  });
+  console.info(`Updated latest block to ${block} after delivering ${title}`);
+};
 
 const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): PriceEvent[] => {
   const filteredByBlock = events.filter(priceEvent => castInt(priceEvent.block) === block);
@@ -606,6 +634,7 @@ const checkWallDown = (wallDownEvent: PriceEvent, rangeSnapshot: RangeSnapshot):
 };
 
 export const checkBondMarkets = async (
+  alertSender: DiscordAlertSender,
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
@@ -615,12 +644,20 @@ export const checkBondMarkets = async (
 
   // Get the latest block
   const firestoreSnapshot = await firestore.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0, 10);
+  const storedLatestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0, 10);
+  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
+  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
+  const latestBlock = await getEventStartBlock(storedLatestBlock || undefined, async () => {
+    const [rangeIndexedBlock, bondsIndexedBlock] = await Promise.all([
+      getSubgraphIndexedBlock(rangeSnapshotClient, "RBS subgraph"),
+      getSubgraphIndexedBlock(bondsClient, "Bonds subgraph"),
+    ]);
+    return Math.min(rangeIndexedBlock, bondsIndexedBlock);
+  });
   let updatedLatestBlock = latestBlock;
   console.info(`Latest block is ${latestBlock}`);
 
   // Fetch range snapshots
-  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
   // Snapshots are in ascending order
   console.debug(`Fetching RangeSnapshot records since block ${latestBlock}`);
   const rangeSnapshotResults = await rangeSnapshotClient
@@ -632,8 +669,6 @@ export const checkBondMarkets = async (
   if (!rangeSnapshotResults.data) {
     throw new Error(`Did not receive results from RangeSnapshot GraphQL query. Error: ${rangeSnapshotResults.error}`);
   }
-
-  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
 
   // Fetch PriceEvents
   console.debug(`Fetching PriceEvent records since block ${latestBlock}`);
@@ -678,7 +713,7 @@ export const checkBondMarkets = async (
   // Iterate over blocks and perform checks
   const rangeSnapshots: RangeSnapshot[] = rangeSnapshotResults.data.rangeSnapshots;
   console.info(`Processing ${rangeSnapshots.length} RangeSnapshot records`);
-  rangeSnapshots.forEach(rangeSnapshot => {
+  for (const rangeSnapshot of rangeSnapshots) {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);
     const rangeSnapshotBlock = castInt(rangeSnapshot.block);
     const cushionUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "CushionUp");
@@ -686,105 +721,159 @@ export const checkBondMarkets = async (
     const wallUpEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallUp");
     const wallDownEventsAtBlock = filterPriceEvents(priceEvents, rangeSnapshotBlock, "WallDown");
 
-    cushionUpEventsAtBlock.forEach(priceEvent => {
+    for (const priceEvent of cushionUpEventsAtBlock) {
       const errors = checkCushionUp(priceEvent, rangeSnapshot, marketCreatedEvents);
-      if (errors.length === 0) return;
+      if (errors.length === 0) continue;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionUp Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        {
-          name: "Market ID",
-          value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
-        },
-        {
-          name: "Transaction",
-          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
-        },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
-    });
+      await sendDiscrepancyAlert(
+        alertSender,
+        webhookUrl,
+        mentionRoles,
+        `🚨 CushionUp Discrepancies`,
+        errors,
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          {
+            name: "Market ID",
+            value: `${priceEvent.isHigh ? priceEvent.snapshot.highMarketId : priceEvent.snapshot.lowMarketId}`,
+          },
+          {
+            name: "Transaction",
+            value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+          },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        firestore,
+        rangeSnapshotBlock,
+      );
+    }
 
-    cushionDownEventsAtBlock.forEach(priceEvent => {
+    for (const priceEvent of cushionDownEventsAtBlock) {
       const errors = checkCushionDown(priceEvent, rangeSnapshot, marketClosedEvents, wallUpEventsAtBlock);
-      if (errors.length === 0) return;
+      if (errors.length === 0) continue;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CushionDown Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        // marketId is not available
-        {
-          name: "Transaction",
-          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
-        },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
-    });
+      await sendDiscrepancyAlert(
+        alertSender,
+        webhookUrl,
+        mentionRoles,
+        `🚨 CushionDown Discrepancies`,
+        errors,
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          // marketId is not available
+          {
+            name: "Transaction",
+            value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+          },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        firestore,
+        rangeSnapshotBlock,
+      );
+    }
 
-    wallUpEventsAtBlock.forEach(priceEvent => {
+    for (const priceEvent of wallUpEventsAtBlock) {
       const errors = checkWallUp(priceEvent, rangeSnapshot);
-      if (errors.length === 0) return;
+      if (errors.length === 0) continue;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallUp Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        // marketId is not available
-        {
-          name: "Transaction",
-          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
-        },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
-    });
+      await sendDiscrepancyAlert(
+        alertSender,
+        webhookUrl,
+        mentionRoles,
+        `🚨 WallUp Discrepancies`,
+        errors,
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          // marketId is not available
+          {
+            name: "Transaction",
+            value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+          },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        firestore,
+        rangeSnapshotBlock,
+      );
+    }
 
-    wallDownEventsAtBlock.forEach(priceEvent => {
+    for (const priceEvent of wallDownEventsAtBlock) {
       const errors = checkWallDown(priceEvent, rangeSnapshot);
-      if (errors.length === 0) return;
+      if (errors.length === 0) continue;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 WallDown Discrepancies`, toUnorderedList(errors), [
-        { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
-        // marketId is not available
-        {
-          name: "Transaction",
-          value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
-        },
-        { name: "Block", value: `${priceEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
-    });
+      await sendDiscrepancyAlert(
+        alertSender,
+        webhookUrl,
+        mentionRoles,
+        `🚨 WallDown Discrepancies`,
+        errors,
+        [
+          { name: "Upper/Lower Cushion", value: `${priceEvent.isHigh ? "Upper" : "Lower"}` },
+          // marketId is not available
+          {
+            name: "Transaction",
+            value: `${getEtherscanTransactionUrl(priceEvent.transaction.toString(), ChainId.MAINNET)}`,
+          },
+          { name: "Block", value: `${priceEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        firestore,
+        rangeSnapshotBlock,
+      );
+    }
 
     const marketCreatedEventsAtBlock = filterCreatedEvents(marketCreatedEvents, rangeSnapshotBlock);
-    marketCreatedEventsAtBlock.forEach(marketEvent => {
+    for (const marketEvent of marketCreatedEventsAtBlock) {
       const errors = checkMarketCreated(marketEvent, rangeSnapshot, cushionUpEventsAtBlock);
-      if (errors.length === 0) return;
+      if (errors.length === 0) continue;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 CreatedMarket Discrepancies`, toUnorderedList(errors), [
-        {
-          name: "Market ID",
-          value: `${marketEvent.market.marketId}`,
-        },
-        { name: "Block", value: `${marketEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
-    });
+      await sendDiscrepancyAlert(
+        alertSender,
+        webhookUrl,
+        mentionRoles,
+        `🚨 CreatedMarket Discrepancies`,
+        errors,
+        [
+          {
+            name: "Market ID",
+            value: `${marketEvent.market.marketId}`,
+          },
+          { name: "Block", value: `${marketEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        firestore,
+        rangeSnapshotBlock,
+      );
+    }
 
     const marketClosedEventsAtBlock = filterClosedEvents(marketClosedEvents, rangeSnapshotBlock);
-    marketClosedEventsAtBlock.forEach(marketEvent => {
+    for (const marketEvent of marketClosedEventsAtBlock) {
       const errors = checkMarketClosed(marketEvent, rangeSnapshot, cushionDownEventsAtBlock);
-      if (errors.length === 0) return;
+      if (errors.length === 0) continue;
 
-      sendAlert(webhookUrl, getRoleMentions(mentionRoles), `🚨 ClosedMarket Discrepancies`, toUnorderedList(errors), [
-        {
-          name: "Market ID",
-          value: `${marketEvent.market.marketId}`,
-        },
-        { name: "Block", value: `${marketEvent.block}` },
-        ...getShutdownEmbedField(contractUrl),
-      ]);
-    });
+      await sendDiscrepancyAlert(
+        alertSender,
+        webhookUrl,
+        mentionRoles,
+        `🚨 ClosedMarket Discrepancies`,
+        errors,
+        [
+          {
+            name: "Market ID",
+            value: `${marketEvent.market.marketId}`,
+          },
+          { name: "Block", value: `${marketEvent.block}` },
+          ...getShutdownEmbedField(contractUrl),
+        ],
+        firestore,
+        rangeSnapshotBlock,
+      );
+    }
 
     updatedLatestBlock = rangeSnapshotBlock;
-  });
+  }
 
   // Update latest block
   await firestore.update({

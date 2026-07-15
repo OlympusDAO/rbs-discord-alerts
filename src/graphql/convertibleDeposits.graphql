@@ -44,8 +44,6 @@ query ConvertibleDepositFacilityClaimedYieldsSince($latestBlock: BigInt!, $chain
 query AuctionParametersUpdatedSince(
   $latestBlock: BigInt!
   $chainId: Int!
-  $managerChainId: Float!
-  $emissionManagerAddress: String!
 ) {
   convertibleDepositAuctioneerAuctionParametersUpdateds(
     orderBy: "block"
@@ -73,13 +71,6 @@ query AuctionParametersUpdatedSince(
         }
       }
     }
-  }
-  emissionManager(chainId: $managerChainId, address: $emissionManagerAddress) {
-    address
-    convertibleDepositAuctioneer
-    backingDecimal
-    minimumPremiumDecimal
-    minPriceScalarDecimal
   }
 }
 

@@ -1,13 +1,14 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
 import {
   BondMarketCreationFailedSinceDocument,
   type BondMarketCreationFailedSinceQuery,
 } from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
+import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, formatNumber } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -23,7 +24,11 @@ type BondMarketCreationFailedEvent =
  * @param webhookUrl
  * @param event
  */
-const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarketCreationFailedEvent): void => {
+const sendBondMarketCreationFailedAlert = (
+  alertSender: DiscordAlertSender,
+  webhookUrl: string,
+  event: BondMarketCreationFailedEvent,
+): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const blockNumber = Number(event.block);
   const txHash = event.txHash;
@@ -61,7 +66,7 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
     },
   ];
 
-  sendAlert(
+  return alertSender(
     webhookUrl,
     "",
     `⚠️ The EmissionManager was unable to create a bond market for the under-selling of OHM.`,
@@ -70,14 +75,10 @@ const sendBondMarketCreationFailedAlert = (webhookUrl: string, event: BondMarket
   );
 };
 
-const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
+const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number | undefined> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0", 10);
-
-  if (latestBlock === 0) {
-    console.info(`No latest block found, defaulting to 0 (process all events)`);
-    return 0;
-  }
+  const value = firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`);
+  const latestBlock = value ? parseInt(value, 10) : undefined;
 
   console.info(`Latest block is ${latestBlock}`);
   return latestBlock;
@@ -101,6 +102,7 @@ export const performBondMarketCreationFailedChecks = async (
   firestoreCollectionName: string,
   webhookUrl: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
@@ -108,10 +110,10 @@ export const performBondMarketCreationFailedChecks = async (
   console.info(`\n\n⏰ Processing Bond Market Creation Failed Events`);
 
   // Get the latest block
-  const latestBlock = await getLatestBlock(firestoreDocument);
+  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
+  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
 
   // Fetch failed events using GraphQL
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
   console.debug(`Fetching bond market creation failed events since block ${latestBlock}`);
 
   const queryResults = await client
@@ -135,28 +137,19 @@ export const performBondMarketCreationFailedChecks = async (
     return;
   }
 
-  let updatedLatestBlock = latestBlock;
-
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(
       `Processing bond market creation failed event for emission manager ${event.emissionManager} at block ${eventBlock}`,
     );
-    sendBondMarketCreationFailedAlert(webhookUrl, event);
+    const alertSent = await sendBondMarketCreationFailedAlert(alertSender, webhookUrl, event);
+    if (!alertSent) throw new Error(`Discord rate-limited the bond market failure alert at block ${eventBlock}`);
 
-    // Update the latest block to this event's block
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest block to ${eventBlock}`);
   }
 };
 

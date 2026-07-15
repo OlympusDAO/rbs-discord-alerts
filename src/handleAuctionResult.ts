@@ -1,10 +1,11 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
 import { getConvertibleDepositsSubgraphUrl } from "./constants";
-import { type EmbedField, getRelativeTimestamp, sendAlert } from "./discord";
+import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
 import { AuctionResultSinceDocument, type AuctionResultSinceQuery } from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
+import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -19,7 +20,11 @@ type AuctionResultEvent = AuctionResultSinceQuery["convertibleDepositAuctioneerA
  * @param webhookUrl
  * @param event
  */
-const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): void => {
+const sendAuctionResultAlert = (
+  alertSender: DiscordAlertSender,
+  webhookUrl: string,
+  event: AuctionResultEvent,
+): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
   const target = castFloat(event.targetDecimal);
@@ -55,17 +60,13 @@ const sendAuctionResultAlert = (webhookUrl: string, event: AuctionResultEvent): 
     },
   ];
 
-  sendAlert(webhookUrl, "", title, description, fields);
+  return alertSender(webhookUrl, "", title, description, fields);
 };
 
-const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number> => {
+const getLatestBlock = async (firestoreDocument: DocumentReference): Promise<number | undefined> => {
   const firestoreSnapshot = await firestoreDocument.get();
-  const latestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || "0", 10);
-
-  if (latestBlock === 0) {
-    console.info(`No latest block found, defaulting to 0 (process all events)`);
-    return 0;
-  }
+  const value = firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`);
+  const latestBlock = value ? parseInt(value, 10) : undefined;
 
   console.info(`Latest block is ${latestBlock}`);
   return latestBlock;
@@ -89,6 +90,7 @@ export const performAuctionResultChecks = async (
   firestoreCollectionName: string,
   webhookUrl: string,
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
@@ -96,10 +98,10 @@ export const performAuctionResultChecks = async (
   console.info(`\n\n⏰ Processing Auction Result Events`);
 
   // Get the latest block
-  const latestBlock = await getLatestBlock(firestoreDocument);
+  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
+  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
 
   // Fetch events using GraphQL
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
   console.debug(`Fetching auction result events since block ${latestBlock}`);
 
   const queryResults = await client
@@ -123,26 +125,17 @@ export const performAuctionResultChecks = async (
     return;
   }
 
-  let updatedLatestBlock = latestBlock;
-
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing auction result event for auctioneer ${event.auctioneer} at block ${eventBlock}`);
-    sendAuctionResultAlert(webhookUrl, event);
+    const alertSent = await sendAuctionResultAlert(alertSender, webhookUrl, event);
+    if (!alertSent) throw new Error(`Discord rate-limited the auction result alert at block ${eventBlock}`);
 
-    // Update the latest block to this event's block
-    if (eventBlock > updatedLatestBlock) {
-      updatedLatestBlock = eventBlock;
-    }
-  }
-
-  // Update latest block
-  if (updatedLatestBlock > latestBlock) {
     await firestoreDocument.update({
-      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: updatedLatestBlock,
+      [`${FUNCTION_KEY}.${LATEST_BLOCK}`]: eventBlock,
     });
-    console.info(`Updated latest block to ${updatedLatestBlock}`);
+    console.info(`Updated latest block to ${eventBlock}`);
   }
 };
 

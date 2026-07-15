@@ -1,10 +1,11 @@
 import { Firestore } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "./constants";
-import { type EmbedField, sendAlert } from "./discord";
+import { createDiscordAlertSender, type EmbedField } from "./discord";
 import { type MinimumTargetPriceChanged, MinimumTargetPriceChangedEventsDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { createGraphQLClient } from "./helpers/graphqlClient";
+import { getSubgraphEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, castInt, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 
@@ -26,6 +27,7 @@ export const performTargetPriceChangedCheck = async (
   firestoreCollectionName: string,
   alertWebhookUrls: string[],
 ): Promise<void> => {
+  const alertSender = createDiscordAlertSender();
   // Get last processed block
   const firestoreClient = new Firestore();
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
@@ -35,14 +37,15 @@ export const performTargetPriceChangedCheck = async (
 
   // Fetch events since the last processed block
   const client = createGraphQLClient(getRbsSubgraphUrl());
+  const startBlock = await getSubgraphEventStartBlock(client, latestBlock, "RBS subgraph");
   const queryResults = await client
     .query(MinimumTargetPriceChangedEventsDocument, {
-      latestBlock: (latestBlock || 0).toString(),
+      latestBlock: startBlock.toString(),
     })
     .toPromise();
   if (!queryResults.data) {
     throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
+      `Did not receive results from GraphQL query with latest block ${startBlock}. Error: ${queryResults.error}`,
     );
   }
 
@@ -50,8 +53,6 @@ export const performTargetPriceChangedCheck = async (
   if (targetPriceChangedEvents.length === 0) {
     return;
   }
-
-  let updatedLatestBlock: string | undefined;
 
   // Send Discord message
   for (let i = 0; i < targetPriceChangedEvents.length; i++) {
@@ -81,23 +82,15 @@ export const performTargetPriceChangedCheck = async (
     ];
 
     for (let j = 0; j < alertWebhookUrls.length; j++) {
-      const currentAlertSuccess = await sendAlert(alertWebhookUrls[j], "", `🚨 RBS Target Price Changed`, ``, fields);
-
-      // If any of the Discord webhook requests succeed, we update the latest block
-      if (currentAlertSuccess) {
-        updatedLatestBlock = targetPriceChangedEvent.block;
-      }
+      const currentAlertSuccess = await alertSender(alertWebhookUrls[j], "", `🚨 RBS Target Price Changed`, ``, fields);
+      if (!currentAlertSuccess)
+        throw new Error(`Discord rate-limited the target price alert at block ${targetPriceChangedEvent.block}`);
     }
-  }
 
-  if (updatedLatestBlock) {
-    // Update last processed block
     await firestoreDocument.update({
-      [FIELD_LATEST_BLOCK]: updatedLatestBlock,
+      [FIELD_LATEST_BLOCK]: targetPriceChangedEvent.block,
     });
-    console.log(`Updated latest block to ${updatedLatestBlock}`);
-  } else {
-    console.log(`Latest block not updated`);
+    console.log(`Updated latest block to ${targetPriceChangedEvent.block}`);
   }
 };
 

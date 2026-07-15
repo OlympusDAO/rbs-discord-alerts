@@ -35,7 +35,7 @@ query MarketCreatedEvents($sinceBlock: BigInt!) {
 }
 
 query MarketClosedEvents($sinceBlock: BigInt!) {
-  marketClosedEvents(orderBy: block, orderDirection: desc, first: 1000, where: { block_gt: $sinceBlock }) {
+  marketClosedEvents(orderBy: block, orderDirection: asc, first: 1000, where: { block_gt: $sinceBlock }) {
     block
     bondContract
     bondType

@@ -1,10 +1,22 @@
 import fetch from "cross-fetch";
 
+import { createRetryBudget, type RetryBudget, retryWithBackoff } from "./helpers/retryHelper";
+
 export type EmbedField = {
   name: string;
   value: string;
   inline?: boolean;
 };
+
+export type DiscordAlertSender = (
+  webhook: string,
+  content: string,
+  title: string,
+  description: string,
+  fields: EmbedField[],
+  footer?: string,
+  timestamp?: string,
+) => Promise<boolean>;
 
 type Embed = {
   title: string;
@@ -24,31 +36,70 @@ type DiscordMessage = {
   embeds: Embed[];
 };
 
-const executeWebhook = async (webhook: string, content: DiscordMessage): Promise<boolean> => {
+type WebhookAttempt = {
+  success: boolean;
+  retryAfterMs?: number;
+};
+
+const MAX_WEBHOOK_ATTEMPTS = 3;
+const MAX_WEBHOOK_RETRY_BUDGET_MS = 10_000;
+const WEBHOOK_REQUEST_TIMEOUT_MS = 5_000;
+
+const createDiscordRetryBudget = (): RetryBudget => createRetryBudget(MAX_WEBHOOK_RETRY_BUDGET_MS);
+
+const getRetryAfterMs = (body: unknown): number | undefined => {
+  if (typeof body !== "object" || body === null || !("retry_after" in body)) return undefined;
+
+  const retryAfterSeconds = Number(body.retry_after);
+  if (!Number.isFinite(retryAfterSeconds) || retryAfterSeconds < 0) return undefined;
+
+  return retryAfterSeconds * 1000;
+};
+
+const executeWebhookAttempt = async (webhook: string, content: DiscordMessage): Promise<WebhookAttempt> => {
   console.log(`Sending request to Discord webhook: ${JSON.stringify(content, null, 2)}`);
-  const response = await fetch(webhook, {
-    method: "POST",
-    body: JSON.stringify(content),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), WEBHOOK_REQUEST_TIMEOUT_MS);
+  const response = await (async () => {
+    try {
+      return await fetch(webhook, {
+        method: "POST",
+        body: JSON.stringify(content),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: abortController.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+  })();
 
   console.debug(`Discord response status: ${response.status}`);
-  // Ignore rate-limiting
   if (response.status === 429) {
     console.error(`Rate-limited by Discord`);
     const body = await response.json();
     console.error(`Discord response: ${JSON.stringify(body)}`);
 
-    return false;
+    return { success: false, retryAfterMs: getRetryAfterMs(body) };
   }
 
   if (!response.ok) {
     throw new Error(`Encountered error with Discord webhook: ${await response.text()}`);
   }
 
-  return true;
+  return { success: true };
+};
+
+const executeWebhook = async (webhook: string, content: DiscordMessage, retryBudget: RetryBudget): Promise<boolean> => {
+  const result = await retryWithBackoff(() => executeWebhookAttempt(webhook, content), {
+    maxAttempts: MAX_WEBHOOK_ATTEMPTS,
+    maxTotalDelayMs: MAX_WEBHOOK_RETRY_BUDGET_MS,
+    getRetryDelayMs: attempt => attempt.retryAfterMs,
+    sharedBudget: retryBudget,
+  });
+
+  return result.success;
 };
 
 export const BLANK_EMBED_FIELD = {
@@ -70,7 +121,8 @@ export const BLANK_EMBED_FIELD = {
  * @param footer
  * @param timestamp
  */
-export const sendAlert = async (
+const sendAlertWithRetryBudget = async (
+  retryBudget: RetryBudget,
   webhook: string,
   content: string,
   title: string,
@@ -79,21 +131,33 @@ export const sendAlert = async (
   footer?: string,
   timestamp?: string,
 ): Promise<boolean> => {
-  return await executeWebhook(webhook, {
-    content: content,
-    embeds: [
-      {
-        title: title,
-        description: description,
-        fields: fields,
-        footer: {
-          text: footer,
+  return await executeWebhook(
+    webhook,
+    {
+      content: content,
+      embeds: [
+        {
+          title: title,
+          description: description,
+          fields: fields,
+          footer: {
+            text: footer,
+          },
+          timestamp: timestamp,
         },
-        timestamp: timestamp,
-      },
-    ],
-  });
+      ],
+    },
+    retryBudget,
+  );
 };
+
+export const createDiscordAlertSender = (): DiscordAlertSender => {
+  const retryBudget = createDiscordRetryBudget();
+  return (webhook, content, title, description, fields, footer, timestamp) =>
+    sendAlertWithRetryBudget(retryBudget, webhook, content, title, description, fields, footer, timestamp);
+};
+
+export const sendAlert: DiscordAlertSender = (...args) => createDiscordAlertSender()(...args);
 
 export const sortPriceEmbeds = (fields: EmbedField[], ascending = true): EmbedField[] => {
   return fields.sort((a, b) => {

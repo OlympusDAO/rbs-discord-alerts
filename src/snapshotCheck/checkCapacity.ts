@@ -1,7 +1,7 @@
 import type { DocumentReference } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "../constants";
-import { getRoleMentions, sendAlert } from "../discord";
+import { type DiscordAlertSender, getRoleMentions } from "../discord";
 import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "../graphql/rangeSnapshot";
 import { addDate } from "../helpers/dateHelper";
 import { createGraphQLClient } from "../helpers/graphqlClient";
@@ -35,6 +35,7 @@ export const isCapacityDepleted = (
 };
 
 export const checkCapacityDepletion = async (
+  alertSender: DiscordAlertSender,
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
@@ -92,7 +93,7 @@ export const checkCapacityDepletion = async (
 
   // Throw alarm
   console.error(`Above threshold of ${DEPLETION_COUNT_THRESHOLD}. Throwing alarm.`);
-  const alertSuccess = await sendAlert(
+  const alertSuccess = await alertSender(
     webhookUrl,
     getRoleMentions(mentionRoles),
     `🚨 Repeated Cushion Depletion`,

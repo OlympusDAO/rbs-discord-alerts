@@ -1,7 +1,7 @@
 import type { DocumentReference } from "@google-cloud/firestore";
 
 import { getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl } from "../constants";
-import { getRoleMentions, sendAlert } from "../discord";
+import { type DiscordAlertSender, getRoleMentions } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
 import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
 import { createGraphQLClient } from "../helpers/graphqlClient";
@@ -56,6 +56,7 @@ export const isPriceDeviating = (chainlinkPrice: number, lpPrice: number): [bool
  * @returns
  */
 export const checkPrice = async (
+  alertSender: DiscordAlertSender,
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
@@ -108,7 +109,7 @@ export const checkPrice = async (
 
   // Throw an alarm
   console.error(`Above threshold of ${PRICE_DELTA}. Throwing alarm.`);
-  const alertSuccess = await sendAlert(
+  const alertSuccess = await alertSender(
     webhookUrl,
     getRoleMentions(mentionRoles),
     `🚨 Potential Price Manipulation`,

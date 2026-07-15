@@ -1,7 +1,7 @@
 import type { DocumentReference } from "@google-cloud/firestore";
 
 import { getRbsSubgraphUrl } from "../constants";
-import { getRoleMentions, sendAlert } from "../discord";
+import { type DiscordAlertSender, getRoleMentions } from "../discord";
 import { LatestRangeSnapshotDocument, RangeSnapshotAtBlockDocument } from "../graphql/rangeSnapshot";
 import { createGraphQLClient } from "../helpers/graphqlClient";
 import { castFloat, castFloatNullable, castInt } from "../helpers/numberHelper";
@@ -30,6 +30,7 @@ export const isLowerWallBroken = (historicalLowerWallPrice: number, currentPrice
 };
 
 export const checkLowerWall = async (
+  alertSender: DiscordAlertSender,
   firestore: DocumentReference,
   mentionRoles: string[],
   webhookUrl: string,
@@ -94,7 +95,7 @@ export const checkLowerWall = async (
 
   // Throw alarm
   console.error(`Outside threshold of ${LOWER_WALL_PRICE_MULTIPLE}. Throwing alarm.`);
-  const alertSuccess = await sendAlert(
+  const alertSuccess = await alertSender(
     webhookUrl,
     getRoleMentions(mentionRoles),
     `🚨 Fast Price Depreciation`,

@@ -747,6 +747,13 @@ export type RepoMarketQuery = {
   }>;
 };
 
+export type YrfSubgraphMetaQueryVariables = Exact<{ [key: string]: never }>;
+
+export type YrfSubgraphMetaQuery = {
+  __typename?: "Query";
+  _meta?: { __typename?: "_Meta_"; block: { __typename?: "_Block_"; number: number } } | null;
+};
+
 export const RepoMarketsCreatedSinceDocument = {
   kind: "Document",
   definitions: [
@@ -776,7 +783,7 @@ export const RepoMarketsCreatedSinceDocument = {
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "orderDirection" },
-                value: { kind: "EnumValue", value: "desc" },
+                value: { kind: "EnumValue", value: "asc" },
               },
               { kind: "Argument", name: { kind: "Name", value: "first" }, value: { kind: "IntValue", value: "1000" } },
               {
@@ -922,3 +929,35 @@ export const RepoMarketDocument = {
     },
   ],
 } as unknown as DocumentNode<RepoMarketQuery, RepoMarketQueryVariables>;
+export const YrfSubgraphMetaDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "YRFSubgraphMeta" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "_meta" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "block" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [{ kind: "Field", name: { kind: "Name", value: "number" } }],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<YrfSubgraphMetaQuery, YrfSubgraphMetaQueryVariables>;
