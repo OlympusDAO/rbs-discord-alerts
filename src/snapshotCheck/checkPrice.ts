@@ -1,13 +1,13 @@
 import type { DocumentReference } from "@google-cloud/firestore";
 
-import { getPriceSnapshotSubgraphUrl, getRbsSubgraphUrl } from "../constants";
+import { getPriceSnapshotSubgraphUrl } from "../constants";
 import { type DiscordAlertSender, getRoleMentions } from "../discord";
 import { LatestPriceSnapshotDocument } from "../graphql/priceSnapshot";
-import { LatestRangeSnapshotDocument } from "../graphql/rangeSnapshot";
 import { createGraphQLClient } from "../helpers/graphqlClient";
 import { castFloat, castFloatNullable, formatPercent } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
+import { getLatestRangeSnapshot } from "../indexer/rbs";
 
 const PRICE_DELTA = 0.05; // 5%
 const FUNCTION_KEY = "checkPrice";
@@ -65,17 +65,13 @@ export const checkPrice = async (
   console.info(`\n\n⏰ Checking Price Manipulation`);
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
-  // Grab latest RangeSnapshot
-  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
-  const rangeSnapshotResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();
-  if (!rangeSnapshotResults.data || rangeSnapshotResults.data.rangeSnapshots.length === 0) {
-    throw new Error(
-      `Did not receive results from latest RangeSnapshot GraphQL query. Error: ${rangeSnapshotResults.error}`,
-    );
+  // Grab latest RangeSnapshot, from the protocol indexer.
+  const latestRangeSnapshot = await getLatestRangeSnapshot();
+  if (!latestRangeSnapshot) {
+    throw new Error(`Did not receive a latest RangeSnapshot from the indexer.`);
   }
 
   // Grab the OHM price from the RangeSnapshot, which is derived from the Chainlink oracle.
-  const latestRangeSnapshot = rangeSnapshotResults.data.rangeSnapshots[0];
   const chainlinkPrice = castFloatNullable(latestRangeSnapshot.ohmPrice);
 
   // It can be null, in which case we skip the check

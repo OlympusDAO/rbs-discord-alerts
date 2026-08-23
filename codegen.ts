@@ -1,52 +1,14 @@
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
-import {
-  getBondsSubgraphUrl,
-  getConvertibleDepositsSubgraphUrl,
-  getEmissionManagerSubgraphUrl,
-  getPriceSnapshotSubgraphUrl,
-  getRbsSubgraphUrl,
-  getYRFSubgraphUrl,
-} from "./src/constants";
+import { getPriceSnapshotSubgraphUrl } from "./src/constants";
 
+// Only the ohm-price subgraph remains on The Graph. RBS, bonds, YRF, the
+// emission manager and convertible deposits are read from the Olympus protocol
+// indexer's REST API instead (src/indexer/), whose response shapes are declared
+// in src/indexer/types.ts and checked against the deployed API by
+// src/__tests__/indexer.contract.test.ts.
 const config: CodegenConfig = {
   generates: {
-    "src/graphql/bondMarket.ts": {
-      schema: getBondsSubgraphUrl(),
-      documents: "src/graphql/bondMarket.graphql",
-      plugins: ["typescript", "typescript-operations", "typed-document-node"],
-      config: {
-        preResolveTypes: true,
-        scalars: {
-          BigDecimal: "string",
-          BigInt: "string",
-          Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
-          Int8: "number",
-          Timestamp: "number",
-        },
-      },
-      hooks: {
-        afterOneFileWrite: ["patch -p0 < src/graphql/bondMarket.patch", "pnpm run lint"],
-      },
-    },
-    "src/graphql/rangeSnapshot.ts": {
-      schema: getRbsSubgraphUrl(),
-      documents: "src/graphql/rangeSnapshot.graphql",
-      plugins: ["typescript", "typescript-operations", "typed-document-node"],
-      config: {
-        preResolveTypes: true,
-        scalars: {
-          BigDecimal: "string",
-          BigInt: "string",
-          Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
-          Int8: "number",
-          Timestamp: "number",
-        },
-      },
-      hooks: {
-        afterOneFileWrite: ["pnpm run lint"],
-      },
-    },
     "src/graphql/priceSnapshot.ts": {
       schema: getPriceSnapshotSubgraphUrl(),
       documents: "src/graphql/priceSnapshot.graphql",
@@ -58,61 +20,6 @@ const config: CodegenConfig = {
           BigInt: "string",
           Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
           Int8: "number",
-          Timestamp: "number",
-        },
-      },
-      hooks: {
-        afterOneFileWrite: ["pnpm run lint"],
-      },
-    },
-    "src/graphql/yrf.ts": {
-      schema: getYRFSubgraphUrl(),
-      documents: "src/graphql/yrf.graphql",
-      plugins: ["typescript", "typescript-operations", "typed-document-node"],
-      config: {
-        preResolveTypes: true,
-        scalars: {
-          BigDecimal: "string",
-          BigInt: "string",
-          Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
-          Int8: "number",
-          Timestamp: "number",
-        },
-      },
-      hooks: {
-        afterOneFileWrite: ["pnpm run lint"],
-      },
-    },
-    "src/graphql/emissionManager.ts": {
-      schema: getEmissionManagerSubgraphUrl(),
-      documents: "src/graphql/emissionManager.graphql",
-      plugins: ["typescript", "typescript-operations", "typed-document-node"],
-      config: {
-        preResolveTypes: true,
-        scalars: {
-          BigDecimal: "string",
-          BigInt: "string",
-          Bytes: "Uint8Array", // https://thegraph.com/docs/en/developing/assemblyscript-api/#bytes
-          Int8: "number",
-          Timestamp: "number",
-        },
-      },
-      hooks: {
-        afterOneFileWrite: ["pnpm run lint"],
-      },
-    },
-    "src/graphql/convertibleDeposits.ts": {
-      schema: getConvertibleDepositsSubgraphUrl(),
-      documents: "src/graphql/convertibleDeposits.graphql",
-      plugins: ["typescript", "typescript-operations", "typed-document-node"],
-      config: {
-        preResolveTypes: true,
-        scalars: {
-          BigDecimal: "string",
-          BigInt: "string",
-          Bytes: "Uint8Array",
-          Int8: "number",
-          JSON: "unknown",
           Timestamp: "number",
         },
       },

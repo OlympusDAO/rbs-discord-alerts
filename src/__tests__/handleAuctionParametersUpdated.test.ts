@@ -9,7 +9,11 @@ import {
   performAuctionParametersUpdatedChecks,
 } from "../handleAuctionParametersUpdated";
 import { getEmissionManagerStateAtBlock } from "../helpers/ethereumRpcClient";
-import { createGraphQLClient } from "../helpers/graphqlClient";
+import {
+  getAuctionEventsSince,
+  getConvertibleDepositsIndexedBlock,
+  getDepositAssetSymbols,
+} from "../indexer/convertibleDeposits";
 
 jest.mock("@google-cloud/firestore");
 jest.mock("../discord", () => ({
@@ -20,10 +24,11 @@ jest.mock("../discord", () => ({
     return { sendAlert, createDiscordAlertSender: jest.fn(() => sendAlert) };
   })(),
 }));
-jest.mock("../helpers/graphqlClient");
+jest.mock("../indexer/convertibleDeposits");
 jest.mock("../helpers/ethereumRpcClient");
 
 const event = {
+  id: "1_0x1234567890abcdef_0",
   chainId: 1,
   block: "123",
   logIndex: 0,
@@ -37,12 +42,6 @@ const event = {
   tickSizeDecimal: "0.1",
   minPrice: "12000000000000000000",
   minPriceDecimal: "12",
-  rDepositAsset: {
-    rAsset: {
-      name: "Reserve Deposit Asset",
-      symbol: "sUSDS",
-    },
-  },
 };
 
 const manager: EmissionManagerPriceState = {
@@ -150,51 +149,40 @@ describe("CD auction tuning price context", () => {
 describe("performAuctionParametersUpdatedChecks", () => {
   const firestoreGet = jest.fn();
   const firestoreUpdate = jest.fn();
-  const query = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.CONVERTIBLE_DEPOSITS_SUBGRAPH_URL = "https://example.com/subgraph";
-    process.env.GRAPHQL_API_KEY = "graph-api-key";
     process.env.ETHEREUM_RPC_URL = "https://example.com/rpc";
 
     firestoreGet.mockResolvedValue({ get: jest.fn(() => "1") });
     (Firestore as unknown as jest.Mock).mockImplementation(() => ({
       doc: jest.fn(() => ({ get: firestoreGet, update: firestoreUpdate })),
     }));
-    (createGraphQLClient as jest.Mock).mockReturnValue({ query });
+    (getConvertibleDepositsIndexedBlock as jest.Mock).mockResolvedValue(300);
+    (getDepositAssetSymbols as jest.Mock).mockResolvedValue(new Map([["0xasset", "sUSDS"]]));
     (getEmissionManagerStateAtBlock as jest.Mock).mockResolvedValue(manager);
     (sendAlert as jest.Mock).mockResolvedValue(true);
   });
 
-  const mockQueryResult = (data: unknown) => {
-    query.mockReturnValue({ toPromise: jest.fn().mockResolvedValue(data) });
+  // The route answers parameter updates and results together; these tests only
+  // exercise the parameter-update half.
+  const mockParametersUpdated = (items: unknown[]) => {
+    (getAuctionEventsSince as jest.Mock).mockResolvedValue({ parametersUpdated: items, results: [] });
   };
 
-  it("passes the current lowercased manager address to the existing event request", async () => {
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [] },
-      },
-    });
+  it("resumes from the stored block cursor", async () => {
+    mockParametersUpdated([]);
 
     await performAuctionParametersUpdatedChecks("document", "collection", "webhook", "https://example.com/rpc");
 
-    expect(query).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        latestBlock: "1",
-        chainId: 1,
-      }),
-    );
+    // The stored cursor is 1, so the request starts there rather than looking
+    // back a day from the indexed head. `chainId` is gone: these routes are
+    // mainnet-only, so it is no longer a parameter.
+    expect(getAuctionEventsSince).toHaveBeenCalledWith(1);
   });
 
   it("uses exact-block manager and oracle state for active events", async () => {
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event] },
-      },
-    });
+    mockParametersUpdated([event]);
 
     await performAuctionParametersUpdatedChecks("document", "collection", "webhook", "https://example.com/rpc");
 
@@ -208,11 +196,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
   });
 
   it("rejects events from an auctioneer not configured on the manager", async () => {
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event] },
-      },
-    });
+    mockParametersUpdated([event]);
     (getEmissionManagerStateAtBlock as jest.Mock).mockResolvedValue({ ...manager, cdAuctioneer: "0xother" });
 
     await expect(
@@ -223,11 +207,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
   });
 
   it("does not checkpoint an alert that Discord rate-limits", async () => {
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event] },
-      },
-    });
+    mockParametersUpdated([event]);
     (sendAlert as jest.Mock).mockResolvedValue(false);
 
     await expect(
@@ -238,11 +218,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
 
   it("keeps the checkpoint for earlier alerts when a later alert is rate-limited", async () => {
     const laterEvent = { ...event, block: "124", txHash: "0xdef" };
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event, laterEvent] },
-      },
-    });
+    mockParametersUpdated([event, laterEvent]);
     (sendAlert as jest.Mock).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
     await expect(
@@ -254,11 +230,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
 
   it("delivers and checkpoints an earlier alert before loading a later event's RPC state", async () => {
     const laterEvent = { ...event, block: "124", txHash: "0xdef" };
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event, laterEvent] },
-      },
-    });
+    mockParametersUpdated([event, laterEvent]);
     (getEmissionManagerStateAtBlock as jest.Mock)
       .mockResolvedValueOnce(manager)
       .mockRejectedValueOnce(new Error("RPC unavailable"));
@@ -273,11 +245,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
   });
 
   it("rejects malformed manager pricing settings before sending or checkpointing", async () => {
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [event] },
-      },
-    });
+    mockParametersUpdated([event]);
     (getEmissionManagerStateAtBlock as jest.Mock).mockResolvedValue({ ...manager, backing: 0n });
 
     await expect(
@@ -289,11 +257,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
 
   it("uses exact-block PRICE.getLastPrice when a shutdown event has no auction floor", async () => {
     const shutdownEvent = { ...event, target: "0", targetDecimal: "0", minPrice: "0", minPriceDecimal: "0" };
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [shutdownEvent] },
-      },
-    });
+    mockParametersUpdated([shutdownEvent]);
     (getEmissionManagerStateAtBlock as jest.Mock).mockResolvedValue({
       ...manager,
       ohmPrice: 22_644_609_153_148_047_151n,
@@ -308,11 +272,7 @@ describe("performAuctionParametersUpdatedChecks", () => {
 
   it("rejects a shutdown event when its exact-block oracle price is invalid", async () => {
     const shutdownEvent = { ...event, target: "0", targetDecimal: "0", minPrice: "0", minPriceDecimal: "0" };
-    mockQueryResult({
-      data: {
-        convertibleDepositAuctioneerAuctionParametersUpdateds: { items: [shutdownEvent] },
-      },
-    });
+    mockParametersUpdated([shutdownEvent]);
     (getEmissionManagerStateAtBlock as jest.Mock).mockResolvedValue({ ...manager, ohmPrice: 0n });
 
     await expect(
@@ -322,12 +282,12 @@ describe("performAuctionParametersUpdatedChecks", () => {
     expect(firestoreUpdate).not.toHaveBeenCalled();
   });
 
-  it("preserves the existing GraphQL failure path", async () => {
-    mockQueryResult({ data: undefined, error: new Error("query failed") });
+  it("propagates an indexer request failure rather than checkpointing", async () => {
+    (getAuctionEventsSince as jest.Mock).mockRejectedValue(new Error("Indexer request failed for /v1/..."));
 
     await expect(
       performAuctionParametersUpdatedChecks("document", "collection", "webhook", "https://example.com/rpc"),
-    ).rejects.toThrow("Did not receive results from GraphQL query");
+    ).rejects.toThrow("Indexer request failed");
     expect(sendAlert).not.toHaveBeenCalled();
     expect(firestoreUpdate).not.toHaveBeenCalled();
   });

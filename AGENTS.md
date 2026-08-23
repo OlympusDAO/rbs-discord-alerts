@@ -12,14 +12,15 @@ The system consists of:
 - **Google Cloud Scheduler**: Triggers functions every minute with cron schedule `* * * * *`
 - **Google Firestore**: NoSQL database for persistent state tracking
 - **Google Cloud Monitoring**: Alert policies and dashboards
-- **GraphQL Subgraphs**: Data sources via The Graph Protocol
+- **Olympus protocol indexer**: the REST data source for RBS, bonds, YRF, the emission manager and convertible deposits
+- **ohm-price subgraph**: the one remaining The Graph dependency, read only by the (currently disabled) `checkPrice`
 
 ## Core Functions and Their Purpose
 
 ### 1. Price Events Monitor (`handlePriceEvents.ts`)
 
 - **Purpose**: Broadcasts RBS PriceEvents (WallUp, WallDown, CushionUp, CushionDown) to Discord
-- **Data Source**: RBS Subgraph via `RbsPriceEventsDocument` query
+- **Data Source**: `GET /v1/rbs/price-events?sinceBlock=` on the protocol indexer
 - **State Tracking**: Stores latest processed block in Firestore field `events.latestBlock`
 - **Alert Type**: Informational alerts to DAO and community channels
 
@@ -44,13 +45,13 @@ The system consists of:
 ### 4. Target Price Changes (`handleTargetPriceChangedEvents.ts`)
 
 - **Purpose**: Monitors and reports changes to RBS target price
-- **Data Source**: RBS Subgraph for target price change events
+- **Data Source**: `GET /v1/rbs/target-price-changes?sinceBlock=` on the protocol indexer
 - **Alert Type**: Informational alerts to DAO and community channels
 
 ### 5. YRF Market Monitor (`handleYRFMarkets.ts`)
 
 - **Purpose**: Monitors Yield Repurchase Facility market creation and closure
-- **Data Source**: YRF Subgraph for market events
+- **Data Source**: `GET /v1/yrf/repo-markets` and `GET /v1/bonds/market-events` on the protocol indexer
 - **Alert Type**: Community alerts for YRF activity
 
 ## Pulumi Infrastructure Patterns
@@ -76,9 +77,14 @@ const [functionObject, functionName, triggerUrl] = createFunction(
 - **Environment Variables**: Set via `environmentVariables` in function creation
 - **Secrets**: Managed through Pulumi configuration (`pulumi.Config()`)
 - **Required Secrets**:
-  - `GRAPHQL_API_KEY`: The Graph API key for subgraph access
+  - `GRAPHQL_API_KEY`: The Graph API key. Needed ONLY by the snapshot-check
+    function, whose `checkPrice` reads the ohm-price subgraph; every other
+    function is off The Graph entirely.
+  - `ETHEREUM_RPC_URL`: for the exact-block Emission Manager reads
   - Discord webhook URLs for different alert types
   - Notification email addresses
+- **Optional config**: `indexerApiUrl` -> `INDEXER_API_URL`. Plain config, not a
+  secret — the indexer is public. Unset, each function uses the deployed API.
 
 ### Alert Policy Creation
 
@@ -87,32 +93,37 @@ Two types of alert policies are automatically created for each function:
 - **Function Errors**: `createAlertFunctionError` - monitors crashes and timeouts
 - **Function Executions**: `createAlertFunctionExecutions` - monitors execution frequency
 
-## GraphQL Integration
+## Data sources
 
-### Code Generation
+### Protocol indexer (REST)
 
-- Uses `@graphql-codegen/cli` with configuration in `codegen.ts`
-- Generates TypeScript types from GraphQL schemas
-- Supports multiple subgraphs: RBS, Bonds, Price Snapshot, YRF
+RBS, bonds, YRF, the emission manager and convertible deposits are read from the
+[Olympus protocol indexer](https://github.com/OlympusDAO/olympus-protocol-indexer).
 
-### Subgraph URLs (from `constants.ts`)
+- `src/indexer/*.ts` — one module per domain, each function named after the
+  query it replaced.
+- `src/indexer/types.ts` — the response shapes. There is no codegen for these;
+  `src/__tests__/indexer.contract.test.ts` checks them against a deployed API,
+  which is the only thing that can catch an upstream rename.
+- `src/helpers/indexerClient.ts` — the transport. Retries 3 times with the same
+  backoff the urql `retryExchange` used, but never retries a 4xx: that means
+  this code sent a parameter the route does not accept, which is a bug here.
 
-- **RBS Subgraph**: Primary data source for RBS events
-- **Bonds Subgraph**: Bond market data
-- **Price Snapshot Subgraph**: Price data and snapshots
-- **YRF Subgraph**: Yield Repurchase Facility data
-
-### Query Patterns
-
-All GraphQL queries follow this pattern:
+Query pattern:
 
 ```typescript
-const client = createGraphQLClient(getSubgraphUrl());
-const queryResults = await client.query(DocumentQuery, variables).toPromise();
-if (!queryResults.data) {
-  throw new Error(`Query failed: ${queryResults.error}`);
-}
+const events = await getPriceEventsSince(startBlock);
 ```
+
+Every response is `{ data, meta: { block } }`, where `meta.block` is the indexed
+head — the freshness signal `_meta { block { number } }` used to give, and what
+each handler stores as its Firestore cursor.
+
+### ohm-price subgraph (GraphQL)
+
+The one remaining The Graph dependency, read by `checkPrice` only, which is
+currently commented out in `handleSnapshotCheck.ts`. `codegen.ts` generates
+types for this schema alone.
 
 ## Discord Alert System
 
@@ -178,7 +189,7 @@ pnpm run lint
 pnpm run build
 ```
 
-Run `pnpm run codegen` only when GraphQL documents or schema inputs change. Run `pnpm run lint` and `pnpm run build` after code changes.
+Run `pnpm run codegen` only when the ohm-price GraphQL document or schema changes. Run `pnpm run lint` and `pnpm run build` after code changes.
 
 Local monitor scripts load `.env` and execute the corresponding handler:
 
@@ -243,11 +254,18 @@ pnpm run execute:claimedyield
    ]);
    ```
 
-### GraphQL Schema Updates
+### Adding an indexer route
+
+1. Add the response shape to `src/indexer/types.ts` and a request function to
+   the matching `src/indexer/{domain}.ts`.
+2. Add a case to `src/__tests__/indexer.contract.test.ts` asserting the fields
+   the handler reads, and run it against a deployed API:
+   `INDEXER_API_URL=https://<host> pnpm test`.
+
+### ohm-price subgraph schema updates
 
 1. **Update GraphQL Files**:
-   - Add new queries to `src/graphql/{schema}.graphql`
-   - Update subgraph URLs in `constants.ts` if needed
+   - Add new queries to `src/graphql/priceSnapshot.graphql`
 
 2. **Regenerate Types**:
 
@@ -304,7 +322,7 @@ export $(cat .env | xargs)
 
 - `pnpm run lint`: Fix linting issues. It is recommended to run this after any code changes to ensure consistency.
 - `pnpm run build`: TypeScript compilation. It is recommended to run this after any code changes to ensure accuracy.
-- `pnpm run codegen`: GraphQL code generation. Run this after updating any `.graphql` files.
+- `pnpm run codegen`: GraphQL code generation for the ohm-price subgraph. Run this after updating `src/graphql/priceSnapshot.graphql`.
 
 ### Post-Change Checklist
 

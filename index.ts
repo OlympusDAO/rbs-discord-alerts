@@ -35,8 +35,8 @@ const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
 const SECRET_GRAPHQL_API_KEY = "GRAPHQL_API_KEY";
-const SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL = "CONVERTIBLE_DEPOSITS_SUBGRAPH_URL";
 const SECRET_ETHEREUM_RPC_URL = "ETHEREUM_RPC_URL";
+const CONFIG_INDEXER_API_URL = "indexerApiUrl";
 
 const PROJECT_NAME = `${gcp.config.project}`;
 const PROJECT_NAME_STACK = `${PROJECT_NAME}-${pulumi.getStack()}`;
@@ -68,9 +68,17 @@ const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 const discordRoleCore = pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE);
 const contractUrl = pulumiConfig.get(CONFIG_CONTRACT);
 
+// Still required, but only by the snapshot-check function: `checkPrice` reads
+// the ohm-price subgraph, which is not part of the protocol indexer.
 const graphQlApiKey = pulumiConfig.requireSecret(SECRET_GRAPHQL_API_KEY);
-const convertibleDepositsSubgraphUrl = pulumiConfig.requireSecret(SECRET_CONVERTIBLE_DEPOSITS_SUBGRAPH_URL);
 const ethereumRpcUrl = pulumiConfig.requireSecret(SECRET_ETHEREUM_RPC_URL);
+
+// The protocol indexer is public, so this is plain config rather than a secret,
+// and it is optional — unset, each function falls back to the deployed API.
+const indexerApiUrl = pulumiConfig.get(CONFIG_INDEXER_API_URL);
+const indexerEnv: Record<string, pulumi.Output<string>> = indexerApiUrl
+  ? { INDEXER_API_URL: pulumi.output(indexerApiUrl) }
+  : {};
 
 /**
  * Target Price Changed Events
@@ -93,7 +101,7 @@ const [_functionTargetPriceChanged, functionTargetPriceChangedName] = createFunc
     (<any>res).send("OK").end();
   },
   {
-    GRAPHQL_API_KEY: graphQlApiKey,
+    ...indexerEnv,
   },
   "*/5 * * * *", // Every 5 minutes
 );
@@ -117,7 +125,7 @@ const [_functionPriceEvents, functionPriceEventsName] = createFunction(
     (<any>res).send("OK").end();
   },
   {
-    GRAPHQL_API_KEY: graphQlApiKey,
+    ...indexerEnv,
   },
   "* * * * *", // Every minute
 );
@@ -147,7 +155,12 @@ const [_functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
     (<any>res).send("OK").end();
   },
   {
+    // The only function that still needs a Graph gateway key: `checkPrice`
+    // reads the ohm-price subgraph, which is not part of the protocol indexer.
+    // It is currently disabled in handleSnapshotCheck.ts, so this is here for
+    // when it is switched back on.
     GRAPHQL_API_KEY: graphQlApiKey,
+    ...indexerEnv,
   },
   "* * * * *", // Every minute
 );
@@ -176,7 +189,7 @@ const [_functionHeartbeatCheck, functionHeartbeatCheckName] = createFunction(
     (<any>res).send("OK").end();
   },
   {
-    GRAPHQL_API_KEY: graphQlApiKey,
+    ...indexerEnv,
   },
   "* * * * *", // Every minute
 );
@@ -200,7 +213,7 @@ const [_functionYRFCheck, functionYRFCheckName] = createFunction(
     (<any>res).send("OK").end();
   },
   {
-    GRAPHQL_API_KEY: graphQlApiKey,
+    ...indexerEnv,
   },
   "* * * * *", // Every minute
 );
@@ -253,7 +266,7 @@ const [_functionFailedPeriodicTasksCheck, functionFailedPeriodicTasksCheckName] 
     (<any>res).send("OK").end();
   },
   {
-    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+    ...indexerEnv,
   },
   "*/5 * * * *", // Every 5 minutes
 );
@@ -281,7 +294,7 @@ const [_functionBondMarketCreationFailedCheck, functionBondMarketCreationFailedC
     (<any>res).send("OK").end();
   },
   {
-    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+    ...indexerEnv,
   },
   "*/5 * * * *", // Every 5 minutes
 );
@@ -310,9 +323,8 @@ const [_functionAuctionParametersUpdatedCheck, functionAuctionParametersUpdatedC
     (<any>res).send("OK").end();
   },
   {
-    GRAPHQL_API_KEY: graphQlApiKey,
-    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
     ETHEREUM_RPC_URL: ethereumRpcUrl,
+    ...indexerEnv,
   },
   "*/5 * * * *", // Every 5 minutes
 );
@@ -336,7 +348,7 @@ const [_functionAuctionResultCheck, functionAuctionResultCheckName] = createFunc
     (<any>res).send("OK").end();
   },
   {
-    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+    ...indexerEnv,
   },
   "*/5 * * * *", // Every 5 minutes
 );
@@ -360,7 +372,7 @@ const [_functionClaimedYieldCheck, functionClaimedYieldCheckName] = createFuncti
     (<any>res).send("OK").end();
   },
   {
-    CONVERTIBLE_DEPOSITS_SUBGRAPH_URL: convertibleDepositsSubgraphUrl,
+    ...indexerEnv,
   },
   "*/5 * * * *", // Every 5 minutes
 );

@@ -1,13 +1,12 @@
 import { Firestore } from "@google-cloud/firestore";
 
-import { getRbsSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type EmbedField } from "./discord";
-import { type PriceEvent, PriceEventType, RbsPriceEventsDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getSubgraphEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, castFloatNullable, castInt, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
+import { getPriceEventsSince, getRbsIndexedBlock } from "./indexer/rbs";
+import { type PriceEvent, PriceEventType } from "./indexer/types";
 
 const FIELD_LATEST_BLOCK = "events.latestBlock";
 
@@ -52,20 +51,8 @@ export const performEventChecks = async (
   console.log(`latest block is ${latestBlock}`);
 
   // Fetch events since the last processed block
-  const client = createGraphQLClient(getRbsSubgraphUrl());
-  const startBlock = await getSubgraphEventStartBlock(client, latestBlock, "RBS subgraph");
-  const queryResults = await client
-    .query(RbsPriceEventsDocument, {
-      latestBlock: startBlock.toString(),
-    })
-    .toPromise();
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${startBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const priceEvents: PriceEvent[] = queryResults.data.priceEvents;
+  const startBlock = await getIndexerEventStartBlock(latestBlock, getRbsIndexedBlock);
+  const priceEvents: PriceEvent[] = await getPriceEventsSince(startBlock);
   if (priceEvents.length === 0) {
     return;
   }
