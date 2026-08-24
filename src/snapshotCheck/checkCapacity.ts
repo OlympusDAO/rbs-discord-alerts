@@ -12,6 +12,23 @@ const SINCE_DAYS = 1;
 const FUNCTION_KEY = "checkCapacityDepletion";
 const ALERT_THRESHOLD_SECONDS = SINCE_DAYS * 24 * 60 * 60;
 
+/**
+ * Counts the snapshots that fall strictly inside the alert window.
+ *
+ * The route's `sinceDate` takes a YYYY-MM-DD date, while the query this
+ * replaced took a full ISO timestamp for a rolling 24h window. Asking for the
+ * DATE part widens the response to the start of that day — up to 24 hours of
+ * extra rows — so they are filtered back to the exact cutoff here.
+ *
+ * This is load-bearing: the count it produces is compared against
+ * DEPLETION_COUNT_THRESHOLD to decide whether to fire an EMERGENCY alert with
+ * role mentions. Leaving the window wide would fire alerts that are not due.
+ *
+ * Exported for testing.
+ */
+export const countWithinWindow = (snapshots: readonly { date: string }[], sinceDateString: string): number =>
+  snapshots.filter(snapshot => snapshot.date > sinceDateString).length;
+
 export const isCapacityDepleted = (
   lowerCushionDepletionCount: number,
   upperCushionDepletionCount: number,
@@ -57,11 +74,8 @@ export const checkCapacityDepletion = async (
   // and fire an emergency alert that is not due.
   const depletion = await getCushionDepletion(sinceDateString.slice(0, 10), CUSHION_CAPACITY_THRESHOLD.toString());
 
-  const withinWindow = (snapshots: { date: string }[]): number =>
-    snapshots.filter(snapshot => snapshot.date > sinceDateString).length;
-
-  const lowerDepletionCount = withinWindow(depletion.low);
-  const upperDepletionCount = withinWindow(depletion.high);
+  const lowerDepletionCount = countWithinWindow(depletion.low, sinceDateString);
+  const upperDepletionCount = countWithinWindow(depletion.high, sinceDateString);
 
   const result = isCapacityDepleted(lowerDepletionCount, upperDepletionCount);
   if (!result[0]) {

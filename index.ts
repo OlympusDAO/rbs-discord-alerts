@@ -34,7 +34,6 @@ const SECRET_DISCORD_WEBHOOK_PROTOCOL_REVENUE = "discordWebhookProtocolRevenue";
 const SECRET_DISCORD_WEBHOOK_EMERGENCY = "discordWebhookEmergency";
 const SECRET_NOTIFICATION_EMAIL = "notificationEmail";
 const SECRET_NOTIFICATION_EMAIL_DISCORD = "notificationEmailDiscord";
-const SECRET_GRAPHQL_API_KEY = "GRAPHQL_API_KEY";
 const SECRET_ETHEREUM_RPC_URL = "ETHEREUM_RPC_URL";
 const CONFIG_INDEXER_API_URL = "indexerApiUrl";
 
@@ -68,9 +67,6 @@ const webhookEmergency = pulumiConfig.require(SECRET_DISCORD_WEBHOOK_EMERGENCY);
 const discordRoleCore = pulumiConfig.require(CONFIG_DISCORD_ROLE_CORE);
 const contractUrl = pulumiConfig.get(CONFIG_CONTRACT);
 
-// Still required, but only by the snapshot-check function: `checkPrice` reads
-// the ohm-price subgraph, which is not part of the protocol indexer.
-const graphQlApiKey = pulumiConfig.requireSecret(SECRET_GRAPHQL_API_KEY);
 const ethereumRpcUrl = pulumiConfig.requireSecret(SECRET_ETHEREUM_RPC_URL);
 
 // The protocol indexer is public, so this is plain config rather than a secret,
@@ -155,11 +151,6 @@ const [_functionSnapshotCheck, functionSnapshotCheckName] = createFunction(
     (<any>res).send("OK").end();
   },
   {
-    // The only function that still needs a Graph gateway key: `checkPrice`
-    // reads the ohm-price subgraph, which is not part of the protocol indexer.
-    // It is currently disabled in handleSnapshotCheck.ts, so this is here for
-    // when it is switched back on.
-    GRAPHQL_API_KEY: graphQlApiKey,
     ...indexerEnv,
   },
   "* * * * *", // Every minute
@@ -242,7 +233,6 @@ const [_functionYRFCheck, functionYRFCheckName] = createFunction(
 //     (<any>res).send("OK").end();
 //   },
 //   {
-//     GRAPHQL_API_KEY: graphQlApiKey,
 //   },
 //   "* * * * *", // Every minute
 // );

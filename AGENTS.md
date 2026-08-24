@@ -13,7 +13,6 @@ The system consists of:
 - **Google Firestore**: NoSQL database for persistent state tracking
 - **Google Cloud Monitoring**: Alert policies and dashboards
 - **Olympus protocol indexer**: the REST data source for RBS, bonds, YRF, the emission manager and convertible deposits
-- **ohm-price subgraph**: the one remaining The Graph dependency, read only by the (currently disabled) `checkPrice`
 
 ## Core Functions and Their Purpose
 
@@ -77,9 +76,6 @@ const [functionObject, functionName, triggerUrl] = createFunction(
 - **Environment Variables**: Set via `environmentVariables` in function creation
 - **Secrets**: Managed through Pulumi configuration (`pulumi.Config()`)
 - **Required Secrets**:
-  - `GRAPHQL_API_KEY`: The Graph API key. Needed ONLY by the snapshot-check
-    function, whose `checkPrice` reads the ohm-price subgraph; every other
-    function is off The Graph entirely.
   - `ETHEREUM_RPC_URL`: for the exact-block Emission Manager reads
   - Discord webhook URLs for different alert types
   - Notification email addresses
@@ -119,11 +115,9 @@ Every response is `{ data, meta: { block } }`, where `meta.block` is the indexed
 head — the freshness signal `_meta { block { number } }` used to give, and what
 each handler stores as its Firestore cursor.
 
-### ohm-price subgraph (GraphQL)
-
-The one remaining The Graph dependency, read by `checkPrice` only, which is
-currently commented out in `handleSnapshotCheck.ts`. `codegen.ts` generates
-types for this schema alone.
+This repository no longer talks to The Graph, and has no GraphQL client or
+codegen step. `checkPrice` was the last reader of the ohm-price subgraph and was
+disabled; it has been removed along with the toolchain.
 
 ## Discord Alert System
 
@@ -189,7 +183,7 @@ pnpm run lint
 pnpm run build
 ```
 
-Run `pnpm run codegen` only when the ohm-price GraphQL document or schema changes. Run `pnpm run lint` and `pnpm run build` after code changes.
+Run `pnpm run lint` and `pnpm run build` after code changes.
 
 Local monitor scripts load `.env` and execute the corresponding handler:
 
@@ -262,16 +256,6 @@ pnpm run execute:claimedyield
    the handler reads, and run it against a deployed API:
    `INDEXER_API_URL=https://<host> pnpm test`.
 
-### ohm-price subgraph schema updates
-
-1. **Update GraphQL Files**:
-   - Add new queries to `src/graphql/priceSnapshot.graphql`
-
-2. **Regenerate Types**:
-
-   ```bash
-   pnpm run codegen
-   ```
 
 3. **Import Generated Types**:
 
@@ -322,7 +306,6 @@ export $(cat .env | xargs)
 
 - `pnpm run lint`: Fix linting issues. It is recommended to run this after any code changes to ensure consistency.
 - `pnpm run build`: TypeScript compilation. It is recommended to run this after any code changes to ensure accuracy.
-- `pnpm run codegen`: GraphQL code generation for the ohm-price subgraph. Run this after updating `src/graphql/priceSnapshot.graphql`.
 
 ### Post-Change Checklist
 

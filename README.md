@@ -103,9 +103,9 @@ pulumi config --stack dev
 pulumi config --stack prod
 ```
 
-Required stack config includes `gcp:project`, `gcp:region`, `GRAPHQL_API_KEY`, Discord webhook URLs (including `discordWebhookEmissions`, `discordWebhookProtocolBuybacks`, and `discordWebhookProtocolRevenue`), notification emails, `discordRoleIdCore`, `contractUrl`, and `ETHEREUM_RPC_URL` (an archive-capable Ethereum RPC endpoint).
+Required stack config includes `gcp:project`, `gcp:region`, Discord webhook URLs (including `discordWebhookEmissions`, `discordWebhookProtocolBuybacks`, and `discordWebhookProtocolRevenue`), notification emails, `discordRoleIdCore`, `contractUrl`, and `ETHEREUM_RPC_URL` (an archive-capable Ethereum RPC endpoint).
 
-`GRAPHQL_API_KEY` is now needed only by the snapshot-check function, whose `checkPrice` reads the ohm-price subgraph; every other function reads the protocol indexer, which is public. `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL` is no longer used — the convertible deposits Ponder endpoint was folded into the indexer.
+`GRAPHQL_API_KEY` and `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL` are no longer used. This repository reads only the protocol indexer, which is public, so it holds no data-source credential at all.
 
 `indexerApiUrl` is optional plain config (not a secret) that overrides the indexer base URL; unset, each function uses the deployed API.
 
