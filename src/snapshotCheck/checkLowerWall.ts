@@ -1,12 +1,10 @@
 import type { DocumentReference } from "@google-cloud/firestore";
 
-import { getRbsSubgraphUrl } from "../constants";
 import { type DiscordAlertSender, getRoleMentions } from "../discord";
-import { LatestRangeSnapshotDocument, RangeSnapshotAtBlockDocument } from "../graphql/rangeSnapshot";
-import { createGraphQLClient } from "../helpers/graphqlClient";
 import { castFloat, castFloatNullable, castInt } from "../helpers/numberHelper";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
+import { getLatestRangeSnapshot, getRangeSnapshotAtBlock } from "../indexer/rbs";
 
 const LOWER_WALL_PRICE_MULTIPLE = 0.8;
 const FUNCTION_KEY = "checkLowerWall";
@@ -40,16 +38,13 @@ export const checkLowerWall = async (
   const shouldThrottle = await getShouldThrottle(firestore, FUNCTION_KEY, ALERT_THRESHOLD_SECONDS);
 
   // Get the current block
-  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
   console.debug(`Fetching latest block for RangeSnapshot`);
-  const latestBlockResults = await rangeSnapshotClient.query(LatestRangeSnapshotDocument, {}).toPromise();
-  if (!latestBlockResults.data || latestBlockResults.data.rangeSnapshots.length === 0) {
-    throw new Error(
-      `Did not receive results from latest RangeSnapshot GraphQL query. Error: ${latestBlockResults.error}`,
-    );
+  // The route answers the row itself, or null before the first snapshot.
+  const latestSnapshot = await getLatestRangeSnapshot();
+  if (!latestSnapshot) {
+    throw new Error(`Did not receive a latest RangeSnapshot from the indexer.`);
   }
 
-  const latestSnapshot = latestBlockResults.data.rangeSnapshots[0];
   const latestBlock = castInt(latestSnapshot.block);
   const latestPrice = castFloatNullable(latestSnapshot.ohmPrice);
   // It can be null, in which case we skip the check
@@ -64,23 +59,13 @@ export const checkLowerWall = async (
   const historicalBlock = latestBlock - ALERT_THRESHOLD_SECONDS / 12;
 
   // Get the lower wall price 6 hours ago
-  const previousBlockResults = await rangeSnapshotClient
-    .query(RangeSnapshotAtBlockDocument, {
-      block: historicalBlock.toString(),
-    })
-    .toPromise();
-  if (!previousBlockResults.data) {
-    throw new Error(
-      `Did not receive results from RangeSnapshot GraphQL query with block ${historicalBlock}. Error: ${previousBlockResults.error}`,
-    );
-  }
-
-  if (previousBlockResults.data.rangeSnapshots.length === 0) {
-    console.warn(`RangeSnapshot GraphQL query with block ${historicalBlock} returned 0 records. Exiting.`);
+  const previousSnapshots = await getRangeSnapshotAtBlock(historicalBlock);
+  if (previousSnapshots.length === 0) {
+    console.warn(`RangeSnapshot query at block ${historicalBlock} returned 0 records. Exiting.`);
     return;
   }
 
-  const historicalLowerWallPrice = castFloat(previousBlockResults.data.rangeSnapshots[0].lowWallPrice);
+  const historicalLowerWallPrice = castFloat(previousSnapshots[0].lowWallPrice);
   console.debug(`Historical lower wall price: ${historicalLowerWallPrice}`);
 
   const result = isLowerWallBroken(historicalLowerWallPrice, latestPrice);

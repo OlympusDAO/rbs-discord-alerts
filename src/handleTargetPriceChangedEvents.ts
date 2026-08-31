@@ -1,13 +1,12 @@
 import { Firestore } from "@google-cloud/firestore";
 
-import { getRbsSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type EmbedField } from "./discord";
-import { type MinimumTargetPriceChanged, MinimumTargetPriceChangedEventsDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getSubgraphEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, castInt, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
+import { getRbsIndexedBlock, getTargetPriceChangesSince } from "./indexer/rbs";
+import type { MinimumTargetPriceChanged } from "./indexer/types";
 
 const FIELD_LATEST_BLOCK = "targetPriceChanged.latestBlock";
 
@@ -36,20 +35,8 @@ export const performTargetPriceChangedCheck = async (
   console.log(`latest block is ${latestBlock}`);
 
   // Fetch events since the last processed block
-  const client = createGraphQLClient(getRbsSubgraphUrl());
-  const startBlock = await getSubgraphEventStartBlock(client, latestBlock, "RBS subgraph");
-  const queryResults = await client
-    .query(MinimumTargetPriceChangedEventsDocument, {
-      latestBlock: startBlock.toString(),
-    })
-    .toPromise();
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${startBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const targetPriceChangedEvents: MinimumTargetPriceChanged[] = queryResults.data.minimumTargetPriceChangeds;
+  const startBlock = await getIndexerEventStartBlock(latestBlock, getRbsIndexedBlock);
+  const targetPriceChangedEvents: MinimumTargetPriceChanged[] = await getTargetPriceChangesSince(startBlock);
   if (targetPriceChangedEvents.length === 0) {
     return;
   }

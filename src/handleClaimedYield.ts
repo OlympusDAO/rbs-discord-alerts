@@ -1,22 +1,21 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
-import {
-  ConvertibleDepositFacilityClaimedYieldsSinceDocument,
-  type ConvertibleDepositFacilityClaimedYieldsSinceQuery,
-} from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
+import {
+  getClaimedYieldsSince,
+  getConvertibleDepositsIndexedBlock,
+  getDepositAssetSymbols,
+} from "./indexer/convertibleDeposits";
+import type { CdClaimedYield } from "./indexer/types";
 
 const FUNCTION_KEY = "convertibleDepositFacilityClaimedYield";
 const LATEST_BLOCK = "latestBlock";
 
-type ConvertibleDepositFacilityClaimedYieldEvent =
-  ConvertibleDepositFacilityClaimedYieldsSinceQuery["convertibleDepositFacilityClaimedYields"]["items"][number];
+type ConvertibleDepositFacilityClaimedYieldEvent = CdClaimedYield;
 
 /**
  * Sends a Discord alert when a convertible deposit facility claimed yield event is detected
@@ -28,6 +27,7 @@ const sendClaimYieldAlert = (
   alertSender: DiscordAlertSender,
   webhookUrl: string,
   event: ConvertibleDepositFacilityClaimedYieldEvent,
+  assetSymbols: Map<string, string>,
 ): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
@@ -48,7 +48,7 @@ const sendClaimYieldAlert = (
     },
     {
       name: "Asset",
-      value: `[${event.rDepositAsset?.rAsset?.symbol || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
+      value: `[${assetSymbols.get(event.depositAsset.toLowerCase()) || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
       inline: true,
     },
     {
@@ -96,26 +96,14 @@ export const performClaimedYieldChecks = async (
   console.info(`\n\n⏰ Processing Claimed Yield Events`);
 
   // Get the latest block
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
-  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
+  const latestBlock = await getIndexerEventStartBlock(
+    await getLatestBlock(firestoreDocument),
+    getConvertibleDepositsIndexedBlock,
+  );
 
-  // Fetch claimed yield events using GraphQL
   console.debug(`Fetching claimed yield events since block ${latestBlock}`);
 
-  const queryResults = await client
-    .query(ConvertibleDepositFacilityClaimedYieldsSinceDocument, {
-      latestBlock: latestBlock.toString(),
-      chainId: 1,
-    })
-    .toPromise();
-
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const events = queryResults.data.convertibleDepositFacilityClaimedYields.items || [];
+  const events = await getClaimedYieldsSince(latestBlock);
   console.info(`Processing ${events.length} claimed yield events`);
 
   if (events.length === 0) {
@@ -123,11 +111,15 @@ export const performClaimedYieldChecks = async (
     return;
   }
 
+  // The event rows carry the deposit asset ADDRESS; the symbol shown in the
+  // alert comes from the assets route, resolved once for the whole batch.
+  const assetSymbols = await getDepositAssetSymbols();
+
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing claimed yield event for facility ${event.facility} at block ${eventBlock}`);
-    const alertSent = await sendClaimYieldAlert(alertSender, webhookUrl, event);
+    const alertSent = await sendClaimYieldAlert(alertSender, webhookUrl, event, assetSymbols);
     if (!alertSent) throw new Error(`Discord rate-limited the claimed yield alert at block ${eventBlock}`);
 
     await firestoreDocument.update({

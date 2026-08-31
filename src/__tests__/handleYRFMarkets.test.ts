@@ -1,10 +1,9 @@
 import { Firestore } from "@google-cloud/firestore";
 
 import { sendAlert } from "../discord";
-import { MarketClosedEventsDocument } from "../graphql/bondMarket";
-import { RepoMarketDocument, RepoMarketsCreatedSinceDocument } from "../graphql/yrf";
 import { performYRFMarketChecks } from "../handleYRFMarkets";
-import { createGraphQLClient } from "../helpers/graphqlClient";
+import { getBondMarketEventsSince, getBondsIndexedBlock } from "../indexer/bonds";
+import { getRepoMarket, getRepoMarketsSince, getYrfIndexedBlock } from "../indexer/yrf";
 
 jest.mock("@google-cloud/firestore");
 jest.mock("../discord", () => ({
@@ -14,7 +13,8 @@ jest.mock("../discord", () => ({
     return { sendAlert, createDiscordAlertSender: jest.fn(() => sendAlert) };
   })(),
 }));
-jest.mock("../helpers/graphqlClient");
+jest.mock("../indexer/bonds");
+jest.mock("../indexer/yrf");
 
 const makeRepoMarket = (blockNumber: string, marketId: string) => ({
   id: `repo-${marketId}`,
@@ -28,8 +28,8 @@ const makeRepoMarket = (blockNumber: string, marketId: string) => ({
     id: "contract",
     address: "0xcontract",
     version: "1",
-    majorVersion: "1",
-    minorVersion: "0",
+    majorVersion: 1,
+    minorVersion: 0,
     reserveToken: {
       id: "token",
       address: "0xtoken",
@@ -46,44 +46,33 @@ const makeClosedEvent = (block: string, marketId: string) => ({
   market: { marketId },
 });
 
-const isMetaDocument = (document: unknown): boolean =>
-  (document as { definitions?: [{ name?: { value?: string } }] }).definitions?.[0]?.name?.value ===
-  "IndexedSubgraphMeta";
+// The bonds route answers both collections in one response; these tests only
+// exercise the closed half, so `created` is always empty.
+const marketEvents = (closed: ReturnType<typeof makeClosedEvent>[]) => ({ created: [], closed });
 
 describe("performYRFMarketChecks", () => {
   const firestoreGet = jest.fn();
   const firestoreUpdate = jest.fn();
-  const query = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.GRAPHQL_API_KEY = "graph-api-key";
     firestoreGet.mockResolvedValue({ get: jest.fn(() => "1") });
     (Firestore as unknown as jest.Mock).mockImplementation(() => ({
       doc: jest.fn(() => ({ get: firestoreGet, update: firestoreUpdate })),
     }));
-    (createGraphQLClient as jest.Mock).mockReturnValue({ query });
     (sendAlert as jest.Mock).mockResolvedValue(true);
+    (getYrfIndexedBlock as jest.Mock).mockResolvedValue(300);
+    (getBondsIndexedBlock as jest.Mock).mockResolvedValue(300);
   });
 
   it("checkpoints every created and closed event in query order", async () => {
     const repo101 = makeRepoMarket("101", "1");
     const repo102 = makeRepoMarket("102", "2");
-    query.mockImplementation((document: unknown, variables: { marketId?: string }) => ({
-      toPromise: jest
-        .fn()
-        .mockResolvedValue(
-          document === RepoMarketsCreatedSinceDocument
-            ? { data: { repoMarkets: [repo101, repo102] } }
-            : document === MarketClosedEventsDocument
-              ? { data: { marketClosedEvents: [makeClosedEvent("201", "1"), makeClosedEvent("202", "2")] } }
-              : isMetaDocument(document)
-                ? { data: { _meta: { block: { number: 300 } } } }
-                : document === RepoMarketDocument
-                  ? { data: { repoMarkets: [variables.marketId === "1" ? repo101 : repo102] } }
-                  : { data: undefined },
-        ),
-    }));
+    (getRepoMarketsSince as jest.Mock).mockResolvedValue([repo101, repo102]);
+    (getBondMarketEventsSince as jest.Mock).mockResolvedValue(
+      marketEvents([makeClosedEvent("201", "1"), makeClosedEvent("202", "2")]),
+    );
+    (getRepoMarket as jest.Mock).mockImplementation(async (marketId: string) => [marketId === "1" ? repo101 : repo102]);
 
     await performYRFMarketChecks("document", "collection", "webhook");
 
@@ -97,21 +86,9 @@ describe("performYRFMarketChecks", () => {
 
   it("processes created and closed events in combined block order", async () => {
     const repo = makeRepoMarket("200", "1");
-    query.mockImplementation((document: unknown) => ({
-      toPromise: jest
-        .fn()
-        .mockResolvedValue(
-          document === RepoMarketsCreatedSinceDocument
-            ? { data: { repoMarkets: [repo] } }
-            : document === MarketClosedEventsDocument
-              ? { data: { marketClosedEvents: [makeClosedEvent("150", "1")] } }
-              : isMetaDocument(document)
-                ? { data: { _meta: { block: { number: 300 } } } }
-                : document === RepoMarketDocument
-                  ? { data: { repoMarkets: [repo] } }
-                  : { data: undefined },
-        ),
-    }));
+    (getRepoMarketsSince as jest.Mock).mockResolvedValue([repo]);
+    (getBondMarketEventsSince as jest.Mock).mockResolvedValue(marketEvents([makeClosedEvent("150", "1")]));
+    (getRepoMarket as jest.Mock).mockResolvedValue([repo]);
 
     await performYRFMarketChecks("document", "collection", "webhook");
 
@@ -129,21 +106,11 @@ describe("performYRFMarketChecks", () => {
     const repo1 = makeRepoMarket("101", "1");
     const repo2 = makeRepoMarket("102", "2");
     (sendAlert as jest.Mock).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
-    query.mockImplementation((document: unknown, variables: { marketId?: string }) => ({
-      toPromise: jest
-        .fn()
-        .mockResolvedValue(
-          document === RepoMarketsCreatedSinceDocument
-            ? { data: { repoMarkets: [] } }
-            : document === MarketClosedEventsDocument
-              ? { data: { marketClosedEvents: [makeClosedEvent("201", "1"), makeClosedEvent("202", "2")] } }
-              : isMetaDocument(document)
-                ? { data: { _meta: { block: { number: 300 } } } }
-                : document === RepoMarketDocument
-                  ? { data: { repoMarkets: [variables.marketId === "1" ? repo1 : repo2] } }
-                  : { data: undefined },
-        ),
-    }));
+    (getRepoMarketsSince as jest.Mock).mockResolvedValue([]);
+    (getBondMarketEventsSince as jest.Mock).mockResolvedValue(
+      marketEvents([makeClosedEvent("201", "1"), makeClosedEvent("202", "2")]),
+    );
+    (getRepoMarket as jest.Mock).mockImplementation(async (marketId: string) => [marketId === "1" ? repo1 : repo2]);
 
     await expect(performYRFMarketChecks("document", "collection", "webhook")).rejects.toThrow(
       "Discord rate-limited the YRF market closed alert at block 202",
@@ -152,23 +119,13 @@ describe("performYRFMarketChecks", () => {
     expect(firestoreUpdate.mock.calls.map(([value]) => value)).toEqual([{ "yrfMarkets.latestBlockClosed": 201 }]);
   });
 
-  it("does not checkpoint a closed event before the YRF subgraph has indexed it", async () => {
-    query.mockImplementation((document: unknown) => ({
-      toPromise: jest
-        .fn()
-        .mockResolvedValue(
-          document === RepoMarketsCreatedSinceDocument
-            ? { data: { repoMarkets: [] } }
-            : document === MarketClosedEventsDocument
-              ? { data: { marketClosedEvents: [makeClosedEvent("201", "1")] } }
-              : isMetaDocument(document)
-                ? { data: { _meta: { block: { number: 200 } } } }
-                : { data: undefined },
-        ),
-    }));
+  it("does not checkpoint a closed event before YRF has indexed it", async () => {
+    (getRepoMarketsSince as jest.Mock).mockResolvedValue([]);
+    (getBondMarketEventsSince as jest.Mock).mockResolvedValue(marketEvents([makeClosedEvent("201", "1")]));
+    (getYrfIndexedBlock as jest.Mock).mockResolvedValue(200);
 
     await expect(performYRFMarketChecks("document", "collection", "webhook")).rejects.toThrow(
-      "YRF subgraph is indexed through block 200, before market closed event block 201",
+      "YRF is indexed through block 200, before market closed event block 201",
     );
 
     expect(sendAlert).not.toHaveBeenCalled();
