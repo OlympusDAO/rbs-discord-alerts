@@ -1,7 +1,7 @@
 // The consolidated Olympus protocol indexer's REST API. Replaces the RBS,
 // bonds, YRF and emission-manager subgraphs on The Graph, and the convertible
 // deposits Ponder deployment. Public and unauthenticated — no API key.
-const DEFAULT_INDEXER_API = "https://api-production-ca6c.up.railway.app";
+const DEFAULT_INDEXER_API = "https://protocol-indexer-api.olympusdao.finance";
 
 export const getIndexerUrl = (): string => (process.env.INDEXER_API_URL || DEFAULT_INDEXER_API).replace(/\/+$/, "");
 
