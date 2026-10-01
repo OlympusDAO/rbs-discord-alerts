@@ -1,19 +1,13 @@
 import { Firestore } from "@google-cloud/firestore";
 
-import { getEmissionManagerSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
-import {
-  EmissionManagerMarketDocument,
-  EmissionManagerMarketsCreatedSinceDocument,
-  type EmissionManagerMarketsCreatedSinceQuery,
-} from "./graphql/emissionManager";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getSubgraphEventStartBlock, getSubgraphIndexedBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getBondMarketEventsSince, getBondsIndexedBlock } from "./indexer/bonds";
+import { getEmissionManagerIndexedBlock, getSale, getSalesSince } from "./indexer/emissionManager";
+import type { BondMarketEvent, EmissionManagerSale } from "./indexer/types";
 
-type EmissionManagerSaleCreated = EmissionManagerMarketsCreatedSinceQuery["saleCreateds"][0];
+type EmissionManagerSaleCreated = EmissionManagerSale;
 
-import { getBondsSubgraphUrl } from "./constants";
-import { type MarketClosedEvent, MarketClosedEventsDocument } from "./graphql/bondMarket";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { castFloat, castInt, formatNumber } from "./helpers/numberHelper";
 
@@ -73,7 +67,7 @@ const sendEmissionManagerMarketCreatedAlert = (
 const sendEmissionManagerMarketClosedAlert = (
   alertSender: DiscordAlertSender,
   webhookUrl: string,
-  marketEvent: MarketClosedEvent,
+  marketEvent: BondMarketEvent,
 ): Promise<boolean> => {
   const marketId = marketEvent.market.marketId;
   const timestamp = Number.parseInt(marketEvent.timestamp, 10) * 1000; // Convert to milliseconds
@@ -100,7 +94,7 @@ const sendEmissionManagerMarketClosedAlert = (
 
 type EmissionManagerTask =
   | { kind: "created"; block: number; event: EmissionManagerSaleCreated }
-  | { kind: "closed"; block: number; event: MarketClosedEvent };
+  | { kind: "closed"; block: number; event: BondMarketEvent };
 
 /**
  * Performs checks for EmissionManager market creation and closing events
@@ -129,37 +123,25 @@ export const performEmissionManagerMarketChecks = async (
   const firestoreSnapshot = await firestoreDocument.get();
   const storedCreatedBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK_CREATED}`) || 0, 10);
   const storedClosedBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK_CLOSED}`) || 0, 10);
-  const emissionManagerClient = createGraphQLClient(getEmissionManagerSubgraphUrl());
-  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
-
   const [createdStartBlock, closedStartBlock] = await Promise.all([
-    getSubgraphEventStartBlock(emissionManagerClient, storedCreatedBlock || undefined, "Emission Manager subgraph"),
-    getSubgraphEventStartBlock(bondsClient, storedClosedBlock || undefined, "Bonds subgraph"),
+    getIndexerEventStartBlock(storedCreatedBlock || undefined, getEmissionManagerIndexedBlock),
+    getIndexerEventStartBlock(storedClosedBlock || undefined, getBondsIndexedBlock),
   ]);
 
-  const [saleCreatedResults, marketsClosedResults] = await Promise.all([
-    emissionManagerClient
-      .query(EmissionManagerMarketsCreatedSinceDocument, { latestBlock: createdStartBlock.toString() })
-      .toPromise(),
-    bondsClient.query(MarketClosedEventsDocument, { sinceBlock: closedStartBlock.toString() }).toPromise(),
+  // The bonds route returns created AND closed events together; only the
+  // closed half is used here.
+  const [sales, marketEvents] = await Promise.all([
+    getSalesSince(createdStartBlock),
+    getBondMarketEventsSince(closedStartBlock),
   ]);
-  if (!saleCreatedResults.data) {
-    throw new Error(
-      `Did not receive results from EmissionManager SaleCreated GraphQL query. Error: ${saleCreatedResults.error}`,
-    );
-  }
-  if (!marketsClosedResults.data) {
-    throw new Error(
-      `Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`,
-    );
-  }
+
   const tasks: EmissionManagerTask[] = [
-    ...saleCreatedResults.data.saleCreateds.map(event => ({
+    ...sales.map(event => ({
       kind: "created" as const,
       block: castInt(event.blockNumber),
       event,
     })),
-    ...marketsClosedResults.data.marketClosedEvents.map(event => ({
+    ...marketEvents.closed.map(event => ({
       kind: "closed" as const,
       block: castInt(event.block),
       event,
@@ -176,22 +158,17 @@ export const performEmissionManagerMarketChecks = async (
       continue;
     }
 
-    emissionManagerIndexedBlock ??= await getSubgraphIndexedBlock(emissionManagerClient, "Emission Manager subgraph");
-    if (task.block > emissionManagerIndexedBlock) {
+    if (emissionManagerIndexedBlock === undefined) {
+      emissionManagerIndexedBlock = await getEmissionManagerIndexedBlock();
+    }
+    const indexedBlock = emissionManagerIndexedBlock;
+    if (task.block > indexedBlock) {
       throw new Error(
-        `Emission Manager subgraph is indexed through block ${emissionManagerIndexedBlock}, before market closed event block ${task.block}`,
+        `Emission Manager is indexed through block ${indexedBlock}, before market closed event block ${task.block}`,
       );
     }
     const marketId = task.event.market.marketId;
-    const emissionManagerResults = await emissionManagerClient
-      .query(EmissionManagerMarketDocument, { marketId })
-      .toPromise();
-    if (!emissionManagerResults.data) {
-      throw new Error(
-        `Did not receive results from EmissionManager GraphQL query for market ${marketId}. Error: ${emissionManagerResults.error}`,
-      );
-    }
-    if (emissionManagerResults.data.saleCreateds.length > 0) {
+    if ((await getSale(marketId)).length > 0) {
       const alertSent = await sendEmissionManagerMarketClosedAlert(alertSender, webhookUrl, task.event);
       if (!alertSent)
         throw new Error(`Discord rate-limited the Emission Manager market closed alert at block ${task.block}`);

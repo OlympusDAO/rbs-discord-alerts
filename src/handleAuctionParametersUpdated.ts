@@ -1,23 +1,23 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { EMISSION_MANAGER_V1_2, getConvertibleDepositsSubgraphUrl } from "./constants";
+import { EMISSION_MANAGER_V1_2 } from "./constants";
 import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
-import {
-  AuctionParametersUpdatedSinceDocument,
-  type AuctionParametersUpdatedSinceQuery,
-} from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
 import { type EmissionManagerStateAtBlock, getEmissionManagerStateAtBlock } from "./helpers/ethereumRpcClient";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, formatCurrency } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
+import {
+  getAuctionEventsSince,
+  getConvertibleDepositsIndexedBlock,
+  getDepositAssetSymbols,
+} from "./indexer/convertibleDeposits";
+import type { CdAuctionParametersUpdated } from "./indexer/types";
 
 const FUNCTION_KEY = "auctionParametersUpdated";
 const LATEST_BLOCK = "latestBlock";
 
-type AuctionParametersUpdatedEvent =
-  AuctionParametersUpdatedSinceQuery["convertibleDepositAuctioneerAuctionParametersUpdateds"]["items"][number];
+type AuctionParametersUpdatedEvent = CdAuctionParametersUpdated;
 
 export type EmissionManagerPriceState = EmissionManagerStateAtBlock;
 
@@ -87,6 +87,11 @@ export const deriveAuctionPriceContext = (
 export const buildAuctionParametersUpdatedAlert = (
   event: AuctionParametersUpdatedEvent,
   priceContext: AuctionPriceContext,
+  // Deposit asset address -> symbol, from /v1/convertible-deposits/assets. The
+  // event row carries only the address. Defaults to empty, which renders
+  // "Unknown" — exactly what the previous optional `rDepositAsset?.rAsset?`
+  // chain did when the join came back without one.
+  assetSymbols: Map<string, string> = new Map(),
 ): AuctionParametersUpdatedAlert => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
@@ -103,7 +108,7 @@ export const buildAuctionParametersUpdatedAlert = (
   const fields: EmbedField[] = [
     {
       name: "Deposit Asset",
-      value: `[${event.rDepositAsset?.rAsset?.symbol || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
+      value: `[${assetSymbols.get(event.depositAsset.toLowerCase()) || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
       inline: true,
     },
     {
@@ -162,8 +167,9 @@ const sendAuctionParametersUpdatedAlert = (
   webhookUrl: string,
   event: AuctionParametersUpdatedEvent,
   priceContext: AuctionPriceContext,
+  assetSymbols: Map<string, string>,
 ): Promise<boolean> => {
-  const alert = buildAuctionParametersUpdatedAlert(event, priceContext);
+  const alert = buildAuctionParametersUpdatedAlert(event, priceContext, assetSymbols);
   return alertSender(webhookUrl, "", alert.title, alert.description, alert.fields);
 };
 
@@ -205,32 +211,25 @@ export const performAuctionParametersUpdatedChecks = async (
   console.info(`\n\n⏰ Processing Auction Parameters Updated Events`);
 
   // Get the latest block
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
-  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
+  const latestBlock = await getIndexerEventStartBlock(
+    await getLatestBlock(firestoreDocument),
+    getConvertibleDepositsIndexedBlock,
+  );
 
-  // Fetch events using GraphQL
   console.debug(`Fetching auction parameters updated events since block ${latestBlock}`);
 
-  const queryResults = await client
-    .query(AuctionParametersUpdatedSinceDocument, {
-      latestBlock: latestBlock.toString(),
-      chainId: 1,
-    })
-    .toPromise();
-
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const events = queryResults.data.convertibleDepositAuctioneerAuctionParametersUpdateds.items || [];
+  // One request returns both parameter updates and results; this handler wants
+  // the parameter-update half.
+  const { parametersUpdated: events } = await getAuctionEventsSince(latestBlock);
   console.info(`Processing ${events.length} auction parameters updated events`);
 
   if (events.length === 0) {
     console.info(`No auction parameters updated events to process`);
     return;
   }
+
+  // Resolved once for the whole batch rather than per event.
+  const assetSymbols = await getDepositAssetSymbols();
 
   // Process events and send alerts
   for (const event of events) {
@@ -244,6 +243,7 @@ export const performAuctionParametersUpdatedChecks = async (
       webhookUrl,
       event,
       deriveAuctionPriceContext(event, emissionManager),
+      assetSymbols,
     );
     if (!alertSent) throw new Error(`Discord rate-limited the CD auction tuning alert at block ${eventBlock}`);
 

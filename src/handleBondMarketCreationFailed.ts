@@ -1,22 +1,17 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
-import {
-  BondMarketCreationFailedSinceDocument,
-  type BondMarketCreationFailedSinceQuery,
-} from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, formatNumber } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
+import { getConvertibleDepositsIndexedBlock, getFailuresSince } from "./indexer/convertibleDeposits";
+import type { CdBondMarketCreationFailed } from "./indexer/types";
 
 const FUNCTION_KEY = "bondMarketCreationFailed";
 const LATEST_BLOCK = "latestBlock";
 
-type BondMarketCreationFailedEvent =
-  BondMarketCreationFailedSinceQuery["emissionManagerBondMarketCreationFaileds"]["items"][number];
+type BondMarketCreationFailedEvent = CdBondMarketCreationFailed;
 
 /**
  * Sends a Discord alert when a bond market creation failed event is detected
@@ -110,26 +105,16 @@ export const performBondMarketCreationFailedChecks = async (
   console.info(`\n\n⏰ Processing Bond Market Creation Failed Events`);
 
   // Get the latest block
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
-  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
+  const latestBlock = await getIndexerEventStartBlock(
+    await getLatestBlock(firestoreDocument),
+    getConvertibleDepositsIndexedBlock,
+  );
 
-  // Fetch failed events using GraphQL
   console.debug(`Fetching bond market creation failed events since block ${latestBlock}`);
 
-  const queryResults = await client
-    .query(BondMarketCreationFailedSinceDocument, {
-      latestBlock: latestBlock.toString(),
-      chainId: 1,
-    })
-    .toPromise();
-
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const events = queryResults.data.emissionManagerBondMarketCreationFaileds.items || [];
+  // One request returns both failure kinds; this handler wants the
+  // bond-market-creation half.
+  const { bondMarketCreationFailed: events } = await getFailuresSince(latestBlock);
   console.info(`Processing ${events.length} bond market creation failed events`);
 
   if (events.length === 0) {

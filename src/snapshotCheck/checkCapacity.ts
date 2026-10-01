@@ -1,18 +1,33 @@
 import type { DocumentReference } from "@google-cloud/firestore";
 
-import { getRbsSubgraphUrl } from "../constants";
 import { type DiscordAlertSender, getRoleMentions } from "../discord";
-import { LowerCushionCapacityDepletedDocument, UpperCushionCapacityDepletedDocument } from "../graphql/rangeSnapshot";
 import { addDate } from "../helpers/dateHelper";
-import { createGraphQLClient } from "../helpers/graphqlClient";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { getShouldThrottle, updateLastAlertDate } from "../helpers/throttleHelper";
+import { getCushionDepletion } from "../indexer/rbs";
 
 const CUSHION_CAPACITY_THRESHOLD = 1.0;
 export const DEPLETION_COUNT_THRESHOLD = 2;
 const SINCE_DAYS = 1;
 const FUNCTION_KEY = "checkCapacityDepletion";
 const ALERT_THRESHOLD_SECONDS = SINCE_DAYS * 24 * 60 * 60;
+
+/**
+ * Counts the snapshots that fall strictly inside the alert window.
+ *
+ * The route's `sinceDate` takes a YYYY-MM-DD date, while the query this
+ * replaced took a full ISO timestamp for a rolling 24h window. Asking for the
+ * DATE part widens the response to the start of that day — up to 24 hours of
+ * extra rows — so they are filtered back to the exact cutoff here.
+ *
+ * This is load-bearing: the count it produces is compared against
+ * DEPLETION_COUNT_THRESHOLD to decide whether to fire an EMERGENCY alert with
+ * role mentions. Leaving the window wide would fire alerts that are not due.
+ *
+ * Exported for testing.
+ */
+export const countWithinWindow = (snapshots: readonly { date: string }[], sinceDateString: string): number =>
+  snapshots.filter(snapshot => snapshot.date > sinceDateString).length;
 
 export const isCapacityDepleted = (
   lowerCushionDepletionCount: number,
@@ -48,38 +63,19 @@ export const checkCapacityDepletion = async (
   const sinceDate = addDate(now, -1 * SINCE_DAYS, 0, false);
   const sinceDateString = sinceDate.toISOString();
 
-  const client = createGraphQLClient(getRbsSubgraphUrl());
+  // The route filters on ohmPrice > 0 itself — a null price means the feed was
+  // not live yet, and without that every pre-launch snapshot counts as
+  // depleted. One request now covers both sides; it was two queries.
+  //
+  // `sinceDate` takes a YYYY-MM-DD date, while the query this replaces took a
+  // full ISO timestamp for a rolling 24h window. Requesting the DATE part
+  // widens the window to the start of that day, so the rows are filtered back
+  // to the exact cutoff here. Leaving it wide would inflate the depletion count
+  // and fire an emergency alert that is not due.
+  const depletion = await getCushionDepletion(sinceDateString.slice(0, 10), CUSHION_CAPACITY_THRESHOLD.toString());
 
-  // Note: these queries check for ohmPrice being > 0 (being null would indicate that it is not initialised yet)
-
-  // Get the lower cushion capacity
-  const lowerCushionCapacity = await client
-    .query(LowerCushionCapacityDepletedDocument, {
-      sinceDate: sinceDateString,
-      belowCapacity: CUSHION_CAPACITY_THRESHOLD.toString(),
-    })
-    .toPromise();
-  if (!lowerCushionCapacity.data) {
-    throw new Error(
-      `Did not receive results from lower cushion capacity GraphQL query with sinceDate ${sinceDateString} and capacity ${CUSHION_CAPACITY_THRESHOLD}. Error: ${lowerCushionCapacity.error}`,
-    );
-  }
-
-  // Get the upper cushion capacity
-  const upperCushionCapacity = await client
-    .query(UpperCushionCapacityDepletedDocument, {
-      sinceDate: sinceDateString,
-      belowCapacity: CUSHION_CAPACITY_THRESHOLD.toString(),
-    })
-    .toPromise();
-  if (!upperCushionCapacity.data) {
-    throw new Error(
-      `Did not receive results from upper cushion capacity GraphQL query with sinceDate ${sinceDateString} and capacity ${CUSHION_CAPACITY_THRESHOLD}. Error: ${upperCushionCapacity.error}`,
-    );
-  }
-
-  const lowerDepletionCount = lowerCushionCapacity.data.rangeSnapshots.length;
-  const upperDepletionCount = upperCushionCapacity.data.rangeSnapshots.length;
+  const lowerDepletionCount = countWithinWindow(depletion.low, sinceDateString);
+  const upperDepletionCount = countWithinWindow(depletion.high, sinceDateString);
 
   const result = isCapacityDepleted(lowerDepletionCount, upperDepletionCount);
   if (!result[0]) {

@@ -28,8 +28,6 @@ export const performSnapshotChecks = async (
   const firestoreDocument = firestoreClient.doc(`${firestoreCollectionName}/${firestoreDocumentPath}`);
 
   await checkCapacityDepletion(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
-  // TODO re-enable price check
-  // await checkPrice(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   // Not needed for now
   // await checkLowerWall(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
   await checkBondMarkets(alertSender, firestoreDocument, mentionRoles, webhookUrl, contractUrl);
