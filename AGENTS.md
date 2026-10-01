@@ -112,8 +112,9 @@ const events = await getPriceEventsSince(startBlock);
 ```
 
 Every response is `{ data, meta: { block } }`, where `meta.block` is the indexed
-head — the freshness signal `_meta { block { number } }` used to give, and what
-each handler stores as its Firestore cursor.
+head, the freshness signal `_meta { block { number } }` used to give. Handlers
+resume from the stored Firestore cursor and persist each successfully processed
+event's block. The indexed head is used only for the cold-start lookback.
 
 This repository no longer talks to The Graph, and has no GraphQL client or
 codegen step. `checkPrice` was the last reader of the ohm-price subgraph and was
@@ -178,7 +179,6 @@ The repo uses `pnpm-workspace.yaml` for shared pnpm policy:
 Common verification commands:
 
 ```bash
-pnpm run codegen
 pnpm run lint
 pnpm run build
 ```
@@ -256,13 +256,6 @@ pnpm run execute:claimedyield
    the handler reads, and run it against a deployed API:
    `INDEXER_API_URL=https://<host> pnpm test`.
 
-
-3. **Import Generated Types**:
-
-   ```typescript
-   import { NewQueryDocument, NewQueryResult } from "./graphql/schema";
-   ```
-
 ## Testing
 
 ### Unit Tests
@@ -311,9 +304,8 @@ export $(cat .env | xargs)
 
 After making any code changes, **always** run these commands in order:
 
-1. `pnpm run codegen` - if you modified any GraphQL files
-2. `pnpm run lint` - to fix any linting issues and ensure code consistency
-3. `pnpm run build` - to verify TypeScript compilation succeeds
+1. `pnpm run lint` - to fix any linting issues and ensure code consistency
+2. `pnpm run build` - to verify TypeScript compilation succeeds
 
 This ensures code quality and catches any type errors or linting issues before committing changes.
 

@@ -10,6 +10,8 @@ import { getIndexerUrl } from "../constants";
 const MAX_ATTEMPTS = 3;
 const INITIAL_DELAY_MS = 1000;
 const MAX_DELAY_MS = 5000;
+// Leave room for all three attempts and backoff within the 30-second function.
+const REQUEST_TIMEOUT_MS = 7_500;
 
 // Every route answers `{ data, meta: { block } }`, where `meta.block` is the
 // indexed head — the same freshness signal `_meta { block { number } }` gave.
@@ -48,6 +50,7 @@ export const queryIndexer = async <T>(path: string): Promise<IndexerEnvelope<T>>
     try {
       const response = await fetch(`${getIndexerUrl()}${path}`, {
         headers: { accept: "application/json" },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
 
       if (response.ok) return (await response.json()) as IndexerEnvelope<T>;

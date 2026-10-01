@@ -50,12 +50,6 @@ pnpm install
 
 This repository uses pnpm configuration from `pnpm-workspace.yaml`, including the hoisted linker layout required by Pulumi's Node.js closure serialization. Do not move these settings back to `.npmrc`; npm and `npx` do not understand pnpm-only keys such as `minimumReleaseAge`, `strictDepBuilds`, `blockExoticSubdeps`, or `nodeLinker`.
 
-Regenerate GraphQL types after editing `src/graphql/*.graphql` files:
-
-```bash
-pnpm run codegen
-```
-
 Run formatting and lint fixes:
 
 ```bash
@@ -78,7 +72,7 @@ pnpm run execute:targetPrice
 pnpm run execute:yrfmarkets
 ```
 
-`.env` is used only by the local `execute:*` commands and GraphQL code generation. It is not read by `pnpm run build`, `pnpm run lint`, or Pulumi deployments. See `.env.sample` for the variables required by each local command; there are currently no optional `.env` variables.
+`.env` is used only by the local `execute:*` commands. It is not read by `pnpm run build`, `pnpm run lint`, or Pulumi deployments. See `.env.sample` for the variables required by each local command; there are currently no optional `.env` variables.
 
 ## Deployment
 
