@@ -1,18 +1,21 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
-import { AuctionResultSinceDocument, type AuctionResultSinceQuery } from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
+import {
+  getAuctionEventsSince,
+  getConvertibleDepositsIndexedBlock,
+  getDepositAssetSymbols,
+} from "./indexer/convertibleDeposits";
+import type { CdAuctionResult } from "./indexer/types";
 
 const FUNCTION_KEY = "auctionResult";
 const LATEST_BLOCK = "latestBlock";
 
-type AuctionResultEvent = AuctionResultSinceQuery["convertibleDepositAuctioneerAuctionResults"]["items"][number];
+type AuctionResultEvent = CdAuctionResult;
 
 /**
  * Sends a Discord alert when auction results are updated
@@ -24,6 +27,7 @@ const sendAuctionResultAlert = (
   alertSender: DiscordAlertSender,
   webhookUrl: string,
   event: AuctionResultEvent,
+  assetSymbols: Map<string, string>,
 ): Promise<boolean> => {
   const timestamp = Number(event.timestamp) * 1000; // Convert to milliseconds
   const txHash = event.txHash;
@@ -36,7 +40,7 @@ const sendAuctionResultAlert = (
   const fields: EmbedField[] = [
     {
       name: "Deposit Asset",
-      value: `[${event.rDepositAsset?.rAsset?.symbol || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
+      value: `[${assetSymbols.get(event.depositAsset.toLowerCase()) || "Unknown"}](${getEtherscanAddressUrl(event.depositAsset, ChainId.MAINNET)})`,
       inline: true,
     },
     {
@@ -98,26 +102,16 @@ export const performAuctionResultChecks = async (
   console.info(`\n\n⏰ Processing Auction Result Events`);
 
   // Get the latest block
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
-  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
+  const latestBlock = await getIndexerEventStartBlock(
+    await getLatestBlock(firestoreDocument),
+    getConvertibleDepositsIndexedBlock,
+  );
 
-  // Fetch events using GraphQL
   console.debug(`Fetching auction result events since block ${latestBlock}`);
 
-  const queryResults = await client
-    .query(AuctionResultSinceDocument, {
-      latestBlock: latestBlock.toString(),
-      chainId: 1,
-    })
-    .toPromise();
-
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const events = queryResults.data.convertibleDepositAuctioneerAuctionResults.items || [];
+  // One request returns both parameter updates and results; this handler wants
+  // the results half.
+  const { results: events } = await getAuctionEventsSince(latestBlock);
   console.info(`Processing ${events.length} auction result events`);
 
   if (events.length === 0) {
@@ -125,11 +119,15 @@ export const performAuctionResultChecks = async (
     return;
   }
 
+  // The event rows carry the deposit asset ADDRESS; the symbol shown in the
+  // alert comes from the assets route, resolved once for the whole batch.
+  const assetSymbols = await getDepositAssetSymbols();
+
   // Process events and send alerts
   for (const event of events) {
     const eventBlock = Number(event.block);
     console.info(`Processing auction result event for auctioneer ${event.auctioneer} at block ${eventBlock}`);
-    const alertSent = await sendAuctionResultAlert(alertSender, webhookUrl, event);
+    const alertSent = await sendAuctionResultAlert(alertSender, webhookUrl, event, assetSymbols);
     if (!alertSent) throw new Error(`Discord rate-limited the auction result alert at block ${eventBlock}`);
 
     await firestoreDocument.update({

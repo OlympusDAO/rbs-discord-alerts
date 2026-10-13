@@ -2,7 +2,11 @@ import { Firestore } from "@google-cloud/firestore";
 
 import { sendAlert } from "../discord";
 import { performClaimedYieldChecks } from "../handleClaimedYield";
-import { createGraphQLClient } from "../helpers/graphqlClient";
+import {
+  getClaimedYieldsSince,
+  getConvertibleDepositsIndexedBlock,
+  getDepositAssetSymbols,
+} from "../indexer/convertibleDeposits";
 
 jest.mock("@google-cloud/firestore");
 jest.mock("../discord", () => ({
@@ -12,7 +16,7 @@ jest.mock("../discord", () => ({
     return { sendAlert, createDiscordAlertSender: jest.fn(() => sendAlert) };
   })(),
 }));
-jest.mock("../helpers/graphqlClient");
+jest.mock("../indexer/convertibleDeposits");
 
 const makeClaimedYieldEvent = (block: string) => ({
   block,
@@ -21,35 +25,27 @@ const makeClaimedYieldEvent = (block: string) => ({
   facility: "0xfacility",
   depositAsset: "0xasset",
   amountDecimal: "12.5",
-  rDepositAsset: { rAsset: { symbol: "USDS" } },
 });
 
 describe("performClaimedYieldChecks", () => {
   const firestoreGet = jest.fn();
   const firestoreUpdate = jest.fn();
-  const query = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.CONVERTIBLE_DEPOSITS_SUBGRAPH_URL = "https://example.com/subgraph";
-    process.env.GRAPHQL_API_KEY = "graph-api-key";
     firestoreGet.mockResolvedValue({ get: jest.fn(() => "1") });
     (Firestore as unknown as jest.Mock).mockImplementation(() => ({
       doc: jest.fn(() => ({ get: firestoreGet, update: firestoreUpdate })),
     }));
-    (createGraphQLClient as jest.Mock).mockReturnValue({ query });
+    (getConvertibleDepositsIndexedBlock as jest.Mock).mockResolvedValue(300);
+    (getDepositAssetSymbols as jest.Mock).mockResolvedValue(new Map([["0xasset", "USDS"]]));
   });
 
   it("retains earlier checkpoints when a later alert is rate-limited", async () => {
-    query.mockReturnValue({
-      toPromise: jest.fn().mockResolvedValue({
-        data: {
-          convertibleDepositFacilityClaimedYields: {
-            items: [makeClaimedYieldEvent("201"), makeClaimedYieldEvent("202")],
-          },
-        },
-      }),
-    });
+    (getClaimedYieldsSince as jest.Mock).mockResolvedValue([
+      makeClaimedYieldEvent("201"),
+      makeClaimedYieldEvent("202"),
+    ]);
     (sendAlert as jest.Mock).mockResolvedValueOnce(true).mockResolvedValueOnce(false);
 
     await expect(performClaimedYieldChecks("document", "collection", "webhook")).rejects.toThrow("rate-limited");

@@ -8,7 +8,7 @@ This project checks the state of RBS and sends alerts in Discord.
 
 Pulumi is used to manage the infrastructure, which comprises of:
 
-- Google Cloud Function: to query the subgraph and send Discord messages
+- Google Cloud Function: to query the [Olympus protocol indexer](https://github.com/OlympusDAO/olympus-protocol-indexer) and send Discord messages
 - Google Cloud Scheduler: triggers the function every minute
 - Google Firestore: simple, scalable, cheap database that supports JSON/key-values
 - Alerts: sends notifications via email and Discord (using [Make](https://us1.make.com/126792/scenarios/463632/edit))
@@ -18,7 +18,7 @@ Pulumi is used to manage the infrastructure, which comprises of:
 
 - Subgraph Check: PriceEvents
   1. Gets the latest block from Firestore
-  2. Fetches all PriceEvent records from the [RBS subgraph](https://github.com/OlympusDAO/rbs-subgraph)
+  2. Fetches all PriceEvent records from the protocol indexer (`GET /v1/rbs/price-events?sinceBlock=`)
   3. Sends a message using a Discord webhook
   4. Updates the latest block in Firestore
 - Snapshot Checks
@@ -50,12 +50,6 @@ pnpm install
 
 This repository uses pnpm configuration from `pnpm-workspace.yaml`, including the hoisted linker layout required by Pulumi's Node.js closure serialization. Do not move these settings back to `.npmrc`; npm and `npx` do not understand pnpm-only keys such as `minimumReleaseAge`, `strictDepBuilds`, `blockExoticSubdeps`, or `nodeLinker`.
 
-Regenerate GraphQL types after editing `src/graphql/*.graphql` files:
-
-```bash
-pnpm run codegen
-```
-
 Run formatting and lint fixes:
 
 ```bash
@@ -78,7 +72,7 @@ pnpm run execute:targetPrice
 pnpm run execute:yrfmarkets
 ```
 
-`.env` is used only by the local `execute:*` commands and GraphQL code generation. It is not read by `pnpm run build`, `pnpm run lint`, or Pulumi deployments. See `.env.sample` for the variables required by each local command; there are currently no optional `.env` variables.
+`.env` is used only by the local `execute:*` commands. It is not read by `pnpm run build`, `pnpm run lint`, or Pulumi deployments. See `.env.sample` for the variables required by each local command; there are currently no optional `.env` variables.
 
 ## Deployment
 
@@ -103,7 +97,11 @@ pulumi config --stack dev
 pulumi config --stack prod
 ```
 
-Required stack config includes `gcp:project`, `gcp:region`, `GRAPHQL_API_KEY`, Discord webhook URLs (including `discordWebhookEmissions`, `discordWebhookProtocolBuybacks`, and `discordWebhookProtocolRevenue`), notification emails, `discordRoleIdCore`, `contractUrl`, `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL`, and `ETHEREUM_RPC_URL` (an archive-capable Ethereum RPC endpoint).
+Required stack config includes `gcp:project`, `gcp:region`, Discord webhook URLs (including `discordWebhookEmissions`, `discordWebhookProtocolBuybacks`, and `discordWebhookProtocolRevenue`), notification emails, `discordRoleIdCore`, `contractUrl`, and `ETHEREUM_RPC_URL` (an archive-capable Ethereum RPC endpoint).
+
+`GRAPHQL_API_KEY` and `CONVERTIBLE_DEPOSITS_SUBGRAPH_URL` are no longer used. This repository reads only the protocol indexer, which is public, so it holds no data-source credential at all.
+
+`indexerApiUrl` is optional plain config (not a secret) that overrides the indexer base URL; unset, each function uses the deployed API.
 
 The dedicated webhook routing is:
 
@@ -134,10 +132,10 @@ Removing this required configuration would first require the Convertible Deposit
 
 Once those exact-block values are indexed and validated against historical events, the alert can calculate the approximate activation price using GraphQL data alone. The RPC client and `ETHEREUM_RPC_URL` Pulumi configuration can then be removed. Using the subgraph's mutable current Emission Manager entity is not sufficient because replayed events could be calculated with settings from a later block.
 
-## How To Update Subgraph Versions
+## How To Update Against a New Indexer
 
-- Deploy a new version of `rbs-subgraph`
-  - Ideally, test this tool against the version in Subgraph Studio before deploying to the Decentralized Network. In which case, replace `RBS_SUBGRAPH_URL` with the temporary GraphQL endpoint.
+- Point `indexerApiUrl` at the candidate deployment to test against it before cutting over, or set `INDEXER_API_URL` locally.
+- Run the contract tests against it: `INDEXER_API_URL=https://<host> pnpm test`. They assert every field these handlers read.
 - Update the addresses and starting blocks in `operator.ts` and `heart.ts` corresponding to new `Operator` and `Heart` policy versions, respectively.
 - Deploy to the dev environment: `pulumi up --stack dev`
 - Check that it operates as expected

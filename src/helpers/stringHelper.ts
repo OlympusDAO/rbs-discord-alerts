@@ -3,8 +3,16 @@ export function shorten(str: string) {
   return `${str.slice(0, 6)}...${str.slice(str.length - 4)}`;
 }
 
-export const isBytesEqual = (a: Uint8Array, b: string): boolean => {
-  return a.toString().toLowerCase() === b.toLowerCase();
+/**
+ * Case-insensitive address/hash comparison.
+ *
+ * The subgraph codegen typed `Bytes` as `Uint8Array` and this took one, but at
+ * runtime GraphQL always handed over a hex STRING — hence the `.toString()`.
+ * The REST API returns the same hex strings, so the parameter now says what it
+ * always received.
+ */
+export const isBytesEqual = (a: string, b: string): boolean => {
+  return a.toLowerCase() === b.toLowerCase();
 };
 
 /**

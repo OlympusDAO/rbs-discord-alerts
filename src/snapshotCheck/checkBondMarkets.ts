@@ -5,29 +5,13 @@ import {
   EMISSION_MANAGER_V1_2,
   ERC20_DAI,
   ERC20_OHM_V2,
-  getBondsSubgraphUrl,
-  getRbsSubgraphUrl,
   YIELD_REPURCHASE_FACILITY_V1_0,
   YIELD_REPURCHASE_FACILITY_V1_1,
   YIELD_REPURCHASE_FACILITY_V1_2,
 } from "../constants";
 import { type DiscordAlertSender, type EmbedField, getRoleMentions } from "../discord";
-import {
-  type MarketClosedEvent,
-  MarketClosedEventsDocument,
-  type MarketCreatedEvent,
-  MarketCreatedEventsDocument,
-} from "../graphql/bondMarket";
-import {
-  type PriceEvent,
-  type RangeSnapshot,
-  RangeSnapshotSinceBlockDocument,
-  RbsPriceEventsDocument,
-} from "../graphql/rangeSnapshot";
 import { getEventStartBlock } from "../helpers/blockHelper";
 import { ChainId, getEtherscanTransactionUrl } from "../helpers/contractHelper";
-import { createGraphQLClient } from "../helpers/graphqlClient";
-import { getSubgraphIndexedBlock } from "../helpers/indexerCursorHelper";
 import {
   castFloat,
   castFloatNullable,
@@ -40,6 +24,9 @@ import {
 import { getCurrentOperatorContractAddress } from "../helpers/operator";
 import { getShutdownEmbedField } from "../helpers/shutdownHelper";
 import { isBytesEqual, toUnorderedList } from "../helpers/stringHelper";
+import { getBondMarketEventsSince, getBondsIndexedBlock } from "../indexer/bonds";
+import { getPriceEventsSince, getRangeSnapshotsSince, getRbsIndexedBlock } from "../indexer/rbs";
+import type { BondMarketEvent, PriceEvent, RangeSnapshot } from "../indexer/types";
 
 const FUNCTION_KEY = "checkBondMarkets";
 const LATEST_BLOCK = "latestBlock";
@@ -82,7 +69,7 @@ const filterPriceEvents = (events: PriceEvent[], block: number, type?: string): 
   return filteredByBlock.filter(priceEvent => priceEvent.type === type);
 };
 
-const filterCreatedEvents = (events: MarketCreatedEvent[], block: number, marketId?: number): MarketCreatedEvent[] => {
+const filterCreatedEvents = (events: BondMarketEvent[], block: number, marketId?: number): BondMarketEvent[] => {
   const filteredByBlock = events.filter(createdEvent => castInt(createdEvent.block) === block);
 
   if (!marketId) {
@@ -92,7 +79,7 @@ const filterCreatedEvents = (events: MarketCreatedEvent[], block: number, market
   return filteredByBlock.filter(createdEvent => castInt(createdEvent.market.marketId) === marketId);
 };
 
-const filterClosedEvents = (events: MarketClosedEvent[], block: number, marketId?: number): MarketClosedEvent[] => {
+const filterClosedEvents = (events: BondMarketEvent[], block: number, marketId?: number): BondMarketEvent[] => {
   const filteredByBlock = events.filter(closedEvent => castInt(closedEvent.block) === block);
 
   if (!marketId) {
@@ -107,7 +94,7 @@ const pushError = (error: string, errors: string[]): void => {
   errors.push(error);
 };
 
-const isYRFOwner = (owner: Uint8Array): boolean => {
+const isYRFOwner = (owner: string): boolean => {
   return (
     isBytesEqual(owner, YIELD_REPURCHASE_FACILITY_V1_0) ||
     isBytesEqual(owner, YIELD_REPURCHASE_FACILITY_V1_1) ||
@@ -115,11 +102,11 @@ const isYRFOwner = (owner: Uint8Array): boolean => {
   );
 };
 
-const isEmissionManagerOwner = (owner: Uint8Array): boolean => {
+const isEmissionManagerOwner = (owner: string): boolean => {
   return isBytesEqual(owner, EMISSION_MANAGER_V1_0) || isBytesEqual(owner, EMISSION_MANAGER_V1_2);
 };
 
-const isValidMarketOwner = (owner: Uint8Array, block: number): boolean => {
+const isValidMarketOwner = (owner: string, block: number): boolean => {
   const currentOperatorAddress = getCurrentOperatorContractAddress(block);
   // The owner should be the operator contract or the yield repurchase facility or the emission manager
   return isBytesEqual(owner, currentOperatorAddress) || isYRFOwner(owner) || isEmissionManagerOwner(owner);
@@ -146,7 +133,7 @@ const isValidMarketOwner = (owner: Uint8Array, block: number): boolean => {
 const checkCushionUp = (
   priceEvent: PriceEvent,
   rangeSnapshot: RangeSnapshot,
-  marketCreatedEvents: MarketCreatedEvent[],
+  marketCreatedEvents: BondMarketEvent[],
 ): string[] => {
   const errors: string[] = [];
   const marketId = castFloatNullable(
@@ -165,19 +152,16 @@ const checkCushionUp = (
   // Check that a market created event was fired by the Bond Protocol contracts
   const createdMarkets = filterCreatedEvents(marketCreatedEvents, castInt(rangeSnapshot.block), marketId);
   if (!createdMarkets.length) {
-    pushError(
-      `Expected to find a MarketCreatedEvent with id (${marketId}) for a CushionUp, but it was missing.`,
-      errors,
-    );
+    pushError(`Expected to find a BondMarketEvent with id (${marketId}) for a CushionUp, but it was missing.`, errors);
     return errors; // Can't proceed
   } else {
-    console.debug(`CushionUp event has a corresponding MarketCreatedEvent`);
+    console.debug(`CushionUp event has a corresponding BondMarketEvent`);
   }
 
   // There should only be only event fired, but check anyway
   if (createdMarkets.length > 1) {
     pushError(
-      `Expected to find only 1 MarketCreatedEvent with id (${marketId}) for a CushionUp, but there were ${createdMarkets.length}.`,
+      `Expected to find only 1 BondMarketEvent with id (${marketId}) for a CushionUp, but there were ${createdMarkets.length}.`,
       errors,
     );
   }
@@ -344,7 +328,7 @@ const checkCushionUp = (
 const checkCushionDown = (
   priceEvent: PriceEvent,
   rangeSnapshot: RangeSnapshot,
-  marketClosedEvents: MarketClosedEvent[],
+  marketClosedEvents: BondMarketEvent[],
   wallUpEvents: PriceEvent[],
 ): string[] => {
   const errors: string[] = [];
@@ -354,15 +338,15 @@ const checkCushionDown = (
   // Check that a market closed event was fired in the same block
   const closedMarkets = filterClosedEvents(marketClosedEvents, castInt(rangeSnapshot.block));
   if (!closedMarkets.length) {
-    pushError(`Expected to find a MarketClosedEvent for a CushionDown event, but it was missing.`, errors);
+    pushError(`Expected to find a BondMarketEvent for a CushionDown event, but it was missing.`, errors);
     return errors; // Can't proceed
   } else {
-    console.debug(`CushionDown event has a corresponding MarketClosedEvent`);
+    console.debug(`CushionDown event has a corresponding BondMarketEvent`);
   }
 
   // The marketId is unique, so we are guaranteed that there is only one result
   const closedMarket = closedMarkets[0];
-  console.debug(`MarketClosedEvent: ${JSON.stringify(closedMarket, null, 2)}`);
+  console.debug(`BondMarketEvent: ${JSON.stringify(closedMarket, null, 2)}`);
 
   // Check that the market is actually closed
   if (!closedMarket.market.closedBlock) {
@@ -431,7 +415,7 @@ const checkCushionDown = (
  * @returns
  */
 const checkMarketCreated = (
-  event: MarketCreatedEvent,
+  event: BondMarketEvent,
   _rangeSnapshot: RangeSnapshot,
   cushionUpEvents: PriceEvent[],
 ): string[] => {
@@ -462,7 +446,7 @@ const checkMarketCreated = (
     if (matchingCushionUpEvents.length === 0) {
       pushError(`Market was created, but there was no corresponding RBS CushionUp event`, errors);
     } else {
-      console.debug(`MarketCreatedEvent has a corresponding CushionUp event`);
+      console.debug(`BondMarketEvent has a corresponding CushionUp event`);
     }
   } else {
     console.debug(`Market owner is YRF or EmissionManager, so no CushionUp event is expected`);
@@ -486,7 +470,7 @@ const checkMarketCreated = (
  * @returns
  */
 const checkMarketClosed = (
-  _event: MarketClosedEvent,
+  _event: BondMarketEvent,
   _rangeSnapshot: RangeSnapshot,
   cushionDownEvents: PriceEvent[],
 ): string[] => {
@@ -497,7 +481,7 @@ const checkMarketClosed = (
   if (cushionDownEvents.length === 0) {
     pushError(`Market was closed, but there was no corresponding RBS CushionDown event`, errors);
   } else {
-    console.debug(`MarketClosedEvent has a corresponding CushionDown event`);
+    console.debug(`BondMarketEvent has a corresponding CushionDown event`);
   }
 
   return errors;
@@ -645,73 +629,28 @@ export const checkBondMarkets = async (
   // Get the latest block
   const firestoreSnapshot = await firestore.get();
   const storedLatestBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK}`) || 0, 10);
-  const rangeSnapshotClient = createGraphQLClient(getRbsSubgraphUrl());
-  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
   const latestBlock = await getEventStartBlock(storedLatestBlock || undefined, async () => {
-    const [rangeIndexedBlock, bondsIndexedBlock] = await Promise.all([
-      getSubgraphIndexedBlock(rangeSnapshotClient, "RBS subgraph"),
-      getSubgraphIndexedBlock(bondsClient, "Bonds subgraph"),
-    ]);
+    const [rangeIndexedBlock, bondsIndexedBlock] = await Promise.all([getRbsIndexedBlock(), getBondsIndexedBlock()]);
     return Math.min(rangeIndexedBlock, bondsIndexedBlock);
   });
   let updatedLatestBlock = latestBlock;
   console.info(`Latest block is ${latestBlock}`);
 
-  // Fetch range snapshots
-  // Snapshots are in ascending order
-  console.debug(`Fetching RangeSnapshot records since block ${latestBlock}`);
-  const rangeSnapshotResults = await rangeSnapshotClient
-    .query(RangeSnapshotSinceBlockDocument, {
-      sinceBlock: latestBlock.toString(),
-    })
-    .toPromise();
-  // This previously checked for a 0 length array returned. However, if indexing lags slightly, we could get 0 records. Hence, it should not be an error.
-  if (!rangeSnapshotResults.data) {
-    throw new Error(`Did not receive results from RangeSnapshot GraphQL query. Error: ${rangeSnapshotResults.error}`);
-  }
-
-  // Fetch PriceEvents
-  console.debug(`Fetching PriceEvent records since block ${latestBlock}`);
-  const priceEventResults = await rangeSnapshotClient
-    .query(RbsPriceEventsDocument, {
-      latestBlock: latestBlock.toString(),
-    })
-    .toPromise();
-  if (!priceEventResults.data) {
-    throw new Error(`Did not receive results from PriceEvent GraphQL query. Error: ${priceEventResults.error}`);
-  }
-  const priceEvents = priceEventResults.data.priceEvents;
-
-  // Fetch markets created (restricted to OHM)
-  console.debug(`Fetching MarketCreatedEvent records since block ${latestBlock}`);
-  const marketsCreatedResults = await bondsClient
-    .query(MarketCreatedEventsDocument, {
-      sinceBlock: latestBlock.toString(),
-    })
-    .toPromise();
-  if (!marketsCreatedResults.data) {
-    throw new Error(
-      `Did not receive results from MarketCreatedEvents GraphQL query. Error: ${marketsCreatedResults.error}`,
-    );
-  }
-  const marketCreatedEvents: MarketCreatedEvent[] = marketsCreatedResults.data.marketCreatedEvents;
-
-  // Fetch markets closed (restricted to OHM)
-  console.debug(`Fetching MarketClosedEvent records since block ${latestBlock}`);
-  const marketsClosedResults = await bondsClient
-    .query(MarketClosedEventsDocument, {
-      sinceBlock: latestBlock.toString(),
-    })
-    .toPromise();
-  if (!marketsClosedResults.data) {
-    throw new Error(
-      `Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`,
-    );
-  }
-  const marketClosedEvents: MarketClosedEvent[] = marketsClosedResults.data.marketClosedEvents;
+  // Four queries became three requests: the bonds route returns the created
+  // and closed events together. Snapshots come back in ascending order.
+  //
+  // A zero-length result is NOT an error — if indexing lags slightly there may
+  // genuinely be no records yet.
+  console.debug(`Fetching RangeSnapshot, PriceEvent and bond market records since block ${latestBlock}`);
+  const [rangeSnapshots, priceEvents, marketEvents] = await Promise.all([
+    getRangeSnapshotsSince(latestBlock),
+    getPriceEventsSince(latestBlock),
+    getBondMarketEventsSince(latestBlock),
+  ]);
+  const marketCreatedEvents: BondMarketEvent[] = marketEvents.created;
+  const marketClosedEvents: BondMarketEvent[] = marketEvents.closed;
 
   // Iterate over blocks and perform checks
-  const rangeSnapshots: RangeSnapshot[] = rangeSnapshotResults.data.rangeSnapshots;
   console.info(`Processing ${rangeSnapshots.length} RangeSnapshot records`);
   for (const rangeSnapshot of rangeSnapshots) {
     console.debug(`\n\nChecking RangeSnapshot at block ${rangeSnapshot.block}`);

@@ -1,12 +1,11 @@
 import { Firestore } from "@google-cloud/firestore";
-import { getBondsSubgraphUrl, getYRFSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
-import { type MarketClosedEvent, MarketClosedEventsDocument } from "./graphql/bondMarket";
-import { type RepoMarket, RepoMarketDocument, RepoMarketsCreatedSinceDocument } from "./graphql/yrf";
 import { ChainId, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getSubgraphEventStartBlock, getSubgraphIndexedBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castFloat, castInt, formatNumber } from "./helpers/numberHelper";
+import { getBondMarketEventsSince, getBondsIndexedBlock } from "./indexer/bonds";
+import type { BondMarketEvent, YrfRepoMarket } from "./indexer/types";
+import { getRepoMarket, getRepoMarketsSince, getYrfIndexedBlock } from "./indexer/yrf";
 
 const FUNCTION_KEY = "yrfMarkets";
 const LATEST_BLOCK_CREATED = "latestBlockCreated";
@@ -21,7 +20,7 @@ const LATEST_BLOCK_CLOSED = "latestBlockClosed";
 const sendYRFMarketCreatedAlert = (
   alertSender: DiscordAlertSender,
   webhookUrl: string,
-  repoMarket: RepoMarket,
+  repoMarket: YrfRepoMarket,
 ): Promise<boolean> => {
   const capacity = castFloat(repoMarket.bidAmountDecimal);
   const marketId = repoMarket.marketId;
@@ -67,8 +66,8 @@ const sendYRFMarketCreatedAlert = (
 const sendYRFMarketClosedAlert = (
   alertSender: DiscordAlertSender,
   webhookUrl: string,
-  repoMarket: RepoMarket,
-  marketEvent: MarketClosedEvent,
+  repoMarket: YrfRepoMarket,
+  marketEvent: BondMarketEvent,
 ): Promise<boolean> => {
   const marketId = marketEvent.market.marketId;
   const timestamp = Number.parseInt(marketEvent.timestamp, 10) * 1000; // Convert to milliseconds
@@ -96,8 +95,8 @@ const sendYRFMarketClosedAlert = (
 };
 
 type YRFTask =
-  | { kind: "created"; block: number; event: RepoMarket }
-  | { kind: "closed"; block: number; event: MarketClosedEvent };
+  | { kind: "created"; block: number; event: YrfRepoMarket }
+  | { kind: "closed"; block: number; event: BondMarketEvent };
 
 /**
  * Performs checks for YRF market creation and closing events
@@ -126,33 +125,25 @@ export const performYRFMarketChecks = async (
   const firestoreSnapshot = await firestoreDocument.get();
   const storedCreatedBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK_CREATED}`) || 0, 10);
   const storedClosedBlock = parseInt(firestoreSnapshot.get(`${FUNCTION_KEY}.${LATEST_BLOCK_CLOSED}`) || 0, 10);
-  const yrfClient = createGraphQLClient(getYRFSubgraphUrl());
-  const bondsClient = createGraphQLClient(getBondsSubgraphUrl());
-
   const [createdStartBlock, closedStartBlock] = await Promise.all([
-    getSubgraphEventStartBlock(yrfClient, storedCreatedBlock || undefined, "YRF subgraph"),
-    getSubgraphEventStartBlock(bondsClient, storedClosedBlock || undefined, "Bonds subgraph"),
+    getIndexerEventStartBlock(storedCreatedBlock || undefined, getYrfIndexedBlock),
+    getIndexerEventStartBlock(storedClosedBlock || undefined, getBondsIndexedBlock),
   ]);
 
-  const [repoMarketsResults, marketsClosedResults] = await Promise.all([
-    yrfClient.query(RepoMarketsCreatedSinceDocument, { latestBlock: createdStartBlock.toString() }).toPromise(),
-    bondsClient.query(MarketClosedEventsDocument, { sinceBlock: closedStartBlock.toString() }).toPromise(),
+  // The bonds route returns created AND closed events together; only the
+  // closed half is used here.
+  const [repoMarkets, marketEvents] = await Promise.all([
+    getRepoMarketsSince(createdStartBlock),
+    getBondMarketEventsSince(closedStartBlock),
   ]);
-  if (!repoMarketsResults.data) {
-    throw new Error(`Did not receive results from YRF RepoMarket GraphQL query. Error: ${repoMarketsResults.error}`);
-  }
-  if (!marketsClosedResults.data) {
-    throw new Error(
-      `Did not receive results from MarketClosedEvents GraphQL query. Error: ${marketsClosedResults.error}`,
-    );
-  }
+
   const tasks: YRFTask[] = [
-    ...repoMarketsResults.data.repoMarkets.map(event => ({
+    ...repoMarkets.map(event => ({
       kind: "created" as const,
       block: castInt(event.blockNumber),
       event,
     })),
-    ...marketsClosedResults.data.marketClosedEvents.map(event => ({
+    ...marketEvents.closed.map(event => ({
       kind: "closed" as const,
       block: castInt(event.block),
       event,
@@ -168,20 +159,15 @@ export const performYRFMarketChecks = async (
       continue;
     }
 
-    yrfIndexedBlock ??= await getSubgraphIndexedBlock(yrfClient, "YRF subgraph");
-    if (task.block > yrfIndexedBlock) {
-      throw new Error(
-        `YRF subgraph is indexed through block ${yrfIndexedBlock}, before market closed event block ${task.block}`,
-      );
+    if (yrfIndexedBlock === undefined) {
+      yrfIndexedBlock = await getYrfIndexedBlock();
+    }
+    const indexedBlock = yrfIndexedBlock;
+    if (task.block > indexedBlock) {
+      throw new Error(`YRF is indexed through block ${indexedBlock}, before market closed event block ${task.block}`);
     }
     const marketId = task.event.market.marketId;
-    const yrfResults = await yrfClient.query(RepoMarketDocument, { marketId }).toPromise();
-    if (!yrfResults.data) {
-      throw new Error(
-        `Did not receive results from YRF GraphQL query for market ${marketId}. Error: ${yrfResults.error}`,
-      );
-    }
-    const repoMarket = yrfResults.data.repoMarkets[0];
+    const repoMarket = (await getRepoMarket(marketId))[0];
     if (repoMarket) {
       const alertSent = await sendYRFMarketClosedAlert(alertSender, webhookUrl, repoMarket, task.event);
       if (!alertSent) throw new Error(`Discord rate-limited the YRF market closed alert at block ${task.block}`);

@@ -1,36 +1,14 @@
-import { type Client, gql } from "@urql/core";
+import { getEventStartBlock } from "./blockHelper";
 
-import { getEventStartBlock, readPonderIndexedBlock, readSubgraphIndexedBlock } from "./blockHelper";
-
-const MAINNET_CHAIN_ID = 1;
-const PONDER_META_DOCUMENT = gql`
-  query ConvertibleDepositsPonderMeta {
-    _meta {
-      status
-    }
-  }
-`;
-const SUBGRAPH_META_DOCUMENT = gql`
-  query IndexedSubgraphMeta {
-    _meta {
-      block {
-        number
-      }
-    }
-  }
-`;
-
-export const getPonderEventStartBlock = async (client: Client, latestBlock?: number): Promise<number> =>
-  getEventStartBlock(latestBlock, async () => {
-    const result = await client.query(PONDER_META_DOCUMENT, {}).toPromise();
-    return readPonderIndexedBlock(result, MAINNET_CHAIN_ID, "Convertible Deposits Ponder endpoint");
-  });
-
-export const getSubgraphIndexedBlock = async (client: Client, sourceName: string): Promise<number> =>
-  readSubgraphIndexedBlock(await client.query(SUBGRAPH_META_DOCUMENT, {}).toPromise(), sourceName);
-
-export const getSubgraphEventStartBlock = async (
-  client: Client,
+/**
+ * The block to start reading events from, against the protocol indexer.
+ *
+ * Resume from the stored cursor, or look back a day from the indexed head on a
+ * cold start. Same rule as the subgraph/Ponder helpers this replaced; the
+ * indexed head now comes from a route's `meta.block` rather than
+ * `_meta { block { number } }` or Ponder's `_meta { status }`.
+ */
+export const getIndexerEventStartBlock = async (
   latestBlock: number | undefined,
-  sourceName: string,
-): Promise<number> => getEventStartBlock(latestBlock, () => getSubgraphIndexedBlock(client, sourceName));
+  getIndexedBlock: () => Promise<number>,
+): Promise<number> => getEventStartBlock(latestBlock, getIndexedBlock);

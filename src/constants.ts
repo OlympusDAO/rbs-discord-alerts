@@ -1,57 +1,9 @@
-const RBS_SUBGRAPH_URL =
-  "https://gateway.thegraph.com/api/[api-key]/subgraphs/id/8L8ZJ5hqCZguKk2QyBRWWdsp2thmzHF2Egyj4TqC9NHc";
+// The consolidated Olympus protocol indexer's REST API. Replaces the RBS,
+// bonds, YRF and emission-manager subgraphs on The Graph, and the convertible
+// deposits Ponder deployment. Public and unauthenticated — no API key.
+const DEFAULT_INDEXER_API = "https://protocol-indexer-api.olympusdao.finance";
 
-export const getRbsSubgraphUrl = (): string => {
-  const apiKey = process.env.GRAPHQL_API_KEY;
-  if (!apiKey) {
-    throw new Error("GRAPHQL_API_KEY is not set");
-  }
-  return RBS_SUBGRAPH_URL.replace("[api-key]", apiKey);
-};
-
-const PRICE_SNAPSHOT_SUBGRAPH_URL =
-  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/AaQjjnQ2esBZXe3trmXvGzMCYcDgTgWNoikaadr8Rep1";
-
-export const getPriceSnapshotSubgraphUrl = (): string => {
-  const apiKey = process.env.GRAPHQL_API_KEY;
-  if (!apiKey) {
-    throw new Error("GRAPHQL_API_KEY is not set");
-  }
-  return PRICE_SNAPSHOT_SUBGRAPH_URL.replace("[api-key]", apiKey);
-};
-
-const BONDS_SUBGRAPH_URL =
-  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/E4Mikyz3ec1MGGFYNuEDQ3F1qtcLashFKwyTvnbfa9Ss";
-
-export const getBondsSubgraphUrl = (): string => {
-  const apiKey = process.env.GRAPHQL_API_KEY;
-  if (!apiKey) {
-    throw new Error("GRAPHQL_API_KEY is not set");
-  }
-  return BONDS_SUBGRAPH_URL.replace("[api-key]", apiKey);
-};
-
-const YRF_SUBGRAPH_URL =
-  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/BVcdoUHemeVF5qmbvgLvHqLKH2oNouwJBuZXBVwdyNLe";
-
-export const getYRFSubgraphUrl = (): string => {
-  const apiKey = process.env.GRAPHQL_API_KEY;
-  if (!apiKey) {
-    throw new Error("GRAPHQL_API_KEY is not set");
-  }
-  return YRF_SUBGRAPH_URL.replace("[api-key]", apiKey);
-};
-
-const EMISSION_MANAGER_SUBGRAPH_URL =
-  "https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/7KwoppR1FTbHpz7VieAEFmyyPh9z2ZWUvYjSs5w3cTV8";
-
-export const getEmissionManagerSubgraphUrl = (): string => {
-  const apiKey = process.env.GRAPHQL_API_KEY;
-  if (!apiKey) {
-    throw new Error("GRAPHQL_API_KEY is not set");
-  }
-  return EMISSION_MANAGER_SUBGRAPH_URL.replace("[api-key]", apiKey);
-};
+export const getIndexerUrl = (): string => (process.env.INDEXER_API_URL || DEFAULT_INDEXER_API).replace(/\/+$/, "");
 
 export const ERC20_OHM_V2 = "0x64aa3364f17a4d01c6f1751fd97c2bd3d7e7f1d5".toLowerCase();
 export const ERC20_DAI = "0x6b175474e89094c44da98b954eedeac495271d0f".toLowerCase();

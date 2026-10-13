@@ -1,21 +1,16 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getConvertibleDepositsSubgraphUrl } from "./constants";
 import { createDiscordAlertSender, type DiscordAlertSender, type EmbedField, getRelativeTimestamp } from "./discord";
-import {
-  ClaimAllYieldFailedEventsSinceDocument,
-  type ClaimAllYieldFailedEventsSinceQuery,
-} from "./graphql/convertibleDeposits";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
-import { getPonderEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { shorten } from "./helpers/stringHelper";
+import { getConvertibleDepositsIndexedBlock, getFailuresSince } from "./indexer/convertibleDeposits";
+import type { CdClaimAllYieldFailed } from "./indexer/types";
 
 const FUNCTION_KEY = "failedPeriodicTasks";
 const LATEST_BLOCK = "latestBlock";
 
-type ClaimAllYieldFailedEvent =
-  ClaimAllYieldFailedEventsSinceQuery["convertibleDepositFacilityClaimAllYieldFaileds"]["items"][number];
+type ClaimAllYieldFailedEvent = CdClaimAllYieldFailed;
 
 /**
  * Sends a Discord alert when a claim all yield failed event is detected
@@ -98,26 +93,16 @@ export const performFailedPeriodicTasksChecks = async (
   console.info(`\n\n⏰ Processing Failed Periodic Tasks`);
 
   // Get the latest block
-  const client = createGraphQLClient(getConvertibleDepositsSubgraphUrl());
-  const latestBlock = await getPonderEventStartBlock(client, await getLatestBlock(firestoreDocument));
+  const latestBlock = await getIndexerEventStartBlock(
+    await getLatestBlock(firestoreDocument),
+    getConvertibleDepositsIndexedBlock,
+  );
 
-  // Fetch failed events using GraphQL
   console.debug(`Fetching claim all yield failed events since block ${latestBlock}`);
 
-  const queryResults = await client
-    .query(ClaimAllYieldFailedEventsSinceDocument, {
-      latestBlock: latestBlock.toString(),
-      chainId: 1,
-    })
-    .toPromise();
-
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${latestBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const events = queryResults.data.convertibleDepositFacilityClaimAllYieldFaileds.items || [];
+  // One request returns both failure kinds; this handler wants the
+  // claim-all-yield half.
+  const { claimAllYieldFailed: events } = await getFailuresSince(latestBlock);
   console.info(`Processing ${events.length} claim all yield failed events`);
 
   if (events.length === 0) {

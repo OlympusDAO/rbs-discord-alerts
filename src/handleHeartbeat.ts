@@ -1,6 +1,5 @@
 import { type DocumentReference, Firestore } from "@google-cloud/firestore";
 
-import { getRbsSubgraphUrl } from "./constants";
 import {
   createDiscordAlertSender,
   type DiscordAlertSender,
@@ -8,14 +7,14 @@ import {
   getRelativeTimestamp,
   getRoleMentions,
 } from "./discord";
-import { type Beat, BeatsSinceBlockDocument } from "./graphql/rangeSnapshot";
 import { ChainId, getEtherscanAddressUrl, getEtherscanTransactionUrl } from "./helpers/contractHelper";
-import { createGraphQLClient } from "./helpers/graphqlClient";
 import { getHeartAddress } from "./helpers/heart";
-import { getSubgraphEventStartBlock } from "./helpers/indexerCursorHelper";
+import { getIndexerEventStartBlock } from "./helpers/indexerCursorHelper";
 import { castInt } from "./helpers/numberHelper";
 import { shorten } from "./helpers/stringHelper";
 import { getShouldThrottle, updateLastAlertDate } from "./helpers/throttleHelper";
+import { getBeatsSince, getRbsIndexedBlock } from "./indexer/rbs";
+import type { Beat } from "./indexer/types";
 
 const FIELD_LATEST_BLOCK = "heartbeat.latestBlock";
 const FIELD_HEARTBEAT_DATE = "heartbeat.latestBeatDate";
@@ -47,20 +46,8 @@ const sendHeartbeatAlert = async (
   console.log(`${FUNC}: Latest block is ${latestBlock}`);
 
   // Fetch events since the last processed block
-  const client = createGraphQLClient(getRbsSubgraphUrl());
-  const startBlock = await getSubgraphEventStartBlock(client, latestBlock, "RBS subgraph");
-  const queryResults = await client
-    .query(BeatsSinceBlockDocument, {
-      sinceBlock: startBlock.toString(),
-    })
-    .toPromise();
-  if (!queryResults.data) {
-    throw new Error(
-      `Did not receive results from GraphQL query with latest block ${startBlock}. Error: ${queryResults.error}`,
-    );
-  }
-
-  const beatEvents: Beat[] = queryResults.data.beats;
+  const startBlock = await getIndexerEventStartBlock(latestBlock, getRbsIndexedBlock);
+  const beatEvents: Beat[] = await getBeatsSince(startBlock);
   if (beatEvents.length === 0) {
     console.log(`${FUNC}: No heartbeat events to process`);
     return;
