@@ -3,6 +3,9 @@ allowBuilds:
 blockExoticSubdeps: true
 engineStrict: true
 minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  # User-approved SDK security fix; remove after 2026-11-12 17:01 UTC when seven days old.
+  - "@pulumi/pulumi@3.274.1"
 nodeLinker: hoisted
 overrides:
   # Pulumi and Jest run compiled JavaScript; do not reinstall their optional TS loader.
