@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   audit:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     permissions:
       contents: read
       pull-requests: write
@@ -24,7 +24,6 @@ jobs:
         uses: ./.github/actions/bootstrap
 
       - name: Audit pnpm dependencies (fail on moderate+)
-        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: JamesRobertWiseman/pnpm-audit@a6a8cc297d146014c029926e49d43571e776f85e # v3.2.0
         with:
           package_json_path: ./
@@ -33,12 +32,8 @@ jobs:
           fails: true
           single_comment: true
 
-      - name: Audit fork dependencies without PR comments
-        if: github.event.pull_request.head.repo.full_name != github.repository
-        run: pnpm audit --audit-level moderate
-
-  manual_audit:
-    if: github.event_name == 'workflow_dispatch'
+  read_only_audit:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository)
     permissions:
       contents: read
     runs-on: ubuntu-latest
