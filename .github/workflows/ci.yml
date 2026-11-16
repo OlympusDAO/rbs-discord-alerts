@@ -23,6 +23,9 @@ jobs:
       - name: Run build
         run: pnpm run build
 
+      - name: Run unit tests
+        run: pnpm exec jest --runInBand
+
   lint_check:
     runs-on: ubuntu-latest
     steps:

@@ -5,6 +5,8 @@ engineStrict: true
 minimumReleaseAge: 10080
 nodeLinker: hoisted
 overrides:
+  # Pulumi and Jest run compiled JavaScript; do not reinstall their optional TS loader.
+  "ts-node": "-"
   "@babel/core@<7.29.6": "^7.29.6"
   "@grpc/grpc-js@>=1.14.0 <1.14.5": "^1.14.5"
   "@ardatan/relay-compiler@12.0.0>immutable": "^4.3.9"
@@ -12,7 +14,7 @@ overrides:
   "brace-expansion@<1.1.21": "^1.1.21"
   "brace-expansion@>=2.0.0 <2.1.7": "^2.1.7"
   "brace-expansion@>=4.0.0 <5.0.12": "^5.0.12"
-  "ip-address@<=10.7.0": "^10.7.1"
+  "ip-address@<=10.7.3": "^10.7.4"
   "js-yaml@>=3.0.0 <3.15.2": "^3.15.2"
   "js-yaml@>=4.0.0 <4.3.2": "^4.3.2"
   "lodash@>=4.0.0 <=4.17.23": "^4.18.0"
@@ -28,3 +30,10 @@ overrides:
   "ws@>=8.0.0 <8.21.0": "^8.21.0"
 preferFrozenLockfile: true
 strictDepBuilds: true
+trustLockfile: false
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # User-approved legacy Babel/Jest exception; remove when all paths resolve a provenance-backed semver release.
+  - "semver@6.3.1"
+  # User-approved Node 22 type-only exception; remove when compatible typings resolve a provenance-backed release.
+  - "undici-types@6.21.0"

@@ -62,7 +62,7 @@ Check TypeScript compilation:
 pnpm run build
 ```
 
-Run a monitor locally against values from `.env`:
+Run a monitor locally against values from `.env` (each command builds first, then runs the compiled JavaScript):
 
 ```bash
 pnpm run execute:events
@@ -76,16 +76,17 @@ pnpm run execute:yrfmarkets
 
 ## Deployment
 
-Deployments are managed by Pulumi. The package scripts wrap the corresponding stack commands:
+Deployments are managed by Pulumi using the compiled `dist/index.js` entry point, with runtime TypeScript loading disabled. The package scripts build first, then run the corresponding stack commands:
 
 ```bash
 pnpm run deploy:dev
 pnpm run deploy:prod
 ```
 
-Equivalent Pulumi commands:
+When running Pulumi directly, build first:
 
 ```bash
+pnpm run build
 pulumi up --stack dev
 pulumi up --stack prod
 ```
